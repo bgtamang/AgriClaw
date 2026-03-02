@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"></a>
-  <a href="#skills"><img src="https://img.shields.io/badge/skills-15_planned-orange" alt="Skills"></a>
+  <a href="#skills"><img src="https://img.shields.io/badge/skills-4_live,_11_planned-orange" alt="Skills"></a>
   <a href="https://github.com/bgtamang/AgriClaw/issues"><img src="https://img.shields.io/github/issues/bgtamang/AgriClaw" alt="Open Issues"></a>
 </p>
 
@@ -67,8 +67,8 @@ Skills are organised by data type:
 |-------|--------|-------------|
 | [claw-gdd](skills/field/claw-gdd/) | **MVP** | Growing degree days, frost dates, growth stage estimation from free weather APIs |
 | [claw-trial-design](skills/field/claw-trial-design/) | **MVP** | Field trial randomisation (RCBD, alpha-lattice, augmented designs) |
-| [claw-soil](skills/field/claw-soil/) | Planned | Soil properties from USDA SSURGO — texture, OM, drainage, pH |
-| [claw-weather](skills/field/claw-weather/) | Planned | Weather summaries, drought indices, precipitation from PRISM/Open-Meteo |
+| [claw-soil](skills/field/claw-soil/) | **MVP** | Soil properties from USDA SSURGO — texture, OM, drainage, pH |
+| [claw-weather](skills/field/claw-weather/) | **MVP** | Weather summaries, drought indices, water balance from Open-Meteo |
 
 ### Genomics
 
