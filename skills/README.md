@@ -1,12 +1,13 @@
 # Skills
 
-AgriClaw skills are organised by domain:
+AgriClaw skills are organised by data type:
 
 | Domain | Description |
 |--------|-------------|
-| [genomics/](genomics/) | GWAS, QTL mapping, genomic selection, marker analysis |
-| [phenomics/](phenomics/) | Remote sensing, imagery, trait extraction, thermal time |
-| [field/](field/) | Trial design, soil, weather, spatial analysis |
+| [field/](field/) | Trial design, GDD, soil, weather, spatial analysis |
+| [genomics/](genomics/) | GWAS, QTL mapping, WGS, genomic selection, marker analysis |
+| [transcriptomics/](transcriptomics/) | RNA-seq, differential expression, pathway enrichment |
+| [remote-sensing/](remote-sensing/) | Orthomosaics, vegetation indices, canopy cover, UAV/satellite imagery |
 | [orchestrator/](orchestrator/) | Routes requests to the right specialist skill |
 
 Each skill is a self-contained directory with a `SKILL.md` and Python scripts.

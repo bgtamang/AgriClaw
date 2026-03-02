@@ -19,10 +19,11 @@ A skill is **not** a thin wrapper around an existing tool. A good skill encodes 
 
 ```
 skills/
-├── genomics/      # GWAS, QTL, genomic selection, marker analysis
-├── phenomics/     # Remote sensing, imagery, trait extraction, GDD
-├── field/         # Trial design, soil, weather, spatial analysis
-└── orchestrator/  # Routing and integration
+├── field/              # Trial design, GDD, soil, weather, spatial analysis
+├── genomics/           # GWAS, QTL, WGS, genomic selection, marker analysis
+├── transcriptomics/    # RNA-seq, differential expression, pathway enrichment
+├── remote-sensing/     # Orthomosaics, vegetation indices, canopy, UAV/satellite
+└── orchestrator/       # Routing and integration
 ```
 
 ### 2. Create your skill directory

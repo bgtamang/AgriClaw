@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"></a>
-  <a href="#skills"><img src="https://img.shields.io/badge/skills-8_planned-orange" alt="Skills"></a>
+  <a href="#skills"><img src="https://img.shields.io/badge/skills-15_planned-orange" alt="Skills"></a>
   <a href="https://github.com/bgtamang/AgriClaw/issues"><img src="https://img.shields.io/github/issues/bgtamang/AgriClaw" alt="Open Issues"></a>
 </p>
 
@@ -59,14 +59,16 @@ AgriClaw encodes the correct decisions so the agent gets it right first time.
 
 ## Skills
 
-Skills are organised by domain:
+Skills are organised by data type:
 
-### Phenomics
+### Field
 
 | Skill | Status | Description |
 |-------|--------|-------------|
-| [claw-gdd](skills/phenomics/claw-gdd/) | **MVP** | Growing degree days, frost dates, growth stage estimation from free weather APIs |
-| [claw-vi-extract](skills/phenomics/claw-vi-extract/) | Planned | Vegetation index extraction from UAV/satellite multispectral imagery |
+| [claw-gdd](skills/field/claw-gdd/) | **MVP** | Growing degree days, frost dates, growth stage estimation from free weather APIs |
+| [claw-trial-design](skills/field/claw-trial-design/) | **MVP** | Field trial randomisation (RCBD, alpha-lattice, augmented designs) |
+| [claw-soil](skills/field/claw-soil/) | Planned | Soil properties from USDA SSURGO — texture, OM, drainage, pH |
+| [claw-weather](skills/field/claw-weather/) | Planned | Weather summaries, drought indices, precipitation from PRISM/Open-Meteo |
 
 ### Genomics
 
@@ -75,14 +77,23 @@ Skills are organised by domain:
 | [claw-gwas-crop](skills/genomics/claw-gwas-crop/) | **MVP** | Mixed-model GWAS with kinship, FDR control, and genomic inflation checks |
 | [claw-blup](skills/genomics/claw-blup/) | Planned | Multi-environment BLUP computation with R² pre-filtering |
 | [claw-qtl-annotator](skills/genomics/claw-qtl-annotator/) | Planned | SNP annotation with genome liftover and gene lookup (Phytozome/Ensembl Plants) |
+| [claw-wgs](skills/genomics/claw-wgs/) | Planned | Whole genome sequencing: alignment, variant calling, filtering |
 
-### Field
+### Transcriptomics
 
 | Skill | Status | Description |
 |-------|--------|-------------|
-| [claw-trial-design](skills/field/claw-trial-design/) | **MVP** | Field trial randomisation (RCBD, alpha-lattice, augmented designs) |
-| [claw-soil](skills/field/claw-soil/) | Planned | Soil properties from USDA SSURGO — texture, OM, drainage, pH |
-| [claw-weather](skills/field/claw-weather/) | Planned | Weather summaries, drought indices, precipitation from PRISM/Open-Meteo |
+| [claw-rnaseq](skills/transcriptomics/claw-rnaseq/) | Planned | RNA-seq pipeline: QC, alignment, quantification |
+| [claw-de-analysis](skills/transcriptomics/claw-de-analysis/) | Planned | Differential expression analysis (DESeq2/edgeR) with contrasts |
+| [claw-pathway](skills/transcriptomics/claw-pathway/) | Planned | GO/KEGG pathway enrichment from DE gene lists |
+
+### Remote Sensing
+
+| Skill | Status | Description |
+|-------|--------|-------------|
+| [claw-orthomosaic](skills/remote-sensing/claw-orthomosaic/) | Planned | Orthomosaic generation from UAV imagery (ODM integration) |
+| [claw-vi-extract](skills/remote-sensing/claw-vi-extract/) | Planned | Vegetation index extraction from multispectral imagery |
+| [claw-canopy](skills/remote-sensing/claw-canopy/) | Planned | Canopy cover estimation from RGB/multispectral imagery |
 
 ### Orchestrator
 
@@ -107,10 +118,10 @@ git clone https://github.com/bgtamang/AgriClaw.git
 cd AgriClaw
 
 # Run a skill with demo data
-python skills/phenomics/claw-gdd/gdd.py --demo
+python skills/field/claw-gdd/gdd.py --demo
 
 # Or use via OpenClaw
-openclaw install skills/phenomics/claw-gdd
+openclaw install skills/field/claw-gdd
 openclaw "Calculate GDD for soybeans planted May 15 in Champaign IL"
 ```
 
@@ -172,8 +183,10 @@ We want skills from the agricultural research community. If you work with crops,
 | **claw-gxe** | Genomics | G x E interaction (AMMI, GGE biplot) |
 | **claw-gs** | Genomics | Genomic selection / prediction |
 | **claw-ld** | Genomics | LD analysis, haplotype blocks, pruning |
-| **claw-canopy** | Phenomics | Canopy cover estimation from RGB imagery |
-| **claw-yield-predict** | Phenomics | ML yield prediction from time-series imagery |
+| **claw-variant-filter** | Genomics | VCF filtering, quality metrics, variant summaries |
+| **claw-yield-predict** | Remote Sensing | ML yield prediction from time-series imagery |
+| **claw-ndvi-timeseries** | Remote Sensing | NDVI time-series extraction and smoothing |
+| **claw-coexpression** | Transcriptomics | Gene co-expression networks (WGCNA) |
 | **claw-spatial** | Field | Spatial field correction (SpATS, AR1xAR1) |
 | **claw-irrigation** | Field | Irrigation scheduling from ET + soil data |
 
