@@ -26,6 +26,7 @@ Ask yourself: "What do I know about this analysis that a first-year graduate stu
    python -m pytest skills/claw-<your-skill>            # Python skills
    Rscript tests/run_r_tests.R claw-<your-skill>        # R skills
    python tools/build_catalog.py                        # refresh catalog.json and the README table
+   python tools/check_dois.py claw-<your-skill>         # look up every cited DOI (needs internet)
    ```
 7. Open a pull request saying what expert knowledge the skill encodes and how the tests validate it.
 
