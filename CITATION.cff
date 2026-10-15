@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use AgriClaw, please cite it as below, together with the packages and methods named in each skill's report."
+title: "AgriClaw: tested AI-agent skills for crop research"
+type: software
+authors:
+  - family-names: Tamang
+    given-names: Bishal Gole
+license: MIT
+repository-code: "https://github.com/bgtamang/AgriClaw"
+keywords:
+  - agriculture
+  - plant breeding
+  - field trials
+  - agent skills
+  - reproducibility

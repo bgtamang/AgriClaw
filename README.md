@@ -1,229 +1,108 @@
 <h3 align="center">AgriClaw</h3>
 
 <p align="center">
-  <strong>Agriculture-native AI agent skill library.</strong><br>
-  Built on <a href="https://github.com/openclaw/openclaw">OpenClaw</a>. Local-first. Reproducible.
+  <strong>Tested AI-agent skills for crop research.</strong><br>
+  Field trials · genotypes and genetics · gene expression · drone and satellite imagery · plant physiology
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"></a>
-  <a href="#skills"><img src="https://img.shields.io/badge/skills-4_live,_11_planned-orange" alt="Skills"></a>
-  <a href="https://github.com/bgtamang/AgriClaw/issues"><img src="https://img.shields.io/github/issues/bgtamang/AgriClaw" alt="Open Issues"></a>
+  <a href="https://github.com/bgtamang/AgriClaw/actions/workflows/tests.yml"><img src="https://github.com/bgtamang/AgriClaw/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/format-Agent%20Skills-blue" alt="Agent Skills format"></a>
 </p>
 
 ---
 
-## The Problem
+AgriClaw is a library of [Agent Skills](https://agentskills.io): folders of instructions and code that teach an AI agent how to run a crop-research analysis the way an experienced researcher would. They work in Claude Code, OpenAI Codex, Gemini CLI, GitHub Copilot, Cursor, OpenClaw and other tools that read the Agent Skills format.
 
-You run a field trial. 200 genotypes, 3 locations, UAV flights every two weeks. Now you need to:
+Each skill:
 
-1. Compute growing degree days. Open Excel, find the weather station, download CSV, clean it, calculate GDD manually.
-2. Extract vegetation indices from drone imagery. Which band combination? NDVI or NDRE? What about soil background?
-3. Fit BLUPs across environments. Was it `lme4` or `sommer`? Do you need spatial correction? Which variance structure?
-4. Run GWAS. GAPIT? TASSEL? Mixed model or GLM? What's the right significance threshold?
-5. Annotate hits. Which genome assembly? Liftover needed? Where's the gene list?
+- **wraps established tools** instead of re-implementing them: agricolae, FielDHub, statgenSTA, statgenGxE, statgenGWAS, qtl2, rrBLUP, DESeq2, WGCNA, PhotoGEA, terra and others;
+- **encodes the expert decisions**: which design, which model, which threshold, and why, with sources;
+- **asks before guessing** units, experimental design, genome assembly, planting date or band order;
+- **checks itself**, with tests that compare results against known answers (simulations with known truth, published worked examples, design-property checks);
+- **leaves a record**: every run writes a report (warnings first), tables, figures, and a reproducibility bundle (`commands.sh`, session info, SHA-256 checksums).
 
-Each step is a rabbit hole. A new student spends **weeks** learning the pitfalls. A postdoc has the knowledge but it lives in undocumented scripts on their laptop.
+## Why
 
-**AgriClaw freezes that expert knowledge into skills that an AI agent executes correctly every time.**
+An AI agent can write an analysis script in seconds. What it lacks is the field-specific judgement that decides whether the result is right. Some examples:
 
----
+- A split-plot layout whose whole plots straddle two field rows.
+- Corn growth-stage thresholds in °F-days compared against °C-day accumulation.
+- BLUPs passed into a GWAS, which shrinks them twice.
+- LI-6800 Excel files read before their formulas were ever calculated, so A and Ci come back as zeros.
+- Random cross-validation that leaks genotypes between folds and inflates prediction accuracy.
+- GO enrichment run against the whole genome instead of the expressed genes.
 
-## What Is AgriClaw?
+AgriClaw skills encode these decisions and test them.
 
-A **skill** is a domain expert's pipeline — frozen into code — that an AI agent runs reproducibly.
+## Install
+
+### Claude Code
 
 ```
-LLM alone        = guesses at agriculture analysis, hallucinates thresholds
-AgriClaw skill    = a breeder's proven pipeline that the AI executes correctly
+/plugin install agriclaw --marketplace bgtamang/AgriClaw
 ```
 
-- **Local-first**: Your field data, genotypes, and imagery stay on your machine.
-- **Reproducible**: Every analysis exports `commands.sh`, `environment.yml`, and SHA-256 checksums.
-- **Modular**: Each skill is a self-contained directory (`SKILL.md` + scripts) organised by domain.
-- **Expert-driven**: Skills encode the hard-won decisions — the QC thresholds, the model choices, the pitfalls to avoid.
+On Claude Code versions before 2.1.275, add the marketplace first:
 
-### Why not just ask an LLM?
+```
+/plugin marketplace add bgtamang/AgriClaw
+/plugin install agriclaw@agriclaw
+```
 
-Ask an LLM to "run GWAS on my soybean data." It will:
+### OpenClaw
 
-- Use GLM instead of MLM, ignoring population structure
-- Skip kinship correction entirely
-- Set an arbitrary p-value threshold instead of FDR
-- Produce results with genomic inflation factor > 10
-- No reproducibility bundle, no audit trail
+```bash
+git clone https://github.com/bgtamang/AgriClaw.git
+openclaw skills install ./AgriClaw/skills/claw-trial-analysis --as claw-trial-analysis   # repeat for each skill you want
+```
 
-AgriClaw encodes the correct decisions so the agent gets it right first time.
+### Other Agent Skills tools
 
----
+Copy the folders you want from `skills/` into your tool's skills directory. Each folder is self-contained.
+
+### Software the skills run
+
+- **R ≥ 4.2.** Install every package the R skills use with `Rscript tools/install_r_deps.R`.
+- **Python ≥ 3.9.** Run `python -m pip install -r requirements.txt`.
+
+Each skill's `compatibility` field lists exactly what that skill needs.
 
 ## Skills
 
-Skills are organised by data type:
+Start with [`agriclaw`](skills/agriclaw/), the router skill. It maps requests to skills and shows how they chain together, for example trial design → field book → trial analysis → multi-environment analysis → GWAS → gene lookup.
 
-### Field
+<!-- skills:start -->
+<!-- skills:end -->
 
-| Skill | Status | Description |
-|-------|--------|-------------|
-| [claw-gdd](skills/field/claw-gdd/) | **MVP** | Growing degree days, frost dates, growth stage estimation from free weather APIs |
-| [claw-trial-design](skills/field/claw-trial-design/) | **MVP** | Field trial randomisation (RCBD, alpha-lattice, augmented designs) |
-| [claw-soil](skills/field/claw-soil/) | **MVP** | Soil properties from USDA SSURGO — texture, OM, drainage, pH |
-| [claw-weather](skills/field/claw-weather/) | **MVP** | Weather summaries, drought indices, water balance from Open-Meteo |
+**Status:**
 
-### Genomics
+- `tested`: the tests check results against known answers, and they pass.
+- `experimental`: the skill runs, but some parts aren't validated yet. Its SKILL.md says which.
+- `guide`: instructions only.
 
-| Skill | Status | Description |
-|-------|--------|-------------|
-| [claw-gwas-crop](skills/genomics/claw-gwas-crop/) | **MVP** | Mixed-model GWAS with kinship, FDR control, and genomic inflation checks |
-| [claw-blup](skills/genomics/claw-blup/) | Planned | Multi-environment BLUP computation with R² pre-filtering |
-| [claw-qtl-annotator](skills/genomics/claw-qtl-annotator/) | Planned | SNP annotation with genome liftover and gene lookup (Phytozome/Ensembl Plants) |
-| [claw-wgs](skills/genomics/claw-wgs/) | Planned | Whole genome sequencing: alignment, variant calling, filtering |
+## Quality checks
 
-### Transcriptomics
-
-| Skill | Status | Description |
-|-------|--------|-------------|
-| [claw-rnaseq](skills/transcriptomics/claw-rnaseq/) | Planned | RNA-seq pipeline: QC, alignment, quantification |
-| [claw-de-analysis](skills/transcriptomics/claw-de-analysis/) | Planned | Differential expression analysis (DESeq2/edgeR) with contrasts |
-| [claw-pathway](skills/transcriptomics/claw-pathway/) | Planned | GO/KEGG pathway enrichment from DE gene lists |
-
-### Remote Sensing
-
-| Skill | Status | Description |
-|-------|--------|-------------|
-| [claw-orthomosaic](skills/remote-sensing/claw-orthomosaic/) | Planned | Orthomosaic generation from UAV imagery (ODM integration) |
-| [claw-vi-extract](skills/remote-sensing/claw-vi-extract/) | Planned | Vegetation index extraction from multispectral imagery |
-| [claw-canopy](skills/remote-sensing/claw-canopy/) | Planned | Canopy cover estimation from RGB/multispectral imagery |
-
-### Orchestrator
-
-| Skill | Status | Description |
-|-------|--------|-------------|
-| [agri-orchestrator](skills/orchestrator/agri-orchestrator/) | Planned | Routes agriculture requests to the right specialist skill |
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- [OpenClaw](https://github.com/openclaw/openclaw) installed
-- Python 3.9+
-
-### Install and run
+Run these from the repository root:
 
 ```bash
-# Clone
-git clone https://github.com/bgtamang/AgriClaw.git
-cd AgriClaw
-
-# Run a skill with demo data
-python skills/field/claw-gdd/gdd.py --demo
-
-# Or use via OpenClaw
-openclaw install skills/field/claw-gdd
-openclaw "Calculate GDD for soybeans planted May 15 in Champaign IL"
+python -m pip install -r requirements-dev.txt
+python tools/validate_skills.py        # every SKILL.md against the Agent Skills spec and AgriClaw rules
+python -m pytest                       # Python skill tests
+Rscript tests/run_r_tests.R            # R skill tests, each in a fresh R session
 ```
 
-Every skill includes **demo data** — try it immediately without your own files.
-
----
-
-## Architecture
-
-```
-User: "How many GDD have accumulated for my soybean trial?"
-         |
-  +------v--------+
-  |  Agri          |  <- routes by data type + keywords
-  |  Orchestrator  |
-  +------+---------+
-         |
-  +------v------------------------------------------+
-  |                                                  |
-  GDD       GWAS      Trial      Soil      VI
-  Calc      Crop      Design     Lookup    Extract  ...
-  |                                                  |
-  +------+------------------------------------------+
-         |
-  +------v--------+
-  |  Markdown      |  <- report + figures + checksums
-  |  Report        |     + reproducibility bundle
-  +---------------+
-```
-
-Each skill works standalone — the orchestrator routes, but you can run any skill directly.
-
----
-
-## Reproducibility
-
-Every AgriClaw analysis produces a **reproducibility bundle**:
-
-```
-output/
-  report.md              # Full analysis with figures and tables
-  figures/               # Publication-quality plots
-  tables/                # CSV data tables
-  commands.sh            # Exact commands to reproduce
-  environment.yml        # Conda/pip environment snapshot
-  checksums.sha256       # SHA-256 of every input and output
-```
-
-A collaborator can reproduce your results without emailing you. A reviewer can verify your analysis in 30 seconds.
-
----
-
-## Community Wanted Skills
-
-We want skills from the agricultural research community. If you work with crops, livestock, soil, or remote sensing — **wrap your pipeline as a skill**.
-
-| Skill | Domain | Your expertise |
-|-------|--------|----------------|
-| **claw-gxe** | Genomics | G x E interaction (AMMI, GGE biplot) |
-| **claw-gs** | Genomics | Genomic selection / prediction |
-| **claw-ld** | Genomics | LD analysis, haplotype blocks, pruning |
-| **claw-variant-filter** | Genomics | VCF filtering, quality metrics, variant summaries |
-| **claw-yield-predict** | Remote Sensing | ML yield prediction from time-series imagery |
-| **claw-ndvi-timeseries** | Remote Sensing | NDVI time-series extraction and smoothing |
-| **claw-coexpression** | Transcriptomics | Gene co-expression networks (WGCNA) |
-| **claw-spatial** | Field | Spatial field correction (SpATS, AR1xAR1) |
-| **claw-irrigation** | Field | Irrigation scheduling from ET + soil data |
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the submission process and [templates/SKILL-TEMPLATE.md](templates/SKILL-TEMPLATE.md) for the skill template.
-
----
+GitHub Actions runs all three on every push.
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-The short version:
-1. Fork the repo
-2. Create your skill using [templates/SKILL-TEMPLATE.md](templates/SKILL-TEMPLATE.md)
-3. Include demo data and a `--demo` flag
-4. Submit a PR
-
----
+New skills and fixes are welcome. Read [CONVENTIONS.md](CONVENTIONS.md) (the rules every skill follows) and [CONTRIBUTING.md](CONTRIBUTING.md), and start from `templates/r-skill` or `templates/python-skill`.
 
 ## Citation
 
-If you use AgriClaw in your research, please cite:
-
-```bibtex
-@software{agriclaw_2026,
-  author = {Tamang, Bishal},
-  title = {AgriClaw: An Agriculture-Native AI Agent Skill Library for Reproducible Crop Research},
-  year = {2026},
-  url = {https://github.com/bgtamang/AgriClaw}
-}
-```
-
-## Links
-
-- [OpenClaw](https://github.com/openclaw/openclaw) — The agent platform
-- [ClawBio](https://github.com/ClawBio/ClawBio) — Bioinformatics skill library (inspiration)
+If AgriClaw helps your research, please cite the software. [CITATION.cff](CITATION.cff) has the details, and GitHub shows a "Cite this repository" button. Please also cite the packages and methods each skill names in its report.
 
 ## License
 
-MIT — clone it, run it, build a skill, submit a PR.
+MIT. See [LICENSE](LICENSE).
