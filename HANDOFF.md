@@ -46,38 +46,42 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-gwas-crop | genomics | R | building | mixed-model GWAS with kinship (statgenGWAS) |
 | claw-ld-decay | genomics | R | building | LD decay and critical distance for candidate windows |
 | claw-gene-lookup | genomics | R | building | genes in QTL/GWAS intervals (Ensembl Plants REST or local GFF3), assembly checks |
-| claw-qtl-mapping | genomics | R | planned | biparental QTL mapping with permutation thresholds (qtl2) |
-| claw-genomic-prediction | genomics | R | planned | GBLUP / Bayesian prediction with leakage-safe cross-validation |
-| claw-selection-index | genomics | R | planned | breeder's equation, Smith-Hazel and desired-gains indices |
+| claw-qtl-mapping | genomics | R | building | biparental QTL mapping with permutation thresholds (qtl2) |
+| claw-genomic-prediction | genomics | R | building | GBLUP / Bayesian prediction with leakage-safe cross-validation |
+| claw-selection-index | genomics | R | building | breeder's equation, Smith-Hazel and desired-gains indices |
 | claw-rnaseq-import | transcriptomics | R | building | Salmon/kallisto import (tximport) and sample QC |
 | claw-de-analysis | transcriptomics | R | building | DESeq2 differential expression with contrasts, shrinkage, LRT |
 | claw-enrichment | transcriptomics | R | building | GO/KEGG/custom enrichment with the correct background (clusterProfiler) |
 | claw-coexpression | transcriptomics | R | building | WGCNA co-expression modules and module-trait links |
-| claw-plot-grid | remote-sensing | R | planned | plot polygons from field corners and layout |
-| claw-vi-extract | remote-sensing | R | planned | per-plot vegetation indices from multispectral imagery |
-| claw-canopy-cover | remote-sensing | R | planned | canopy cover from RGB imagery |
-| claw-ortho-qc | remote-sensing | R | planned | orthomosaic quality checks and processing guide |
-| claw-vi-timeseries | remote-sensing | R | planned | VI time-series smoothing and phenology metrics |
-| claw-yield-prediction | remote-sensing | R | planned | yield prediction with leakage-safe (grouped) cross-validation |
+| claw-plot-grid | remote-sensing | R | building | plot polygons from field corners and layout |
+| claw-vi-extract | remote-sensing | R | building | per-plot vegetation indices from multispectral imagery |
+| claw-canopy-cover | remote-sensing | R | building | canopy cover from RGB imagery |
+| claw-ortho-qc | remote-sensing | R | building | orthomosaic quality checks and processing guide |
+| claw-vi-timeseries | remote-sensing | R | building | VI time-series smoothing and phenology metrics |
+| claw-yield-prediction | remote-sensing | R | building | yield prediction with leakage-safe (grouped) cross-validation |
 | claw-licor-6800 | physiology | R | building | read and QC LI-COR LI-6800 files |
 | claw-aci-fit | physiology | R | building | C3/C4 A-Ci fitting (PhotoGEA) |
 | claw-light-response | physiology | R | building | light-response curves (non-rectangular hyperbola) |
 | claw-stomatal-models | physiology | R | building | Ball-Berry and Medlyn stomatal model fits |
-| claw-vpd-transpiration | physiology | R | planned | transpiration response to VPD with breakpoint models |
-| claw-growth-analysis | physiology | R | planned | RGR, NAR, LAR, SLA from sequential harvests |
-| claw-fluorescence | physiology | R | planned | PAM chlorophyll-fluorescence parameters |
-| agriclaw | meta | none | planned | catalog and pipeline router across all skills |
+| claw-vpd-transpiration | physiology | R | building | transpiration response to VPD with breakpoint models |
+| claw-growth-analysis | physiology | R | building | RGR, NAR, LAR, SLA from sequential harvests |
+| claw-fluorescence | physiology | R | building | PAM chlorophyll-fluorescence parameters |
+| agriclaw | meta | none | done | catalog and pipeline router across all skills |
 
 ## Repo-level work
 
 | Item | Status |
 |---|---|
 | Flat `skills/<name>/` layout, CONVENTIONS.md, templates, validator, R/Python test runners | done |
-| `tools/install_r_deps.R` (all R packages) | planned |
-| Claude Code plugin + marketplace manifest (`.claude-plugin/`) | planned |
-| GitHub Actions CI (validator + Python + R tests) | planned |
-| README rewrite (honest status table, install for Claude Code / OpenClaw / others) | planned |
-| CONTRIBUTING.md update, CHANGELOG.md | planned |
+| `tools/install_r_deps.R` (all R packages) | done |
+| Claude Code plugin + marketplace manifest (`.claude-plugin/`) | done (passes `claude plugin validate`) |
+| GitHub Actions CI (validator + Python + R tests) | written (`.github/workflows/tests.yml`), not pushed until skills pass locally |
+| README rewrite (honest status table, install for Claude Code / OpenClaw / others) | done; table filled by `tools/build_catalog.py` |
+| CONTRIBUTING.md update, CHANGELOG.md, CITATION.cff | done |
+
+## How the build is organised
+
+Nine build agents worked in parallel on 2026-10-15, one per area: field (Python), trials, markers/GWAS, breeding genetics, RNA-seq, imagery, imagery time series, gas exchange, and plant water/growth/fluorescence. Each could edit only its own skill folders. The orchestrator reviews each area, runs the validator and tests, and commits area by area.
 
 ## Decisions log
 
@@ -85,4 +89,5 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 - 2026-10-15: R for statistics, wrapping established packages (agricolae, FielDHub, statgen*, qtl2, rrBLUP, DESeq2, WGCNA, PhotoGEA, terra). Python only for the field/weather data plumbing.
 - 2026-10-15: Removed the earlier fabricated or garbled citations (Federer 1961 HPR, "Cullis 2006 J Agric Sci", "Gao 1992"). Every reference is now checked against Crossref.
 - 2026-10-15: Skills are flat folders (`skills/<name>/`) so they install directly in Claude Code, OpenClaw and other tools. Domains are recorded in `metadata.domain`.
+- 2026-10-15: SKILL.md commands call scripts through `${CLAUDE_SKILL_DIR}`, because an installed skill runs from the user's project folder. Claude Code substitutes the variable; other tools are told to use the skill folder.
 - Out of scope: read alignment and variant calling. Use established pipelines such as nf-core; AgriClaw starts from a VCF or genotype matrix.
