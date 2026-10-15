@@ -59,10 +59,10 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-ortho-qc | remote-sensing | R | building | orthomosaic quality checks and processing guide |
 | claw-vi-timeseries | remote-sensing | R | done | double logistic (Beck/Elmore), LOESS or Savitzky-Golay on days-after-planting or GDD; upper-envelope weights for cloudy dates; peak/green-up/senescence recovered within 4 d on simulated seasons; 76 checks |
 | claw-yield-prediction | remote-sensing | R | done | elastic net and random forest with nested grouped CV (leave-environment/genotype/year-out); leakage shown (r 0.90 random vs 0.20 environment-out); 75 checks |
-| claw-licor-6800 | physiology | R | building | read and QC LI-COR LI-6800 files |
-| claw-aci-fit | physiology | R | building | C3/C4 A-Ci fitting (PhotoGEA) |
-| claw-light-response | physiology | R | building | light-response curves (non-rectangular hyperbola) |
-| claw-stomatal-models | physiology | R | building | Ball-Berry and Medlyn stomatal model fits |
+| claw-licor-6800 | physiology | R | done | reads LI-6800 Excel and plaintext logs (values match PhotoGEA's reader); stops on unevaluated Excel formulas; duplicate-observation and instrument-confounding checks; 55 checks |
+| claw-aci-fit | physiology | R | done | PhotoGEA C3/C4 A-Ci fits; reproduces PhotoGEA's published Vcmax, J, TPU and Vpmax tables within 0.5%; simulated-curve recovery; 62 checks in 3 files |
+| claw-light-response | physiology | R | done | non-rectangular hyperbola with compensation and saturation points; simulated recovery within 3.5 SE; 34 checks |
+| claw-stomatal-models | physiology | R | done | Ball-Berry and Medlyn via PhotoGEA; reproduces PhotoGEA's Ball-Berry table; catches unit mistakes; 38 checks |
 | claw-vpd-transpiration | physiology | R | done | VPD (FAO-56 examples), irrigation/spike QC, segmented breakpoint with AICc and Davies test; breakpoint within 0.2 kPa in 86% of simulations; 55 checks |
 | claw-growth-analysis | physiology | R | done | RGR, NAR, SLA, LAR, LMF (classical and spline); Hoffmann-Poorter bias reproduced; 40 checks |
 | claw-fluorescence | physiology | R | done | Fv/Fm, PhiPSII, qP, qL, NPQ, ETR; match the LI-6800's own values on 424 rows; 124 checks |
