@@ -53,10 +53,10 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-de-analysis | transcriptomics | R | done | DESeq2 Wald and LRT with apeglm shrinkage; empirical FDR 0.06 at nominal 0.05; refuses TPM, unreplicated or confounded designs; LRT anti-conservatism measured and reported; 56 checks |
 | claw-enrichment | transcriptomics | R | done | over-representation with the tested genes as the universe; GO propagation via is_a/part_of; planted terms found, 0 of 47 null terms called; 44 checks |
 | claw-coexpression | transcriptomics | R | done | WGCNA modules and module-trait links; planted modules recovered (ARI 0.95); 47 checks |
-| claw-plot-grid | remote-sensing | R | building | plot polygons from field corners and layout |
-| claw-vi-extract | remote-sensing | R | building | per-plot vegetation indices from multispectral imagery |
-| claw-canopy-cover | remote-sensing | R | building | canopy cover from RGB imagery |
-| claw-ortho-qc | remote-sensing | R | building | orthomosaic quality checks and processing guide |
+| claw-plot-grid | remote-sensing | R | done | plot polygons from RTK corners or origin and bearing, in UTM with the scale-factor correction; serpentine or row-wise numbering; field-book join with a position cross-check (works on claw-trial-design output); 80 checks |
+| claw-vi-extract | remote-sensing | R | done | 7 indices checked against the primary formulas; coverage-weighted plot means; soil masking; reflectance-scale and band-order checks; 70 checks |
+| claw-canopy-cover | remote-sensing | R | done | ExG/ExGR with one Otsu threshold; within 0.83 percentage points on synthetic plots of known cover; glare and shadow fractions; 45 checks |
+| claw-ortho-qc | remote-sensing | R | done | 18 orthomosaic/DSM checks (CRS, rotation, DN vs reflectance, NoData, saturation, DSM spikes); every injected problem detected; processing guide; 52 checks |
 | claw-vi-timeseries | remote-sensing | R | done | double logistic (Beck/Elmore), LOESS or Savitzky-Golay on days-after-planting or GDD; upper-envelope weights for cloudy dates; peak/green-up/senescence recovered within 4 d on simulated seasons; 76 checks |
 | claw-yield-prediction | remote-sensing | R | done | elastic net and random forest with nested grouped CV (leave-environment/genotype/year-out); leakage shown (r 0.90 random vs 0.20 environment-out); 75 checks |
 | claw-licor-6800 | physiology | R | done | reads LI-6800 Excel and plaintext logs (values match PhotoGEA's reader); stops on unevaluated Excel formulas; duplicate-observation and instrument-confounding checks; 55 checks |
