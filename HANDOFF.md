@@ -49,10 +49,10 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-qtl-mapping | genomics | R | building | biparental QTL mapping with permutation thresholds (qtl2) |
 | claw-genomic-prediction | genomics | R | building | GBLUP / Bayesian prediction with leakage-safe cross-validation |
 | claw-selection-index | genomics | R | building | breeder's equation, Smith-Hazel and desired-gains indices |
-| claw-rnaseq-import | transcriptomics | R | building | Salmon/kallisto import (tximport) and sample QC |
-| claw-de-analysis | transcriptomics | R | building | DESeq2 differential expression with contrasts, shrinkage, LRT |
-| claw-enrichment | transcriptomics | R | building | GO/KEGG/custom enrichment with the correct background (clusterProfiler) |
-| claw-coexpression | transcriptomics | R | building | WGCNA co-expression modules and module-trait links |
+| claw-rnaseq-import | transcriptomics | R | done | Salmon, kallisto or featureCounts import; tx2gene from GFF3/GTF; transcript-version and mapping-rate QC; 54 checks |
+| claw-de-analysis | transcriptomics | R | done | DESeq2 Wald and LRT with apeglm shrinkage; empirical FDR 0.06 at nominal 0.05; refuses TPM, unreplicated or confounded designs; LRT anti-conservatism measured and reported; 56 checks |
+| claw-enrichment | transcriptomics | R | done | over-representation with the tested genes as the universe; GO propagation via is_a/part_of; planted terms found, 0 of 47 null terms called; 44 checks |
+| claw-coexpression | transcriptomics | R | done | WGCNA modules and module-trait links; planted modules recovered (ARI 0.95); 47 checks |
 | claw-plot-grid | remote-sensing | R | building | plot polygons from field corners and layout |
 | claw-vi-extract | remote-sensing | R | building | per-plot vegetation indices from multispectral imagery |
 | claw-canopy-cover | remote-sensing | R | building | canopy cover from RGB imagery |

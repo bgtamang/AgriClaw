@@ -1,0 +1,8 @@
+{
+  "salmon_version": "1.10.1",
+  "note": "synthetic AgriClaw demo file, not produced by Salmon",
+  "library_types": ["ISR"],
+  "num_processed": 14200000,
+  "num_mapped": 4615000,
+  "percent_mapped": 32.5000
+}

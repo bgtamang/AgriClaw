@@ -1,0 +1,7 @@
+"sample","path","condition","replicate"
+"S1","quant/S1","control",1
+"S2","quant/S2","control",2
+"S3","quant/S3","control",3
+"S4","quant/S4","drought",1
+"S5","quant/S5","drought",2
+"S6","quant/S6","drought",3
