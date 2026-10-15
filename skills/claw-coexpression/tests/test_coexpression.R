@@ -76,7 +76,7 @@ check(top$module == target && top$padj < 0.05 && top$r > 0.5,
       sprintf("t_assoc: strongest module is the planted one (%s, r = %.2f, padj = %.1e)", top$module, top$r, top$padj))
 check(!any(mt$significant[mt$trait == "t_null"]), "null trait: no module at padj < 0.05")
 check(isTRUE(all.equal(mt$padj, stats::p.adjust(mt$pvalue, "BH"))), "BH applied across all module x trait tests")
-check(!"ME0" %in% mt$module, "grey (ME0) excluded from module-trait tests")
+check(!"ME0" %in% mt$module, "unassigned module (ME0) excluded from module-trait tests")
 check(abs(min_detectable_r(24) - 0.4044) < 1e-3, "minimum detectable |r| at n = 24, alpha 0.05 is 0.404")
 
 # 4. Hub genes and kME ------------------------------------------------------------------
@@ -97,7 +97,7 @@ check(select_power(low, 18)$power == 18 && select_power(low, 25)$power == 16 &&
         select_power(low, 35)$power == 14 && select_power(low, 50)$power == 12 && select_power(low, 25)$fallback,
       "no power reaches 0.8: WGCNA FAQ table for signed networks (18/16/14/12)")
 
-# 6. Sample outliers by standardised connectivity ----------------------------------------
+# 6. Sample outliers by standardized connectivity ----------------------------------------
 # Realistic VST scale: genes differ in mean (6-12) and SD, so samples correlate highly.
 d_real <- sweep(sweep(scale(dat), 2, stats::runif(ncol(dat), 0.3, 1.2), "*"), 2, stats::runif(ncol(dat), 6, 12), "+")
 d_out <- d_real
@@ -157,6 +157,6 @@ sig <- dmt[dmt$significant, ]
 check(any(sig$trait == "stomatal_conductance_mol_m2_s" & sig$r < 0) && any(sig$trait == "leaf_n_mg_g" & sig$r > 0),
       "demo: planted stomatal-conductance (negative) and leaf-N (positive) module links found")
 check(!any(sig$trait == "plant_height_cm"), "demo: the null trait (plant height) has no significant module")
-check(run_cli(c("--demo", "--colour", "red"))$status != 0L, "unknown option exits with an error")
+check(run_cli(c("--demo", "--color", "red"))$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

@@ -14,7 +14,7 @@
 #   Rscript scripts/light_response.R --input licor_tidy.csv --curve-cols genotype,plot
 #   Rscript scripts/light_response.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-light-response"
 VERSION <- "1.0.0"
@@ -260,7 +260,7 @@ fit_nrh <- function(q, a, theta_fixed = NA_real_, low_light = 150) {
 }
 
 # Parameter estimates, Wald SEs/CIs and derived quantities for one fit.
-summarise_fit <- function(fit, q, a, opt) {
+summarize_fit <- function(fit, q, a, opt) {
   est <- stats::coef(fit)
   theta_fit <- is.na(opt$theta)
   th <- if (theta_fit) est[["theta"]] else opt$theta
@@ -321,7 +321,7 @@ curve_key <- function(df, curve_cols) {
   do.call(paste, c(lapply(curve_cols, function(cn) as.character(df[[cn]])), sep = " - "))
 }
 
-analyse_light <- function(df, opt) {
+analyze_light <- function(df, opt) {
   curve_cols <- split_cols(opt$curve_cols)
   validate_input(df, curve_cols, opt)
   df$curve_id <- curve_key(df, curve_cols)
@@ -351,7 +351,7 @@ analyse_light <- function(df, opt) {
                                  stringsAsFactors = FALSE)
       next
     }
-    s <- summarise_fit(fit, q, a, opt)
+    s <- summarize_fit(fit, q, a, opt)
     qc <- light_qc(q, a, s, opt)
     params[[id]] <- data.frame(curve_id = id, s, n_low_light_points = qc$n_low,
                                tleaf_mean_c = if ("tleaf_c" %in% names(d)) mean(d$tleaf_c, na.rm = TRUE) else NA_real_,
@@ -512,7 +512,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   if (!nzchar(opt$input)) stop("Provide --input FILE.csv (claw-licor-6800 output), or --demo. See --help.", call. = FALSE)
   if (!nzchar(opt$out)) opt$out <- file.path("agriclaw_output", SKILL)
   dir.create(opt$out, recursive = TRUE, showWarnings = FALSE)
-  res <- analyse_light(read_tidy(opt$input), opt)
+  res <- analyze_light(read_tidy(opt$input), opt)
   save_table(res$params, opt$out, "light_parameters.csv")
   if (!is.null(res$fits)) save_table(res$fits, opt$out, "light_fitted_points.csv")
   figs <- plot_fits(res, opt, opt$out)

@@ -2,7 +2,7 @@
 # Known answers: published selection-intensity tables, analytic order-statistic
 # values, a hand-computed two-trait Smith-Hazel index, the worked examples in
 # Ceron-Rojas & Crossa (2018, sections 2.8.2 and 3.1.4), and the bending example
-# in Nilforooshan (2020). Design properties: Smith-Hazel maximises r_IH, desired
+# in Nilforooshan (2020). Design properties: Smith-Hazel maximizes r_IH, desired
 # gains are achieved in the requested proportions, restricted traits do not change.
 
 test_file <- local({
@@ -146,7 +146,7 @@ check(near(mr$gains[-1], c(-2.2, 2.03, 2.66), c(0.05, 0.01, 0.01)),
       "published RLPSI gains (-2.2, 2.03, 2.66)")
 check(near(mr$r_IH, 0.35, 0.005), "published RLPSI r_IH 0.35")
 
-# 7. Smith-Hazel maximises r_IH: no random weighting beats it (demo matrices).
+# 7. Smith-Hazel maximizes r_IH: no random weighting beats it (demo matrices).
 dd <- file.path(SKILL_TEST_DIR, "demo")
 Pd <- read_matrix(file.path(dd, "P_matrix.csv"), "P")
 Gd <- read_matrix(file.path(dd, "G_matrix.csv"), "G")
@@ -225,7 +225,7 @@ sc <- utils::read.csv(file.path(out, "tables", "breeders_equation.csv"))
 check(near(sc$intensity[1], intensity_infinite(0.1), 1e-9), "demo scenario intensity")
 
 # 13. Unknown options are rejected.
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

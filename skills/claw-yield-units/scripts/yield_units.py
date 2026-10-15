@@ -12,7 +12,7 @@ Usage:
     python scripts/yield_units.py --input plots.csv --crop corn --weight-unit lb --rows 2 \
         --row-spacing 30 --row-spacing-unit in --length 17.5 --length-unit ft
 
-Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 """
 
 from __future__ import annotations
@@ -103,7 +103,7 @@ LB_AC_TO_KG_HA = LB_KG / (ACRE_M2 / HA_M2)   # 1.12085116...
 # yield units -> kg/ha (bu/ac handled separately because it needs the bushel weight)
 TO_KG_HA = {"kg/ha": 1.0, "t/ha": 1000.0, "mg/ha": 1000.0, "g/m2": 10.0, "lb/ac": LB_AC_TO_KG_HA,
             "cwt/ac": 100.0 * LB_AC_TO_KG_HA}
-UNIT_ALIASES = {"kg/ha": "kg/ha", "kg ha-1": "kg/ha", "t/ha": "t/ha", "mg/ha": "t/ha", "tonnes/ha": "t/ha",
+UNIT_ALIASES = {"kg/ha": "kg/ha", "kg ha-1": "kg/ha", "t/ha": "t/ha", "mg/ha": "t/ha", "metric tons/ha": "t/ha",
                 "g/m2": "g/m2", "g/m^2": "g/m2", "lb/ac": "lb/ac", "lb/acre": "lb/ac", "lbs/ac": "lb/ac",
                 "cwt/ac": "cwt/ac", "bu/ac": "bu/ac", "bu/acre": "bu/ac", "bushels/acre": "bu/ac"}
 WEIGHT_TO_KG = {"g": 0.001, "kg": 1.0, "lb": LB_KG}

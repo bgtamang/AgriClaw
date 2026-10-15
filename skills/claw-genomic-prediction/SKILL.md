@@ -23,7 +23,7 @@ Fits genomic prediction models to phenotypes (BLUEs) and marker genotypes, estim
 - Use for genomic selection in inbred or partially inbred crop populations (RIL families, breeding lines, diversity panels) with one BLUE per line, or BLUEs per line and environment.
 - Genotypes should first pass `claw-marker-qc` (call rate, MAF, duplicates). Phenotype BLUEs come from `claw-trial-analysis` (one trial) or `claw-met-gxe` (several environments); the entry-mean heritability for `--h2` comes from the same analysis.
 - For finding loci use `claw-gwas-crop` (panels) or `claw-qtl-mapping` (biparental and multiparent crosses). To turn accuracy into genetic gain per year use `claw-selection-index`.
-- Not for G x E modelling with environmental covariates or reaction norms, multi-trait models, or non-additive kernels; say so and suggest a dedicated model (for example BGLR multi-kernel, Jarquin et al. 2014).
+- Not for G x E modeling with environmental covariates or reaction norms, multi-trait models, or non-additive kernels; say so and suggest a dedicated model (for example BGLR multi-kernel, Jarquin et al. 2014).
 
 ## Inputs
 
@@ -69,7 +69,7 @@ Run time grows with lines x markers; Bayesian models refit the sampler in every 
 
 ## Expert decisions
 
-- **Markers**: recoded to rrBLUP's -1/0/1; `A.mat` removes monomorphic markers and mean-imputes missing calls; A = WW'/c with W the centred markers and c = 2 sum p(1-p) (VanRaden 2008; Endelman & Jannink 2012). Imputation is reported, never silent.
+- **Markers**: recoded to rrBLUP's -1/0/1; `A.mat` removes monomorphic markers and mean-imputes missing calls; A = WW'/c with W the centered markers and c = 2 sum p(1-p) (VanRaden 2008; Endelman & Jannink 2012). Imputation is reported, never silent.
 - **GBLUP** (`rrBLUP::kin.blup`, K = A) and **RR-BLUP** (`rrBLUP::mixed.solve`, Z = W) use REML variance components and are equivalent models (Endelman 2011); the report shows their agreement as a check.
 - **Bayesian models** (`BGLR`; Perez & de los Campos 2014): BayesB, BayesC (Habier et al. 2011) and BRR with BGLR default priors (R2 = 0.5, df0 = 5, probIn = 0.5, counts = 10). Default 12000 iterations, 2000 burn-in, thin 5: an adjustable rule of thumb, longer than BGLR's own 1500/500 default. Convergence of the residual variance is checked with the Geweke z (flag |z| > 2) and effective sample size (flag < 100) from coda: rules of thumb.
 - **Cross-validation**: 5 folds x 5 repetitions by default (adjustable rule of thumb). Family-stratified folds put about 1/k of each family in every fold. Leave-one-family-out predicts each family from the others. CV1 holds out whole lines; CV2 spreads each line's records over different folds (Burgueno et al. 2012). The same folds are used for every model.

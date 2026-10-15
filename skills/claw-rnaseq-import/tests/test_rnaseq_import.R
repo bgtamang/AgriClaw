@@ -74,7 +74,7 @@ tx2gene <- data.frame(transcript_id = tx_ids, gene_id = tx_gene)
 
 # 1. Gene-level sums equal hand-computed values ------------------------------
 txi_tx <- import_transcripts(files, "salmon")
-sg <- summarise_to_genes(txi_tx, tx2gene)
+sg <- summarize_to_genes(txi_tx, tx2gene)
 txi <- sg$txi
 read_back <- function(col) sapply(files, function(f) as.numeric(utils::read.delim(f)[[col]]))
 nr_file <- read_back("NumReads"); tpm_file <- read_back("TPM"); eff_file <- read_back("EffectiveLength")
@@ -114,7 +114,7 @@ for (j in 1:3) {
 }
 rk <- resolve_quant_files(data.frame(sample = samp[1:3], path = samp[1:3]), kdir)
 check(rk$type == "kallisto", "kallisto detected from abundance.tsv inside sample folders")
-sk <- summarise_to_genes(import_transcripts(rk$files, "kallisto"), tx2gene)
+sk <- summarize_to_genes(import_transcripts(rk$files, "kallisto"), tx2gene)
 check(max(abs(sk$txi$counts[rownames(exp_counts), ] - exp_counts[, 1:3])) < 1e-8,
       "kallisto: gene counts = hand sums of est_counts")
 check(read_mapping_info(rk$files[[1]], "kallisto")$mapping_rate_pct == 85, "kallisto mapping rate read from run_info.json")
@@ -142,18 +142,18 @@ ens <- sprintf("TXA%04d", seq_len(n_tx))
 files_v <- write_salmon(file.path(tmp, "salmon_ver"), paste0(ens, ".2"), len, nr, eff)
 t2g_nov <- data.frame(transcript_id = ens, gene_id = tx_gene)
 txv <- import_transcripts(files_v, "salmon")
-msg <- expect_error(summarise_to_genes(txv, t2g_nov), "trailing '\\.N'",
+msg <- expect_error(summarize_to_genes(txv, t2g_nov), "trailing '\\.N'",
                     "versioned quant IDs vs unversioned tx2gene stops with a diagnosis")
 check(grepl("--strip-tx-version", msg), "the error suggests --strip-tx-version")
-sgv <- summarise_to_genes(txv, t2g_nov, strip_version = TRUE)
+sgv <- summarize_to_genes(txv, t2g_nov, strip_version = TRUE)
 check(max(abs(sgv$txi$counts[rownames(exp_counts), ] - exp_counts)) < 1e-8,
       "after --strip-tx-version the gene sums are correct")
 # the reverse direction: annotation versioned, quantification not
-expect_error(summarise_to_genes(import_transcripts(write_salmon(file.path(tmp, "salmon_nov"),
+expect_error(summarize_to_genes(import_transcripts(write_salmon(file.path(tmp, "salmon_nov"),
              ens, len, nr, eff), "salmon"), data.frame(transcript_id = paste0(ens, ".1"),
              gene_id = tx_gene)), "annotation IDs carry a trailing", "unversioned quant vs versioned tx2gene")
 # plant isoform numbers are not versions: stripping would merge isoforms
-expect_error(summarise_to_genes(txi_tx, tx2gene, strip_version = TRUE), "isoform number",
+expect_error(summarize_to_genes(txi_tx, tx2gene, strip_version = TRUE), "isoform number",
              "--strip-tx-version refuses to merge plant isoforms (Gm.01G000100.1/.2)")
 # tximport's own ignoreTxVersion cuts at the first dot: show why it is unsafe here
 check(all(sub("\\..*", "", tx_ids) == "Gm"),
@@ -251,7 +251,7 @@ tp_rep <- readLines(file.path(tmp, "three_prime", "report.md"))
 check(any(grepl("--no-length-offset", tp_rep, fixed = TRUE)), "--three-prime: the report tells claw-de-analysis to drop length offsets")
 
 # 7. Bad inputs fail loudly ----------------------------------------------------------
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 a1_t2g <- file.path(tmp, "a1_tx2gene.csv")
 utils::write.csv(data.frame(transcript_id = sub("^Demo\\.0([1-4])G", "Glyma0\\1g", d_t2g$transcript_id),

@@ -24,7 +24,7 @@ Fits elastic-net and random-forest models that predict yield from per-plot featu
 - Use to audit a reported accuracy. Shared genotypes or environments between training and test sets, or late-season features in an "early" model, inflate it.
 - Get features with `claw-vi-extract` and `claw-vi-timeseries` first; that skill's `tables/feature_time.csv` plugs into `--feature-time`. Convert units with `claw-yield-units`.
 - Don't use it for marker-based genomic prediction (`claw-genomic-prediction`), for estimating genotype BLUEs from one trial (`claw-trial-analysis`), or for G x E and stability analysis (`claw-met-gxe`).
-- Don't treat predicted yields as phenotypes for GWAS or selection. They are shrunk towards the mean and inherit the features' genetics, not yield's.
+- Don't treat predicted yields as phenotypes for GWAS or selection. They are shrunk toward the mean and inherit the features' genetics, not yield's.
 
 ## Inputs
 
@@ -54,7 +54,7 @@ A CSV with one row per plot, or per genotype x environment mean or BLUE:
 - **Is it an early-season forecast?** If so, at what DAP, and when is each feature known? Then use `--feature-time` with `--cutoff`. Features for an early forecast must come from data up to that date (`claw-vi-timeseries --cutoff`), not from a whole-season fit.
 - **Yield units and type.** Plot yield or BLUE? Moisture-adjusted? For leave-env-out, BLUEs must be per environment: BLUEs pooled across environments already carry information from the held-out one.
 - **What defines an environment**, and is there a year column?
-- **Feature provenance.** Did any feature come from harvest, from yield itself, from field position (row/range), or from processing that used all plots at once (e.g. normalising over the whole data set)? Any of these leaks.
+- **Feature provenance.** Did any feature come from harvest, from yield itself, from field position (row/range), or from processing that used all plots at once (e.g. normalizing over the whole data set)? Any of these leaks.
 
 ## How to run
 
@@ -82,13 +82,13 @@ Other options: `--models`, `--folds`, `--inner-folds`, `--seed`, `--alpha-grid`,
 - `tables/cv_predictions.csv`: every out-of-fold prediction with ids, scheme, model and fold. `tables/fold_metrics.csv`: the same metrics per held-out fold, e.g. per environment.
 - `tables/tuning.csv`: the chosen alpha/lambda or mtry/min.node.size per fold, and how the inner folds were formed.
 - `tables/permutation_importance.csv`: headline scheme only; mean held-out RMSE increase, SD over folds, rank. `tables/features.csv`: each candidate feature, used or not, and why.
-- `figures/accuracy_by_scheme.png`, `figures/obs_vs_pred.png` (headline scheme, environment centroids labelled), `figures/importance.png`. Reproducibility bundle in `reproducibility/`.
+- `figures/accuracy_by_scheme.png`, `figures/obs_vs_pred.png` (headline scheme, environment centroids labeled), `figures/importance.png`. Reproducibility bundle in `reproducibility/`.
 
 ## Expert decisions
 
 **Elastic net** (Zou & Hastie 2005) through `glmnet::cv.glmnet` (Friedman et al. 2010).
 - Alpha is searched over 0, 0.25, 0.5, 0.75 and 1 (rule of thumb: ridge to lasso).
-- Lambda is chosen by inner CV with the one-standard-error rule. That is glmnet's default for `predict()`, and it favours the sparser model when n is small. Change it with `--enet-lambda min`.
+- Lambda is chosen by inner CV with the one-standard-error rule. That is glmnet's default for `predict()`, and it favors the sparser model when n is small. Change it with `--enet-lambda min`.
 
 **Random forest** (Breiman 2001) through `ranger` (Wright & Ziegler 2017).
 - 500 trees, ranger's default.
@@ -100,13 +100,13 @@ Other options: `--models`, `--folds`, `--inner-folds`, `--seed`, `--alpha-grid`,
 - Inner folds are grouped like the outer scheme (environments, years or genotypes) when the training rows hold at least 3 groups. Otherwise they are random, and `tuning.csv` and the report say so.
 
 **Grouped CV schemes** (Roberts et al. 2017).
-- Random k-fold puts rows of the same genotype and environment on both sides of the split. A model can then score well by recognising them, through replicated genotypes or environment-specific calibration offsets, without having learnt anything that transfers.
+- Random k-fold puts rows of the same genotype and environment on both sides of the split. A model can then score well by recognizing them, through replicated genotypes or environment-specific calibration offsets, without having learned anything that transfers.
 - `leave-genotype-out` is the "untested genotypes" problem (CV1 of Burgueño et al. 2012).
 - `leave-genotype-env-out` holds out one environment and one genotype fold together. The training set excludes both, matching the untested-sites-and-lines scenarios of Jarquín et al. (2017).
 - Folds: `--folds` (5, rule of thumb) for random and genotype folds; one environment or year per fold otherwise.
 
 **No preprocessing on the full data.**
-- glmnet standardises features inside every fit from that fit's own training rows (`standardize = TRUE`). Forests need no scaling.
+- glmnet standardizes features inside every fit from that fit's own training rows (`standardize = TRUE`). Forests need no scaling.
 - Nothing is imputed: rows with missing features stop the run unless `--drop-na-rows`, which drops and counts them.
 
 **Metrics.**

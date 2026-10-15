@@ -3,7 +3,7 @@
 # into gene-level counts with tximport, build the transcript-to-gene table from
 # a GFF3/GTF (or a user table), check that transcript IDs match, and run sample
 # QC (mapping rate, library size, detected genes, correlations, PCA on a
-# variance-stabilised transform, outlier flags).
+# variance-stabilized transform, outlier flags).
 #
 # Usage:
 #   Rscript scripts/rnaseq_import.R --demo
@@ -12,7 +12,7 @@
 #   Rscript scripts/rnaseq_import.R --samples samples.csv --type featurecounts --counts counts.txt
 #   Rscript scripts/rnaseq_import.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-rnaseq-import"
 VERSION <- "1.0.0"
@@ -46,7 +46,7 @@ USAGE <- "Usage: Rscript scripts/rnaseq_import.R [--demo] --samples SAMPLES.csv
   --transform          vst or rlog for the QC PCA and correlations (default: vst)
   --three-prime        3' tag-seq library (e.g. QuantSeq): counts have no length bias, so
                        no transcript-length offsets are used (tximport vignette)
-  --color-by           sample-sheet column used to colour the PCA (default: first
+  --color-by           sample-sheet column used to color the PCA (default: first
                        design column)
   --out                output folder (default: agriclaw_output/claw-rnaseq-import)
 "
@@ -493,9 +493,9 @@ import_transcripts <- function(files, type) {
                                       countsFromAbundance = "no"))
 }
 
-# Summarise transcript-level estimates to genes. Returns the gene-level txi plus
+# Summarize transcript-level estimates to genes. Returns the gene-level txi plus
 # ID-matching diagnostics. Stops when too few transcripts match.
-summarise_to_genes <- function(txi_tx, tx2gene, strip_version = FALSE, min_id_match = 0.95) {
+summarize_to_genes <- function(txi_tx, tx2gene, strip_version = FALSE, min_id_match = 0.95) {
   q_ids <- rownames(txi_tx$counts)
   if (strip_version) {
     q_ids <- strip_tx_version(q_ids, "quantified transcripts")
@@ -600,7 +600,7 @@ qc_transform <- function(counts, lengths = NULL, method = "vst") {
   SummarizedExperiment::assay(tr)
 }
 
-# PCA as in DESeq2::plotPCA: top-variance genes, centred, not scaled.
+# PCA as in DESeq2::plotPCA: top-variance genes, centered, not scaled.
 qc_pca <- function(mat, ntop = 500) {
   rv <- apply(mat, 1, stats::var)
   sel <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
@@ -806,7 +806,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
       id_info <- list(source = basename(opt$tx2gene), style = "user table",
                       match = c(`user table` = mean(q_ids %in% tx2gene$transcript_id)))
     }
-    sg <- summarise_to_genes(txi_tx, tx2gene, opt$strip_tx_version, opt$min_id_match)
+    sg <- summarize_to_genes(txi_tx, tx2gene, opt$strip_tx_version, opt$min_id_match)
     txi <- sg$txi
     counts <- txi$counts
     lengths <- txi$length
@@ -930,7 +930,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   }
   rep <- c(rep, "", "## Methods", "",
            paste0(if (quant_type == "featureCounts") "Gene-level counts were read from featureCounts output. " else
-             sprintf("Transcript-level estimates from %s were imported and summarised to genes with tximport (countsFromAbundance = \"no\"; gene length = abundance-weighted mean of transcript effective lengths). ", quant_type),
+             sprintf("Transcript-level estimates from %s were imported and summarized to genes with tximport (countsFromAbundance = \"no\"; gene length = abundance-weighted mean of transcript effective lengths). ", quant_type),
              sprintf("For QC only, counts were transformed with DESeq2 %s (blind = TRUE); PCA used the %d most variable genes (as DESeq2::plotPCA).",
                      opt$transform, pca$n_genes)),
            "", "## References", "",

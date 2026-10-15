@@ -73,7 +73,7 @@ The demo fits four synthetic curves with known parameters, one with photoinhibit
 
 ## Expert decisions
 
-- **Model.** Non-rectangular hyperbola (Prioul & Chartier 1977; Marshall & Biscoe 1980): A = [phi Q + Pmax - sqrt((phi Q + Pmax)^2 - 4 theta phi Q Pmax)] / (2 theta) - Rd, with phi the initial slope, Pmax the gross asymptote and 0 < theta <= 1 (theta = 1 is the Blackman response, theta -> 0 the rectangular hyperbola). It is the usual empirical model for leaf light responses; Ögren & Evans (1993) analyse what controls the curvature, and Lobo et al. (2013) compare it with other light-response models.
+- **Model.** Non-rectangular hyperbola (Prioul & Chartier 1977; Marshall & Biscoe 1980): A = [phi Q + Pmax - sqrt((phi Q + Pmax)^2 - 4 theta phi Q Pmax)] / (2 theta) - Rd, with phi the initial slope, Pmax the gross asymptote and 0 < theta <= 1 (theta = 1 is the Blackman response, theta -> 0 the rectangular hyperbola). It is the usual empirical model for leaf light responses; Ögren & Evans (1993) analyze what controls the curvature, and Lobo et al. (2013) compare it with other light-response models.
 - **Asat** is defined as the asymptote Pmax - Rd. With low theta it is approached only far above the measured range, so the model A at the highest PPFD and the maximum observed A are also reported. Say which one you quote.
 - **LCP and saturation point** are exact: gross rate g = Rd (LCP) or g = Rd + f (Pmax - Rd), and Q = g (Pmax - theta g) / (phi (Pmax - g)). The saturation point depends on the chosen fraction f; definitions vary between studies (Lobo et al. 2013), so 0.9 is an adjustable rule of thumb and is recorded in the output.
 - **Quantum yield basis.** phi is per mol incident photons unless `--absorptance` is given (phi_absorbed = phi / absorptance). The theoretical maximum is 0.125 mol CO2 per mol absorbed photons (8 photons per CO2); measured C3 values are lower (Long, Postl & Bolhár-Nordenkampf 1993). A fitted phi above 0.125 is flagged.
@@ -86,7 +86,7 @@ The demo fits four synthetic curves with known parameters, one with photoinhibit
 - LCP and saturation point equal the numerical roots of the fitted curve to 1e-6 (25 random parameter sets); a noise-free curve returns phi, theta, Asat and Rd to 1e-4.
 - 20 simulated curves (phi 0.04-0.075, theta 0.55-0.9, A noise sd 0.3): every estimate within 3.5 standard errors of the truth and at least 75% within 2; largest errors phi 16%, Asat 3.8%, theta 0.15, Rd 0.45, LCP 24% (phi and theta trade off); true phi inside the Wald interval on at least 75% of curves.
 - The demo's three regular curves give Asat within 5% of the generating values; the photoinhibited one is flagged.
-- Not validated: behaviour on curves with Kok-effect breaks at low light, and a photoinhibition model (none is fitted).
+- Not validated: behavior on curves with Kok-effect breaks at low light, and a photoinhibition model (none is fitted).
 
 ## Checks before reporting
 

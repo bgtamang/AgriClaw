@@ -11,7 +11,7 @@
 #   Rscript scripts/yield_prediction.R --input plots.csv --target yield_kg_ha --env-col env --genotype-col genotype
 #   Rscript scripts/yield_prediction.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-yield-prediction"
 VERSION <- "1.0.0"
@@ -422,7 +422,7 @@ inner_foldid <- function(n, groups, k, seed) {
 pad_x <- function(x) if (ncol(x) == 1L) cbind(x, .pad = 0) else x  # glmnet needs >= 2 columns
 
 # Elastic net (Zou & Hastie 2005) via glmnet (Friedman et al. 2010). Features
-# are standardised inside every fit from that fit's training rows only
+# are standardized inside every fit from that fit's training rows only
 # (glmnet's standardize = TRUE); alpha and lambda are tuned by inner CV.
 fit_enet <- function(x, y, foldid, alphas, rule = "1se") {
   x <- pad_x(x)
@@ -567,7 +567,7 @@ run_scheme <- function(dat, features, scheme, opt, keep_models = FALSE, importan
        n_folds = length(folds), models = kept, skipped = skipped)
 }
 
-summarise_cv <- function(pred, dat, opt) {
+summarize_cv <- function(pred, dat, opt) {
   env <- if (has_col(dat, opt$env_col)) as.character(dat[[opt$env_col]]) else NULL
   keys <- unique(pred[, c("scheme", "model")])
   rows <- lapply(seq_len(nrow(keys)), function(i) {
@@ -598,7 +598,7 @@ fold_metrics <- function(pred) {
   }))
 }
 
-summarise_importance <- function(imp) {
+summarize_importance <- function(imp) {
   if (is.null(imp)) return(NULL)
   keys <- unique(imp[, c("scheme", "model", "feature")])
   out <- do.call(rbind, lapply(seq_len(nrow(keys)), function(i) {
@@ -640,9 +640,9 @@ run_cv <- function(prep, opt, keep_models = FALSE) {
   pred <- do.call(rbind, lapply(res, `[[`, "pred"))
   rownames(pred) <- NULL
   list(schemes = schemes, primary = primary, pred = pred,
-       metrics = summarise_cv(pred, dat, opt), folds = fold_metrics(pred),
+       metrics = summarize_cv(pred, dat, opt), folds = fold_metrics(pred),
        tuning = do.call(rbind, lapply(res, `[[`, "tuning")),
-       importance = summarise_importance(do.call(rbind, lapply(res, `[[`, "imp"))),
+       importance = summarize_importance(do.call(rbind, lapply(res, `[[`, "imp"))),
        models = lapply(res, `[[`, "models"),
        skipped = unlist(lapply(names(res), function(s) if (length(res[[s]]$skipped))
          paste0(s, ": ", res[[s]]$skipped))))
@@ -700,7 +700,7 @@ plot_obs_pred <- function(cv, dat, opt, out_dir) {
                    main = sprintf("%s, %s\nr = %.2f, R2 (1-SSE/SST) = %.2f", m, cv$primary, mt$r, mt$r2_sse),
                    cex.main = 0.9)
     graphics::abline(0, 1, col = "grey40", lty = 2)
-    if (!is.null(env)) {  # environment centroids, labelled directly
+    if (!is.null(env)) {  # environment centroids, labeled directly
       e <- env[d$row]
       cx <- tapply(d$predicted, e, mean)
       cy <- tapply(d$observed, e, mean)
@@ -761,7 +761,7 @@ cv_warnings <- function(cv, prep, opt) {
                         paste(sprintf("%s %s vs %s", gap$model, fmt(gap$r), fmt(gap$r_within_env)), collapse = "; ")))
     rk <- pm[is.finite(pm$r_within_env) & pm$r_within_env >= 0.3 & is.finite(pm$r2_sse) & pm$r2_sse < 0, , drop = FALSE]
     if (nrow(rk))
-      w <- c(w, sprintf("Under %s the model still ranks genotypes within environments (mean within-environment r: %s) but misses the environment means (R2 < 0). Use its predictions only to rank entries within an environment, or remove environment means from yield and features before modelling.",
+      w <- c(w, sprintf("Under %s the model still ranks genotypes within environments (mean within-environment r: %s) but misses the environment means (R2 < 0). Use its predictions only to rank entries within an environment, or remove environment means from yield and features before modeling.",
                         cv$primary, paste(sprintf("%s %s", rk$model, fmt(rk$r_within_env)), collapse = "; ")))
   }
   for (s in setdiff(cv$schemes, "random")) {
@@ -819,7 +819,7 @@ write_report <- function(cv, prep, opt, out_dir, warn) {
              "## Limitations", "",
              "- Accuracy applies to the scheme's scenario only: leave-env-out says nothing about new genotypes, leave-genotype-out nothing about new seasons.",
              "- Few environments or years make grouped estimates noisy; random forests cannot extrapolate beyond the training range of the features.",
-             "- Predicted yields are shrunk towards the mean and inherit the features' genetics; they are not substitutes for measured yield in genetic analyses.", "",
+             "- Predicted yields are shrunk toward the mean and inherit the features' genetics; they are not substitutes for measured yield in genetic analyses.", "",
              "## References", "",
              "- Zou H, Hastie T (2005) J R Stat Soc B 67:301-320. https://doi.org/10.1111/j.1467-9868.2005.00503.x",
              "- Friedman J, Hastie T, Tibshirani R (2010) J Stat Softw 33(1):1-22. https://doi.org/10.18637/jss.v033.i01",

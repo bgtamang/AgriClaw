@@ -2,7 +2,7 @@
 # claw-trial-analysis: single-trial mixed-model analysis with statgenSTA.
 # Fits a spatial P-spline model (SpATS) and the design-based model (lme4) with
 # genotype fixed (BLUEs) and random (BLUPs, heritability), compares them, flags
-# outliers on standardised residuals and writes per-genotype BLUEs with
+# outliers on standardized residuals and writes per-genotype BLUEs with
 # weights for multi-environment analysis (claw-met-gxe) or GWAS.
 #
 # Usage:
@@ -10,7 +10,7 @@
 #   Rscript scripts/trial_analysis.R --input clean_data.csv --traits yield_kg_ha
 #   Rscript scripts/trial_analysis.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-trial-analysis"
 VERSION <- "1.0.0"
@@ -20,7 +20,7 @@ USAGE <- "Usage: Rscript scripts/trial_analysis.R --input DATA.csv --traits T1[,
   --input FILE       one row per plot (clean_data.csv from claw-fieldbook or similar)
   --traits LIST      numeric trait columns, comma-separated (units in the names)
   --genotype COL     genotype / entry column (default: entry, else genotype)
-  --trial COL        trial column; each trial is analysed separately (default trial)
+  --trial COL        trial column; each trial is analyzed separately (default trial)
   --rep COL          replicate column (default rep)
   --block COL        incomplete-block column (default block)
   --row COL          field row coordinate (default row)
@@ -31,11 +31,11 @@ USAGE <- "Usage: Rscript scripts/trial_analysis.R --input DATA.csv --traits T1[,
                      SpATS or lme4
   --blues-from E     model whose BLUEs go to met_input.csv: auto (SpATS when fitted),
                      SpATS or lme4
-  --outlier-limit Z  |standardised residual| limit (default: statgenSTA's
+  --outlier-limit Z  |standardized residual| limit (default: statgenSTA's
                      qnorm(1 - 0.5/residual df), kept between 2 and 4)
   --nseg C,R         P-spline segments for columns,rows (default: half the
                      number of columns and rows, statgenSTA's default)
-  --demo             analyse demo/trial_clean.csv (yield_kg_ha, plant_height_cm)
+  --demo             analyze demo/trial_clean.csv (yield_kg_ha, plant_height_cm)
   --out DIR          output folder (default: agriclaw_output/claw-trial-analysis)
 "
 
@@ -172,7 +172,7 @@ read_trial_data <- function(path) {
   utils::read.csv(path, check.names = FALSE, stringsAsFactors = FALSE, fileEncoding = "UTF-8-BOM")
 }
 
-# Standardised working data for one data set; fails loudly on bad input.
+# Standardized working data for one data set; fails loudly on bad input.
 prepare_data <- function(dat, opt) {
   gcol <- if (nzchar(opt$genotype)) opt$genotype else if ("entry" %in% names(dat)) "entry" else "genotype"
   if (!gcol %in% names(dat))
@@ -222,7 +222,7 @@ detect_design <- function(w, requested) {
   if (length(hint) == 1 && hint == "latin")
     return(list(design = if (length(unique(w$repx)) > 1) "res.rowcol" else "rowcol", reason = "design column says 'latin'"))
   if (length(hint) == 1 && hint %in% c("split", "strip", "factorial"))
-    fail("This is a '", hint, "' treatment experiment. claw-trial-analysis fits one genotype factor; analyse factorial treatments with an ANOVA that has the right error strata.")
+    fail("This is a '", hint, "' treatment experiment. claw-trial-analysis fits one genotype factor; analyze factorial treatments with an ANOVA that has the right error strata.")
   has_rep <- !all(is.na(w$repx)) && length(unique(stats::na.omit(w$repx))) > 1
   has_blk <- !all(is.na(w$blockx))
   if (has_rep && has_blk) {
@@ -234,7 +234,7 @@ detect_design <- function(w, requested) {
   if (has_rep) return(list(design = "rcbd", reason = "replicates without incomplete blocks"))
   if (has_blk) return(list(design = "ibd", reason = "blocks without replicates"))
   if (!all(is.na(w$rowx))) return(list(design = "rowcol", reason = "no replicates or blocks: rows and columns used as blocking factors"))
-  fail("No replicate, block or coordinate columns: the design cannot be modelled. Give --rep/--block/--row/--col.")
+  fail("No replicate, block or coordinate columns: the design cannot be modeled. Give --rep/--block/--row/--col.")
 }
 
 # "none", "complete", or an error message describing incomplete/duplicated positions.
@@ -264,7 +264,7 @@ replication_info <- function(w, trait) {
 # Heritability helpers (tested against closed forms)
 # ---------------------------------------------------------------------------
 
-# Cullis et al. (2006) generalised heritability for an lme4 model with genotype
+# Cullis et al. (2006) generalized heritability for an lme4 model with genotype
 # random: 1 - mean PEV of BLUP differences / (2 sigma2_g). The PEV matrix comes
 # from the full mixed-model equations in lme4's spherical form
 # [X'X, X'Z L; L'Z'X, L'Z'Z L + I], so it allows for the fixed effects.
@@ -290,7 +290,7 @@ cullis_h2 <- function(m, term = "genotype") {
   1 - vbar / (2 * s2g)
 }
 
-# SpATS generalised heritability (Oakey et al. 2006): effective dimension of the
+# SpATS generalized heritability (Oakey et al. 2006): effective dimension of the
 # genotype term over its nominal dimension. Same as SpATS::getHeritability()
 # without its rounding to two decimals.
 spats_h2 <- function(m) {
@@ -366,7 +366,7 @@ muffle_known <- function(expr) {
 }
 
 # Summaries, BLUEs, BLUPs and outliers for one engine and one trial.
-summarise_engine <- function(fit, eng, w, traits, opt) {
+summarize_engine <- function(fit, eng, w, traits, opt) {
   tr <- unique(w$trialx)
   sf <- fit$fixed; sr <- fit$random
   ef <- muffle_known(statgenSTA::extractSTA(sf, what = c("BLUEs", "seBLUEs", "CV", "rDfF")))[[tr]]
@@ -388,11 +388,11 @@ summarise_engine <- function(fit, eng, w, traits, opt) {
     p <- p[!is.na(p$blup) & !is.na(p$genotype), ]
     if (eng == "SpATS") {
       h2 <- spats_h2(mr)
-      h2_def <- "generalised H2 (Oakey et al. 2006) = ED_genotype / nominal dimension, from SpATS"
+      h2_def <- "generalized H2 (Oakey et al. 2006) = ED_genotype / nominal dimension, from SpATS"
       h2_statgen <- h2
     } else {
       h2 <- cullis_h2(mr)
-      h2_def <- "generalised H2 (Cullis et al. 2006) = 1 - mean PEV of BLUP differences / (2 sigma2_g), from the lme4 model"
+      h2_def <- "generalized H2 (Cullis et al. 2006) = 1 - mean PEV of BLUP differences / (2 sigma2_g), from the lme4 model"
       h2_statgen <- muffle_known(statgenSTA::extractSTA(sr, what = "heritability"))[[t]]
     }
     rl <- if (opt$outlier_limit > 0) opt$outlier_limit else NULL
@@ -432,7 +432,7 @@ bind_rows_fill <- function(lst) {
   do.call(rbind, lapply(lst, function(x) { for (cl in setdiff(cols, names(x))) x[[cl]] <- NA; x[, cols] }))
 }
 
-analyse <- function(dat, opt) {
+analyze <- function(dat, opt) {
   prep <- prepare_data(dat, opt)
   w_all <- prep$w
   traits <- prep$traits
@@ -465,7 +465,7 @@ analyse <- function(dat, opt) {
                            checks_replicated = vapply(ft$reps, function(r) r$n_check > 0 && r$mean_check > r$mean_test, TRUE),
                            unreplicated = ft$unreplicated, coords = coords, n_plots = nrow(w))
     for (eng in engines) {
-      s <- summarise_engine(ft$fits[[eng]], eng, w, traits, opt)
+      s <- summarize_engine(ft$fits[[eng]], eng, w, traits, opt)
       out$summary[[paste(tr, eng)]] <- s$summary
       out$blues[[paste(tr, eng)]] <- s$blues
       out$blups[[paste(tr, eng)]] <- s$blups
@@ -540,7 +540,7 @@ analysis_warnings <- function(res) {
     if (!is.na(r$cv_pct) && r$cv_pct > 20)
       w <- c(w, sprintf("Trial %s, %s (%s): CV = %.1f%% is high (rule of thumb > 20%% for yield); check units and outliers.", r$trial, r$trait, r$model, r$cv_pct))
     if (r$n_outliers > 0)
-      w <- c(w, sprintf("Trial %s, %s (%s): %d outlier(s) with |standardised residual| > %.2f; listed in outliers.csv, not removed.", r$trial, r$trait, r$model, r$n_outliers, r$outlier_limit))
+      w <- c(w, sprintf("Trial %s, %s (%s): %d outlier(s) with |standardized residual| > %.2f; listed in outliers.csv, not removed.", r$trial, r$trait, r$model, r$n_outliers, r$outlier_limit))
   }
   for (tr in names(res$info)) {
     inf <- res$info[[tr]]
@@ -665,12 +665,12 @@ write_report <- function(res, out_dir, warn, figs, opt) {
                                     "h2", "h2_statgenSTA", "mean_se_blue", "n_outliers"), names(res$summary))]
   show$mean <- signif(show$mean, 5)
   L <- c(L, md_table(show), "",
-         "- `h2` for SpATS: generalised heritability of Oakey et al. (2006), effective dimension of genotype / nominal dimension (SpATS::getHeritability, unrounded).",
-         "- `h2` for lme4: generalised heritability of Cullis et al. (2006), 1 - mean PEV of BLUP differences / (2 sigma2_g), from the full mixed-model equations. `h2_statgenSTA` for lme4 is statgenSTA's sigma2_g / (sigma2_g + sigma2_e / r) (r = number of replicates; plot-level when there is no replicate column); it equals the Cullis value only for balanced complete-block data.",
+         "- `h2` for SpATS: generalized heritability of Oakey et al. (2006), effective dimension of genotype / nominal dimension (SpATS::getHeritability, unrounded).",
+         "- `h2` for lme4: generalized heritability of Cullis et al. (2006), 1 - mean PEV of BLUP differences / (2 sigma2_g), from the full mixed-model equations. `h2_statgenSTA` for lme4 is statgenSTA's sigma2_g / (sigma2_g + sigma2_e / r) (r = number of replicates; plot-level when there is no replicate column); it equals the Cullis value only for balanced complete-block data.",
          "- `cv_pct` = 100 x sqrt(residual variance) / mean (statgenSTA). For SpATS the residual is what is left after the spatial trend, so its CV is lower than an ANOVA CV.", "")
   if (!is.null(res$comparison) && nrow(res$comparison)) {
     L <- c(L, "## Spatial vs non-spatial", "", md_table(res$comparison), "",
-           "Compared on precision (mean standard error of BLUEs; lower is better) and generalised heritability (higher is better). Likelihood criteria (AIC/BIC) are not comparable between SpATS and lme4 fits, so they are not used. A BLUE correlation near 1 means the choice changes little; a clear gain in H2 or standard errors favours the spatial model.", "")
+           "Compared on precision (mean standard error of BLUEs; lower is better) and generalized heritability (higher is better). Likelihood criteria (AIC/BIC) are not comparable between SpATS and lme4 fits, so they are not used. A BLUE correlation near 1 means the choice changes little; a clear gain in H2 or standard errors favors the spatial model.", "")
   }
   if (!is.null(res$outliers) && nrow(res$outliers)) L <- c(L, "## Outliers", "", md_table(utils::head(res$outliers, 30)), "")
   if (length(figs)) L <- c(L, "## Figures", "", sprintf("![%s](figures/%s)", figs, figs), "")
@@ -695,7 +695,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   if (!nzchar(opt$input)) fail("Provide --input DATA.csv and --traits, or --demo. See --help.")
   if (!nzchar(opt$out)) opt$out <- file.path("agriclaw_output", SKILL)
   dat <- read_trial_data(opt$input)
-  res <- analyse(dat, opt)
+  res <- analyze(dat, opt)
   dir.create(opt$out, recursive = TRUE, showWarnings = FALSE)
   save_table(res$summary, opt$out, "model_summary.csv")
   save_table(res$blues, opt$out, "blues.csv")

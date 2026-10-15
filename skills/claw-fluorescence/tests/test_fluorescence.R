@@ -73,7 +73,7 @@ n_rows <- 0L; worst <- 0
 for (f in files) {
   path <- system.file("extdata", f, package = "PhotoGEA")
   check(nzchar(path) && detect_format(path) == "licor", paste("PhotoGEA example found and detected as LI-6800:", f))
-  res <- analyse(standardise(read_licor(path), "licor", NA_real_, NA_real_), dark_adapted = "yes")
+  res <- analyze(standardize(read_licor(path), "licor", NA_real_, NA_real_), dark_adapted = "yes")
   for (v in names(LICOR_OUTPUTS)) {
     a <- res[[v]]; b <- res[[paste0("licor_", v)]]
     d <- max(abs(a - b) / abs(b))
@@ -88,7 +88,7 @@ td <- licor_id_time("RECT-12243-20210724-05_20_30"); tl <- licor_id_time("MPF-13
 check(near(as.numeric(difftime(tl, td, units = "days")), 30.17, 0.01), "LI-6800 flash IDs decoded to timestamps")
 
 # 4. QC flags ------------------------------------------------------------------------------
-q <- analyse(data.frame(fo = c(300, 300, 300, 300), fm = c(1500, 900, 1500, 1500),
+q <- analyze(data.frame(fo = c(300, 300, 300, 300), fm = c(1500, 900, 1500, 1500),
                         fs = c(600, 600, 1000, 200), fm_prime = c(1000, 1000, 1000, 1000),
                         fo_prime = c(250, 250, 250, 250), ppfd = 1000, qabs = NA_real_,
                         absorptance = 0.84, f_psii = 0.5))
@@ -97,19 +97,19 @@ check(grepl("Fm' > Fm", q$qc_check[2]) && q$npq[2] < 0, "Fm' > Fm flagged (negat
 check(grepl("Fv/Fm < 0.75", q$qc_check[2]), "low Fv/Fm flagged")
 check(grepl("Fs >= Fm'", q$qc_invalid[3]), "Fs >= Fm' is invalid")
 check(grepl("Fs < Fo'", q$qc_check[4]) && q$qp[4] > 1, "Fs < Fo' flagged (qP > 1)")
-nd <- analyse(data.frame(fo = 300, fm = 1500, fs = 600, fm_prime = 1000, fo_prime = NA_real_, ppfd = 1000,
+nd <- analyze(data.frame(fo = 300, fm = 1500, fs = 600, fm_prime = 1000, fo_prime = NA_real_, ppfd = 1000,
                          qabs = NA_real_, absorptance = 0.84, f_psii = 0.5), dark_adapted = "no")
 check(is.na(nd$fv_fm) && is.na(nd$npq) && is.na(nd$qp) && near(nd$phi_psii, 0.4, 1e-12),
       "not dark-adapted: Fv/Fm, NPQ and estimated-Fo' parameters withheld; PhiPSII kept")
 
-lo <- analyse(standardise(data.frame(fs = 600, fm_prime = 1000, ppfd_umol_m2_s = 1000), "csv", NA_real_, NA_real_))
+lo <- analyze(standardize(data.frame(fs = 600, fm_prime = 1000, ppfd_umol_m2_s = 1000), "csv", NA_real_, NA_real_))
 check(near(lo$phi_psii, 0.4, 1e-12) && near(lo$etr_umol_m2_s, 168, 1e-9) && is.na(lo$fv_fm) && is.na(lo$qp),
       "light-adapted data only: PhiPSII and ETR computed, Fv/Fm and qP left empty")
 
 # 5. Bad input -----------------------------------------------------------------------------
-check(grepl("fm_prime", errmsg(standardise(data.frame(fo = 1, fm = 2, fs = 1), "csv", NA, NA))),
+check(grepl("fm_prime", errmsg(standardize(data.frame(fo = 1, fm = 2, fs = 1), "csv", NA, NA))),
       "missing fm_prime is named in the error")
-check(grepl("numeric", errmsg(standardise(data.frame(fs = "a", fm_prime = 2), "csv", NA, NA))),
+check(grepl("numeric", errmsg(standardize(data.frame(fs = "a", fm_prime = 2), "csv", NA, NA))),
       "non-numeric signal is rejected")
 
 # 6. End to end --------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ check(res2$status == 0L, paste("LI-6800 run exits cleanly:", paste(res2$output, 
 rep2 <- readLines(file.path(out2, "report.md"), encoding = "UTF-8")
 check(any(grepl("recorded more than 12 h before", rep2)), "LI-6800 run warns that the dark-adapted Fo/Fm is from another day")
 check(any(grepl("Agreement with the LI-6800", rep2)), "LI-6800 run reports agreement with the instrument")
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

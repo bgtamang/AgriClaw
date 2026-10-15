@@ -16,7 +16,7 @@ metadata:
 
 ## What it does
 
-Converts a multispectral raster to surface reflectance (scale, offset, no-data), computes vegetation indices per pixel, optionally removes soil and shadow pixels, and summarises each plot polygon with coverage-weighted statistics from exactextractr. It refuses imagery that still holds digital numbers and flags plots too small for the pixel size.
+Converts a multispectral raster to surface reflectance (scale, offset, no-data), computes vegetation indices per pixel, optionally removes soil and shadow pixels, and summarizes each plot polygon with coverage-weighted statistics from exactextractr. It refuses imagery that still holds digital numbers and flags plots too small for the pixel size.
 
 ## When to use / when not to use
 
@@ -27,7 +27,7 @@ Converts a multispectral raster to surface reflectance (scale, offset, no-data),
 
 ## Inputs
 
-- `--input`: a multi-band raster of **surface reflectance** (0-1, or scaled integers with a known scale), with a CRS, ideally projected in metres.
+- `--input`: a multi-band raster of **surface reflectance** (0-1, or scaled integers with a known scale), with a CRS, ideally projected in meters.
 - `--plots`: plot polygons (GeoPackage, shapefile, GeoJSON) with a unique id column (`--id-col`, default `plot_id`, else `plot`). Any CRS; they are transformed to the raster's.
 - `--bands`: which raster layer holds blue, green, red, red edge and NIR, by number or layer name.
 
@@ -45,7 +45,7 @@ Sensor presets (`--sensor`) suggest a band order and scaling. They are only a st
 
 1. How the orthomosaic was made (Pix4D, Metashape, OpenDroneMap, the MicaSense library) and the band order it wrote. Check layer names with `terra::rast(f)` or `gdalinfo`.
 2. Whether it is reflectance: were reflectance panels and/or the sunlight sensor used? If values are integers, what is the scale factor?
-3. For Sentinel-2: where the data came from. ESA or Copernicus products from processing baseline 04.00 (25 January 2022) carry the -1000 offset (`sentinel2-l2a`); Google Earth Engine's `S2_SR_HARMONIZED` and older baselines do not (`sentinel2-l2a-harmonized`). Applying it twice makes red negative.
+3. For Sentinel-2: where the data came from. ESA or Copernicus products from processing baseline 04.00 (January 25, 2022) carry the -1000 offset (`sentinel2-l2a`); Google Earth Engine's `S2_SR_HARMONIZED` and older baselines do not (`sentinel2-l2a-harmonized`). Applying it twice makes red negative.
 4. The flight or acquisition date (`--date`).
 5. Whether plot values should include soil (whole-plot NDVI) or only vegetation (`--mask`); this changes what the numbers mean.
 
@@ -85,7 +85,7 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/vi_extract.R" --input S2_L2A_stack.tif --pl
 | Index | Formula (reflectance) | Source |
 |---|---|---|
 | NDVI | (NIR - R) / (NIR + R) | Rouse et al. 1974 |
-| NDRE | (NIR - RE) / (NIR + RE) | red-edge normalised difference (750/705 nm) of Gitelson & Merzlyak 1994 |
+| NDRE | (NIR - RE) / (NIR + RE) | red-edge normalized difference (750/705 nm) of Gitelson & Merzlyak 1994 |
 | GNDVI | (NIR - G) / (NIR + G) | Gitelson et al. 1996 |
 | OSAVI | (NIR - R) / (NIR + R + 0.16) | Rondeaux et al. 1996 (some software multiplies by 1.16) |
 | EVI2 | 2.5 (NIR - R) / (NIR + 2.4 R + 1) | Jiang et al. 2008, eq. 15 |
@@ -96,7 +96,7 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/vi_extract.R" --input S2_L2A_stack.tif --pl
 - **Scaling.** reflectance = value x scale + offset. Sentinel-2 L2A from baseline 04.00: (DN + BOA_ADD_OFFSET) / QUANTIFICATION_VALUE = (DN - 1000) / 10000, DN 0 = no data (ESA SentiWiki, Sentinel-2 products). PlanetScope surface reflectance: DN / 10000.
 - **Statistics.** Indices are computed per pixel, then averaged with each pixel weighted by the fraction inside the plot (exactextractr); median and quantiles are coverage-weighted too (they equal R's type-7 quantiles when all pixels are whole). Intermediate rasters are float32 (about 7 significant digits).
 - **Soil and shadow mask** (off by default, because whole-plot NDVI is also a valid trait). `--mask otsu` sets one NDVI threshold for the whole image with Otsu's method on pixels inside the plots, never per plot (a plot that is all canopy or all soil would be split anyway). A threshold outside 0.1-0.8, or an Otsu separability (between-class / total variance) below 0.8, is flagged as a non-bimodal histogram (rule of thumb; a single normal mode gives 2/pi = 0.64). `--mask ndvi` uses a fixed threshold: soil is usually below about 0.3 and green canopy above about 0.5 in UAV reflectance, so 0.3-0.4 is a common starting point (rule of thumb; check the histogram). `--shadow-nir` drops pixels darker than a NIR reflectance (rule of thumb 0.10-0.15).
-- **Buffers** are applied in metres (a projected CRS), never in degrees. A negative buffer of at least one to two pixels (rule of thumb, often 0.2-0.5 m) keeps alley, edge and neighbour pixels out.
+- **Buffers** are applied in meters (a projected CRS), never in degrees. A negative buffer of at least one to two pixels (rule of thumb, often 0.2-0.5 m) keeps alley, edge and neighbor pixels out.
 - **Mixed pixels.** Each plot reports effective and whole-pixel counts. Plots with fewer than `--min-pixels` (10, rule of thumb) effective pixels or no whole pixel are flagged; a median below 10 pixels per plot raises a warning (for example Sentinel-2 10 m pixels over 1.5 x 5 m plots: 0.075 pixels per plot).
 - **Band-order checks.** A layer named, say, `NIR` mapped to red stops the run. Pixels with NDVI below -0.3 at the 5th percentile suggest swapped red and NIR; a 95th percentile below 0.2 suggests no vegetation signal.
 

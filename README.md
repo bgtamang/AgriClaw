@@ -27,7 +27,7 @@ Each skill:
 
 You run a field trial: 200 genotypes, 3 locations, drone flights every two weeks. Then come the growing degree days, the vegetation indices, the BLUPs across environments, the GWAS and the gene lists. Each step has pitfalls that a new student spends weeks learning and that a postdoc knows but keeps in undocumented scripts.
 
-An AI agent can write each analysis script in seconds. What it lacks is the field-specific judgement that decides whether the result is right. Some examples:
+An AI agent can write each analysis script in seconds. What it lacks is the field-specific judgment that decides whether the result is right. Some examples:
 
 - A split-plot layout whose whole plots straddle two field rows.
 - Corn growth-stage thresholds in °F-days compared against °C-day accumulation.
@@ -122,7 +122,7 @@ Start with [`agriclaw`](skills/agriclaw/), the router skill. It maps requests to
 | [`claw-fieldbook`](skills/claw-fieldbook/) | Field Book app export and import, merging tablets, plot-level data QC | R | tested |
 | [`claw-met-gxe`](skills/claw-met-gxe/) | Multi-environment trials: GxE variance, heritability, stability, Finlay-Wilkinson, AMMI/GGE | R | tested |
 | [`claw-trial-analysis`](skills/claw-trial-analysis/) | Single-trial mixed models (SpATS spatial or lme4): BLUEs, BLUPs, heritability, outliers | R | tested |
-| [`claw-trial-design`](skills/claw-trial-design/) | Randomise and lay out trials: RCBD, alpha-lattice, row-column, augmented, p-rep, split, strip | R | tested |
+| [`claw-trial-design`](skills/claw-trial-design/) | Randomize and lay out trials: RCBD, alpha-lattice, row-column, augmented, p-rep, split, strip | R | tested |
 
 ### Genotypes and genetics
 

@@ -20,7 +20,7 @@ AgriClaw is a set of skills for crop research. Each one wraps established R or P
 
 ## When to use
 
-- The request spans several steps (e.g. "analyse my trial and find the genes behind the yield QTL").
+- The request spans several steps (e.g. "analyze my trial and find the genes behind the yield QTL").
 - You aren't sure which AgriClaw skill fits.
 
 When the request clearly matches one skill, use that skill directly.
@@ -55,10 +55,10 @@ When the request clearly matches one skill, use that skill directly.
 
 | Need | Skill |
 |---|---|
-| Randomise a trial: RCBD, alpha-lattice, augmented, p-rep, split-plot, strip-plot, Latin square, row-column | `claw-trial-design` |
+| Randomize a trial: RCBD, alpha-lattice, augmented, p-rep, split-plot, strip-plot, Latin square, row-column | `claw-trial-design` |
 | Field Book app export/import, merge collected data, data QC | `claw-fieldbook` |
-| Analyse one trial: spatial model, BLUEs/BLUPs, heritability, outliers | `claw-trial-analysis` |
-| Analyse many environments: GxE, stability, AMMI/GGE, Finlay–Wilkinson | `claw-met-gxe` |
+| Analyze one trial: spatial model, BLUEs/BLUPs, heritability, outliers | `claw-trial-analysis` |
+| Analyze many environments: GxE, stability, AMMI/GGE, Finlay–Wilkinson | `claw-met-gxe` |
 
 ### Genotypes and genetics
 

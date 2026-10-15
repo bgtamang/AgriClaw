@@ -368,7 +368,7 @@ def test_cli_demo(tmp_path):
         assert (tmp_path / f).is_file(), f
     with open(tmp_path / "tables" / "corn_stages.csv", newline="", encoding="utf-8") as f:
         st = {s["stage"]: s for s in csv.DictReader(f)}
-    # corn planted 25 April near Champaign silks in July and reaches black layer in late summer
+    # corn planted April 25 near Champaign silks in July and reaches black layer in late summer
     assert st["R1"]["date_reached"].startswith("2025-07")
     assert "2025-08-15" <= st["R6"]["date_reached"] <= "2025-09-30"
 

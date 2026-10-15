@@ -8,13 +8,13 @@
 #                  plot_id, plot and the true canopy cover of the synthetic scene
 #                  (true_cover_pct, exact area fraction from 4 x 4 supersampling)
 #
-# Plants are green discs along two rows per plot (0.75 m apart) whose size differs
+# Plants are green disks along two rows per plot (0.75 m apart) whose size differs
 # between plots, on brown soil, with a brightness gradient across the field, pixel
 # noise and anti-aliased leaf edges. Plot P07 has straw residue patches, P03 a
 # small specular (saturated) patch and P05 a dark shadow strip.
 
-# Discs painted into a plot-sized matrix (xl, yl: its sub-pixel centres); only
-# each disc's bounding box is scanned. Vegetation outside plots is cut anyway.
+# Disks painted into a plot-sized matrix (xl, yl: its sub-pixel centers); only
+# each disk's bounding box is scanned. Vegetation outside plots is cut anyway.
 paint_discs <- function(xl, yl, cx, cy, r) {
   loc <- matrix(0, length(yl), length(xl))
   for (j in seq_along(cx)) {
@@ -39,7 +39,7 @@ synth_rgb_scene <- function(seed = 1L, gsd = 0.02, x0 = 500000, y0 = 4570000, ar
   nc <- round(width / gsd); nr <- round(height / gsd)
   ss <- 4L                                          # supersampling per pixel side
   sub <- (seq_len(ss) - 0.5) / ss
-  xs <- as.vector(outer(sub, 0:(nc - 1), "+")) * gsd           # sub-pixel x centres
+  xs <- as.vector(outer(sub, 0:(nc - 1), "+")) * gsd           # sub-pixel x centers
   ys <- height - as.vector(outer(sub, 0:(nr - 1), "+")) * gsd  # top to bottom
   vegf <- matrix(0, nr * ss, nc * ss)              # vegetation indicator at sub-pixels
   resid <- matrix(0, nr * ss, nc * ss)
@@ -50,12 +50,12 @@ synth_rgb_scene <- function(seed = 1L, gsd = 0.02, x0 = 500000, y0 = 4570000, ar
     k <- k + 1L
     xa <- margin + (cl - 1) * W; ya <- margin + (rg - 1) * (L + A)
     plots[[k]] <- c(xa, ya, xa + W, ya + L)
-    centres <- expand.grid(x = xa + c(0.375, 1.125), y = seq(ya + 0.1, ya + L - 0.1, by = 0.15))
-    centres$x <- centres$x + stats::rnorm(nrow(centres), 0, 0.02)
-    rr <- radius[k] * stats::runif(nrow(centres), 0.85, 1.15)
+    centers <- expand.grid(x = xa + c(0.375, 1.125), y = seq(ya + 0.1, ya + L - 0.1, by = 0.15))
+    centers$x <- centers$x + stats::rnorm(nrow(centers), 0, 0.02)
+    rr <- radius[k] * stats::runif(nrow(centers), 0.85, 1.15)
     ix <- which(xs >= xa & xs <= xa + W)
     iy <- which(ys >= ya & ys <= ya + L)
-    vegf[iy, ix] <- paint_discs(xs[ix], ys[iy], centres$x, centres$y, rr)
+    vegf[iy, ix] <- paint_discs(xs[ix], ys[iy], centers$x, centers$y, rr)
     if (artifacts && k == 7L) {                     # straw residue patches between the rows
       cx <- xa + 0.75 + stats::runif(6, -0.15, 0.15); cy <- ya + 0.3 + (0:5) * 0.38
       resid[iy, ix] <- paint_discs(xs[ix], ys[iy], cx, cy, rep(0.12, 6))

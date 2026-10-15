@@ -1,6 +1,6 @@
 ---
 name: claw-rnaseq-import
-description: Import Salmon (quant.sf), kallisto (abundance.tsv) or featureCounts RNA-seq quantifications into gene-level counts with tximport, build the transcript-to-gene table (tx2gene) from a GFF3/GTF or a table, catch transcript ID mismatches (version suffixes, Phytozome vs Ensembl ID styles, wrong annotation release), and run sample QC - mapping rate, library size, detected genes, sample correlations, PCA on VST and outlier flags. Built for crops and non-model plants (soybean, maize, wheat, rice) whose annotation comes from GFF3 files rather than OrgDb packages. Use when the user has Salmon or kallisto output folders, quant.sf files or a featureCounts matrix and asks to import them, summarise transcripts to genes, make a gene count matrix, check RNA-seq sample quality, or find outlier samples before differential expression.
+description: Import Salmon (quant.sf), kallisto (abundance.tsv) or featureCounts RNA-seq quantifications into gene-level counts with tximport, build the transcript-to-gene table (tx2gene) from a GFF3/GTF or a table, catch transcript ID mismatches (version suffixes, Phytozome vs Ensembl ID styles, wrong annotation release), and run sample QC - mapping rate, library size, detected genes, sample correlations, PCA on VST and outlier flags. Built for crops and non-model plants (soybean, maize, wheat, rice) whose annotation comes from GFF3 files rather than OrgDb packages. Use when the user has Salmon or kallisto output folders, quant.sf files or a featureCounts matrix and asks to import them, summarize transcripts to genes, make a gene count matrix, check RNA-seq sample quality, or find outlier samples before differential expression.
 license: MIT
 compatibility: R >= 4.3 with Bioconductor tximport, DESeq2 and SummarizedExperiment, plus jsonlite (CRAN); readr optional for faster reading. Tested with R 4.6.1, tximport 1.40, DESeq2 1.52. No internet needed.
 metadata:
@@ -16,7 +16,7 @@ metadata:
 
 ## What it does
 
-Reads per-sample transcript quantifications from Salmon or kallisto (or a featureCounts gene matrix), maps transcripts to genes with the same GFF3/GTF annotation that built the index, and summarises them to genes with tximport. It keeps the estimated counts plus average transcript lengths, which claw-de-analysis passes to DESeq2 as offsets. It stops when transcript IDs don't match the annotation, then reports per-sample QC (mapping rate, library size, detected genes, correlations, PCA) and flags outlier samples.
+Reads per-sample transcript quantifications from Salmon or kallisto (or a featureCounts gene matrix), maps transcripts to genes with the same GFF3/GTF annotation that built the index, and summarizes them to genes with tximport. It keeps the estimated counts plus average transcript lengths, which claw-de-analysis passes to DESeq2 as offsets. It stops when transcript IDs don't match the annotation, then reports per-sample QC (mapping rate, library size, detected genes, correlations, PCA) and flags outlier samples.
 
 ## When to use / when not to use
 
@@ -72,7 +72,7 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/rnaseq_import.R" --samples samples.csv --ty
 | `--detect-min-count` | 10 | reads for a gene to count as detected |
 | `--transform` | vst | `vst` or `rlog` for QC plots |
 | `--three-prime` | off | 3' tag-seq: no transcript-length offsets |
-| `--color-by` | first design column | PCA colouring |
+| `--color-by` | first design column | PCA coloring |
 
 The demo (6 synthetic Salmon samples, Phytozome-style GFF3) shows a planted low-mapping sample (S6) and two chloroplast transcripts missing from the nuclear GFF3.
 

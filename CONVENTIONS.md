@@ -125,14 +125,14 @@ Rscript tests/run_r_tests.R
 
 ## 7. Scientific honesty
 
-- Every default, threshold and constant has a cited source, or is labelled in SKILL.md as an adjustable rule of thumb.
+- Every default, threshold and constant has a cited source, or is labeled in SKILL.md as an adjustable rule of thumb.
 - **Every reference must be real.** Check each DOI (for example `https://api.crossref.org/works/<doi>`) before citing it. Leave a citation out rather than invent one.
 - Don't claim validation that wasn't done. If the tests cover only part of the method, say which part is untested.
 - State each method's limitations in SKILL.md and in `report.md`.
 
 ## 8. Demo data
 
-Keep demo data small, ideally under 500 KB per skill. Use either synthetic data from a committed generator script with a fixed seed (`demo/make_demo.R`), or public data whose licence allows redistribution, with the source named in `demo/README.md`. Example data that ships inside an R package (PhotoGEA, qtl2, statgenSTA, …) can be loaded with `system.file()` instead of being copied.
+Keep demo data small, ideally under 500 KB per skill. Use either synthetic data from a committed generator script with a fixed seed (`demo/make_demo.R`), or public data whose license allows redistribution, with the source named in `demo/README.md`. Example data that ships inside an R package (PhotoGEA, qtl2, statgenSTA, …) can be loaded with `system.file()` instead of being copied.
 
 ## 9. Naming
 

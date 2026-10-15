@@ -13,7 +13,7 @@
 #   Rscript scripts/aci_fit.R --input licor_tidy.csv --curve-cols genotype,plot --cores 4
 #   Rscript scripts/aci_fit.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-aci-fit"
 VERSION <- "1.0.0"
@@ -394,7 +394,7 @@ run_fits <- function(x, opt) {
 PARAMS <- list(C3 = c(Vcmax = "vcmax", J = "j", Tp = "tp", RL = "rl"),
                C4 = c(Vcmax = "vcmax", Vpmax = "vpmax", RL = "rl"))
 
-# Rename PhotoGEA parameter columns to unit-labelled output names.
+# Rename PhotoGEA parameter columns to unit-labeled output names.
 param_table <- function(pdf, pathway) {
   out <- data.frame(curve_id = pdf$curve_id, stringsAsFactors = FALSE)
   for (p in names(PARAMS[[pathway]])) {
@@ -679,7 +679,7 @@ write_report <- function(res, opt, input, out_dir, figs) {
                      input, nrow(p), nrow(pts), sum(pts$used_in_fit),
                      sum(grepl("recovery_point", pts$excluded_reason)),
                      sum(grepl("qc_hard_fail|unstable|missing", pts$excluded_reason))), "",
-             "Parameters in umol m-2 s-1, normalised to 25 C with the temperature responses below; leaf-temperature values and confidence limits are in `tables/aci_parameters.csv`. NA means PhotoGEA judged the estimate unreliable (the process never limited, or the upper confidence limit was infinite).", "",
+             "Parameters in umol m-2 s-1, normalized to 25 C with the temperature responses below; leaf-temperature values and confidence limits are in `tables/aci_parameters.csv`. NA means PhotoGEA judged the estimate unreliable (the process never limited, or the upper confidence limit was infinite).", "",
              fmt_table(show), "",
              paste0("![A-Ci fits](figures/", figs[1L], ")"), "",
              "## Method", "",
@@ -697,7 +697,7 @@ write_report <- function(res, opt, input, out_dir, figs) {
                      opt$min_points, low, high, opt$min_points, opt$closure_ratio, opt$rmse_frac), "",
              "## Limitations", "",
              "- C3 parameters are apparent (infinite gm). Estimates of J need RuBP-regeneration-limited points and TPU needs TPU-limited points; many curves support neither.",
-             "- Parameters normalised to 25 C inherit any error in the assumed temperature responses, which grows with distance from 25 C.",
+             "- Parameters normalized to 25 C inherit any error in the assumed temperature responses, which grows with distance from 25 C.",
              "- The FvCB model assumes steady state at every point; the induction ratio checks this only at the reference CO2.", "",
              "## References", "",
              "- Farquhar GD, von Caemmerer S, Berry JA (1980) A biochemical model of photosynthetic CO2 assimilation in leaves of C3 species. Planta 149: 78-90. https://doi.org/10.1007/BF00386231",
@@ -714,7 +714,7 @@ write_report <- function(res, opt, input, out_dir, figs) {
 }
 
 # Full analysis on a tidy data frame; returns tables (used by main and tests).
-analyse_aci <- function(df, opt) {
+analyze_aci <- function(df, opt) {
   curve_cols <- split_cols(opt$curve_cols)
   validate_input(df, curve_cols, opt)
   prep <- prepare_points(df, opt, curve_cols)
@@ -775,7 +775,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   dir.create(opt$out, recursive = TRUE, showWarnings = FALSE)
 
   df <- read_tidy(opt$input)
-  res <- analyse_aci(df, opt)
+  res <- analyze_aci(df, opt)
   save_table(res$params, opt$out, "aci_parameters.csv")
   if (!is.null(res$fits)) save_table(res$fits, opt$out, "aci_fitted_points.csv")
   save_table(res$points[, intersect(c("curve_id", "source_file", "instrument_id", "obs", "ci_umol_mol",

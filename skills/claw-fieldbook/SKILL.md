@@ -22,7 +22,7 @@ metadata:
 
 - Use before a season (export) and after data collection (import, QC), including when data come from several tablets or from a spreadsheet instead of Field Book.
 - Use `claw-trial-design` to create the field book first, and `claw-trial-analysis` after QC for model-based analysis. Its outlier test, on residuals after removing genotype and spatial effects, is more sensitive than the screen here.
-- Don't use it to fix the design itself (wrong randomisation, missing plots in the design): regenerate the design instead.
+- Don't use it to fix the design itself (wrong randomization, missing plots in the design): regenerate the design instead.
 
 ## Inputs
 
@@ -79,7 +79,7 @@ The demo exports `demo/design_field_book.csv` and imports `demo/fieldbook_databa
 ## Checks before reporting
 
 - Read the Warnings in `report.md` and pass every one on.
-- `unknown_plot_id`: more than a few means the wrong design file or a different trial. Stop and ask before analysing.
+- `unknown_plot_id`: more than a few means the wrong design file or a different trial. Stop and ask before analyzing.
 - `plot_not_observed` or `trait_not_observed`: ask whether the plots were lost (record why) or the data are in another file.
 - `duplicate_conflict`: resolve with the data collector; don't pick a value yourself unless the user chooses a policy.
 - `mad_outlier`: check against field notes (lodging, damage, entry errors). Don't delete them; `claw-trial-analysis` re-tests outliers on model residuals.
@@ -91,4 +91,4 @@ The demo exports `demo/design_field_book.csv` and imports `demo/fieldbook_databa
 - Rife TW, Poland JA (2014). Field Book: An open-source application for field data collection on Android. Crop Science 54(4):1624-1627. https://doi.org/10.2135/cropsci2013.08.0579
 - Field Book documentation (PhenoApps): fields and export formats. https://field-book.readthedocs.io/ ; source code: https://github.com/PhenoApps/Field-Book
 - Leys C, Ley C, Klein O, Bernard P, Licata L (2013). Detecting outliers: Do not use standard deviation around the mean, use absolute deviation around the median. Journal of Experimental Social Psychology 49(4):764-766. https://doi.org/10.1016/j.jesp.2013.03.013
-- Iglewicz B, Hoaglin DC (1993). How to Detect and Handle Outliers. ASQC Basic References in Quality Control: Statistical Techniques, vol. 16. Cut-off as summarised in the NIST/SEMATECH e-Handbook of Statistical Methods, section 1.3.5.17: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm
+- Iglewicz B, Hoaglin DC (1993). How to Detect and Handle Outliers. ASQC Basic References in Quality Control: Statistical Techniques, vol. 16. Cut-off as summarized in the NIST/SEMATECH e-Handbook of Statistical Methods, section 1.3.5.17: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm

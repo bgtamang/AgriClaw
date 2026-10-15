@@ -134,7 +134,7 @@ check(abs(az - 12) < 1e-3, sprintf("true bearing of the planting direction is 12
 ll <- sf::st_transform(resG$geom, 4326)
 back <- sf::st_transform(ll, 32615)
 check(max(abs(sf::st_coordinates(back)[, 1:2] - sf::st_coordinates(resG$geom)[, 1:2])) < 1e-6,
-      "UTM -> lon/lat -> UTM round trip within 1 micrometre")
+      "UTM -> lon/lat -> UTM round trip within 1 micrometer")
 optGrid <- optG; optGrid$bearing <- resG$info$bearing_grid; optGrid$bearing_ref <- "grid"
 check(max(abs(build_grid(optGrid)$attrs$x - atG$x)) < 1e-6, "--bearing-ref grid with the grid bearing gives the same plots")
 
@@ -160,13 +160,13 @@ optN$crs <- "EPSG:32615"
 resN <- build_grid(optN)
 check(max(resN$corner_df$misfit_m) < 0.05 && abs(resN$info$bearing_true - 12) < 0.05,
       "1 cm corner noise: small misfit, bearing within 0.05 deg")
-optU <- optC; optU$units <- "ft"   # metre values read as feet
+optU <- optC; optU$units <- "ft"   # meter values read as feet
 expect_error(build_grid(optU), "units", "layout/corner mismatch (ft vs m) stops with a units hint")
 optR <- optC; optR$ranges <- 7
 expect_error(build_grid(optR), "disagree", "wrong number of ranges is caught by the corners")
 optX <- optC; optX$corners <- paste(strsplit(corner_str, ";")[[1]][c(1, 3, 2, 4)], collapse = ";")
 expect_error(build_grid(optX), "convex quadrilateral", "corners out of order are refused")
-Q <- rbind(c(0, 0), c(0, 30), c(14, 31), c(13, 0))          # trapezoid, local metres
+Q <- rbind(c(0, 0), c(0, 30), c(14, 31), c(13, 0))          # trapezoid, local meters
 optB <- base_opt(crs = "local", corners = paste(apply(Q, 1, paste, collapse = ","), collapse = ";"),
                  ranges = 5, columns = 4, plot_length = 5.2, alley = 1, plot_width = 3, col_gap = 0.3,
                  fit_corners = TRUE)
@@ -207,7 +207,7 @@ expect_error(build_grid(base_opt(crs = "local", origin = "0,0", bearing = 0, tri
              "trimming the whole plot refused")
 expect_error(build_grid(base_opt(origin = "41.3,-95.8", bearing = 0)), "lat,lon|out of range",
              "swapped lat,lon refused")
-expect_error(build_grid(base_opt(origin = "-95.8,41.3", bearing = 0, out_crs = "EPSG:4326")), "metres|degrees",
+expect_error(build_grid(base_opt(origin = "-95.8,41.3", bearing = 0, out_crs = "EPSG:4326")), "meters|degrees",
              "lon/lat output CRS refused")
 check(length(dimension_warnings(list(L = 5, W = 1.5, A = 1, row_spacing = 30), "m")) == 1L,
       "a 30 m row spacing triggers a units warning")
@@ -229,7 +229,7 @@ check(identical(gp$genotype[order(gp$plot)], fbd$genotype[order(fbd$plot)]), "de
 cc <- utils::read.csv(file.path(out, "tables", "corner_check.csv"))
 check(max(cc$misfit_m) < 0.05, "demo corners (1 cm noise) fit within 5 cm")
 check(length(Sys.glob(file.path(out, "reproducibility", "checksums.*"))) == 1L, "demo writes a checksum file")
-expect_error(main(c("--demo", "--colour", "red")), "Unknown option", "unknown option is rejected")
+expect_error(main(c("--demo", "--color", "red")), "Unknown option", "unknown option is rejected")
 expect_error(main(c("--origin", "0,0", "--crs", "local", "--bearing", "0", "--ranges", "2", "--columns", "2",
                     "--plot-length", "5", "--alley", "1", "--plot-width", "1.5", "--out", out)),
              "units is required", "command line without --units is rejected")

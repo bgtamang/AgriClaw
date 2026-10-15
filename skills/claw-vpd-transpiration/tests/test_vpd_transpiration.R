@@ -190,7 +190,7 @@ check(identical(fits2$model, fits$model) &&
         isTRUE(all.equal(fits2$breakpoint_kpa, fits$breakpoint_kpa, tolerance = 1e-4)),
       "precomputed input reproduces the raw-data fits")
 
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

@@ -95,7 +95,7 @@ nf <- rbind(nf, extra)
 o <- DEFAULTS
 o$curve_cols <- "curve"
 o$cores <- min(2L, cores)
-r_nf <- analyse_aci(nf, o)$params
+r_nf <- analyze_aci(nf, o)$params
 a1 <- r_nf[r_nf$curve_id == "nf_tpu", ]
 a2 <- r_nf[r_nf$curve_id == "nf_j", ]
 check(a1$n_points == 17L && a1$n_points_used == 14L,

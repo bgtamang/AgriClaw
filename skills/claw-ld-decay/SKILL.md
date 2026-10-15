@@ -33,7 +33,7 @@ For each chromosome, the skill samples marker pairs and computes r², the square
 **Ask the user:**
 
 - Which genome assembly the positions use, to record with the window.
-- Whether the panel contains distinct subpopulations (for example, maturity groups or breeding programmes). Pooled panels show inflated LD; consider one run per subpopulation.
+- Whether the panel contains distinct subpopulations (for example, maturity groups or breeding programs). Pooled panels show inflated LD; consider one run per subpopulation.
 - Inbred or outbred material. For inbred lines, r² is the haplotype r²; for unphased heterozygous genotypes, it is the genotypic (composite) r² (Rogers & Huff 2009).
 
 ## How to run

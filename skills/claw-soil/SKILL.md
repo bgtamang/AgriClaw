@@ -20,8 +20,8 @@ Finds the SSURGO map unit at a point and reports what the soil survey records fo
 
 ## When to use / when not to use
 
-- Use for site characterisation of US fields and trials, total available water (TAW) for **claw-water-balance**, and USDA texture classes of lab particle-size results (`--texture-input`).
-- Don't use SSURGO values as a field soil test. They are mapped estimates. Fertiliser and lime decisions need a current soil test.
+- Use for site characterization of US fields and trials, total available water (TAW) for **claw-water-balance**, and USDA texture classes of lab particle-size results (`--texture-input`).
+- Don't use SSURGO values as a field soil test. They are mapped estimates. Fertilizer and lime decisions need a current soil test.
 - Outside the USA, SSURGO has no data. Ask for local survey data or measured θFC/θWP instead (for claw-water-balance).
 - For weather or thermal time, use **claw-weather** or **claw-gdd**.
 

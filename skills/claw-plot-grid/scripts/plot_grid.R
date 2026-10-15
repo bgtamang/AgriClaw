@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # claw-plot-grid: plot polygons for a field trial from the four field corners
 # (or one origin corner and a bearing) and the layout (ranges x columns, plot
-# length, plot width, alleys). Polygons are built in metres in a projected CRS
+# length, plot width, alleys). Polygons are built in meters in a projected CRS
 # (the local UTM zone by default), never in degrees.
 #
 # Usage:
@@ -11,7 +11,7 @@
 #   Rscript scripts/plot_grid.R --origin "-95.80,41.30" --bearing 12 --across right ...
 #   Rscript scripts/plot_grid.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-plot-grid"
 VERSION <- "1.0.0"
@@ -31,10 +31,10 @@ Field geometry (give one):
                  (origin mode; default right)
   --offset-along, --offset-across  distance from the origin point to the first plot
                  corner (origin mode; default 0)
-  --crs          CRS of the input coordinates (default EPSG:4326; 'local' = unreferenced metres)
+  --crs          CRS of the input coordinates (default EPSG:4326; 'local' = unreferenced meters)
   --out-crs      CRS of the output polygons: auto (local UTM zone, default) or e.g. EPSG:32615
   --fit-corners  stretch the layout to the 4 corners (bilinear) instead of a rigid fit
-  --corner-tol   max corner misfit in metres before stopping (default 0.5)
+  --corner-tol   max corner misfit in meters before stopping (default 0.5)
   --scale-factor auto (default: map-projection point scale factor) or a number such as 1
 
 Layout (lengths in --units; --units is required):
@@ -328,7 +328,7 @@ plot_numbers <- function(n_ranges, n_cols, numbering = "serpentine", sweep = "al
   num
 }
 
-# One row per plot with its extent in local layout coordinates (metres):
+# One row per plot with its extent in local layout coordinates (meters):
 # s along the planting direction from c1, t across from c1.
 plot_table <- function(n_ranges, n_cols, L, A, W, G, num) {
   g <- expand.grid(range = seq_len(n_ranges), column = seq_len(n_cols))
@@ -473,7 +473,7 @@ check_fb_coords <- function(joined, fb_cols) {
 
 to_m <- function(x, units) if (units == "ft") x * FT_TO_M else x
 
-# Validate options and convert lengths to metres.
+# Validate options and convert lengths to meters.
 layout_from_opt <- function(opt) {
   if (!opt$units %in% c("m", "ft"))
     stop("--units is required: m or ft (all lengths use it). Ask the user which unit ",
@@ -508,7 +508,7 @@ layout_from_opt <- function(opt) {
        off_s = to_m(opt$offset_along, u), off_t = to_m(opt$offset_across, u))
 }
 
-# Plausibility of plot dimensions in metres (rule-of-thumb ranges for row-crop
+# Plausibility of plot dimensions in meters (rule-of-thumb ranges for row-crop
 # and small-grain trials), used only to warn about a likely ft/m mix-up.
 dimension_warnings <- function(lay, units) {
   w <- character()
@@ -568,14 +568,14 @@ build_grid <- function(opt) {
   } else {
     crs_out <- parse_crs(opt$out_crs, "--out-crs")
     if (is_geographic(crs_out))
-      stop("--out-crs must be a projected CRS in metres, never lon/lat: buffers and areas ",
+      stop("--out-crs must be a projected CRS in meters, never lon/lat: buffers and areas ",
            "would be in degrees.", call. = FALSE)
     out_label <- if (!is.na(crs_out$epsg)) sprintf("EPSG:%d (%s)", crs_out$epsg, crs_out$Name) else crs_out$Name
   }
   if (!local) {
     u <- crs_out$units_gdal
-    if (is.null(u) || is.na(u) || !u %in% c("metre", "meter", "m"))
-      stop("--out-crs must have metre units (got '", u, "').", call. = FALSE)
+    if (is.null(u) || is.na(u) || !u %in% c("metre", "meter", "m"))  # PROJ spells the unit "metre"
+      stop("--out-crs must have meter units (got '", u, "').", call. = FALSE)
   }
 
   gf <- if (local) list(k = 1, k_east = 1, k_north = 1, north_bearing = 0) else
@@ -848,7 +848,7 @@ write_report <- function(res, opt, fb_info, out_dir, warn) {
                "")
   }
   lines <- c(lines, "## Map", "", "![Plot map](figures/plot_map.png)", "",
-             "Check the map against the planting plan: plot 1 position, numbering direction and the side the columns grow towards.", "",
+             "Check the map against the planting plan: plot 1 position, numbering direction and the side the columns grow toward.", "",
              "## Outputs", "",
              "- `spatial/plots.gpkg` (layer `plots`): plot polygons with plot, range, column, plot_id and field-book columns.",
              if (!is.null(res$inner)) "- `spatial/plots_inner.gpkg` (layer `plots`): trimmed polygons for extraction." else NULL,

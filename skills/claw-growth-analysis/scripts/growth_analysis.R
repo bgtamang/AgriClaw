@@ -12,7 +12,7 @@
 #   Rscript scripts/growth_analysis.R --input harvests.csv --group genotype --time-col days
 #   Rscript scripts/growth_analysis.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-growth-analysis"
 VERSION <- "1.0.0"
@@ -319,7 +319,7 @@ overall_rgr <- function(d, conf = 0.95) {
 }
 
 # Functional approach: penalized cubic regression spline of ln W on time
-# (mgcv, REML smoothing; the penalty shrinks towards a straight line, i.e.
+# (mgcv, REML smoothing; the penalty shrinks toward a straight line, i.e.
 # constant RGR). RGR(t) = d ln W / dt from the derivative of the basis; its SE
 # uses the smoothing-parameter-corrected covariance (Wood 2017).
 functional_rgr <- function(d, k_max = 10, n_grid = 101, conf = 0.95) {
@@ -486,7 +486,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   if (nrow(negs)) warn(sprintf("%d interval(s) have RGR <= 0 (e.g. %s, day %g-%g): check harvest labels, senescence or sampling of different plant sizes.",
                                nrow(negs), negs$group[1], negs$t1[1], negs$t2[1]))
   if (any(cls$rgr_g_g_d > 0.5) || any(ov$rgr_g_g_d > 0.5))
-    warn("RGR above 0.5 g g-1 d-1 is unusually high for whole plants: confirm that time is in days and harvests are correctly labelled.")
+    warn("RGR above 0.5 g g-1 d-1 is unusually high for whole plants: confirm that time is in days and harvests are correctly labeled.")
   bias <- cls$rgr_ln_of_means_g_g_d - cls$rgr_g_g_d
   big <- which(abs(bias) > 0.1 * abs(cls$rgr_g_g_d) & abs(bias) > 0.005)
   if (length(big)) warn(sprintf("In %d interval(s) the variance of ln mass changed between harvests, so RGR from ln(mean mass) would differ by up to %.3f g g-1 d-1 (Hoffmann & Poorter 2002). This report uses the unbiased mean of ln mass.",

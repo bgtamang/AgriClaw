@@ -12,7 +12,7 @@
 #   Rscript scripts/ld_decay.R --geno genotypes_filtered_012.csv
 #   Rscript scripts/ld_decay.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-ld-decay"
 VERSION <- "1.0.0"

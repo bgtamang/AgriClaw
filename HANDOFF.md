@@ -80,7 +80,7 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | `tools/check_dois.py` (looks up every cited DOI in Crossref/DataCite) | done; needs internet, so not in CI |
 | Plugin install check | done: installs from a local marketplace in a clean Claude Code config, all 34 skills listed; a `--plugin-dir` session ran `claw-gdd` through `${CLAUDE_SKILL_DIR}` |
 
-## How the build is organised
+## How the build is organized
 
 Nine build agents worked in parallel on 2026-10-15, one per area: field (Python), trials, markers/GWAS, breeding genetics, RNA-seq, imagery, imagery time series, gas exchange, and plant water/growth/fluorescence. Each could edit only its own skill folders. The orchestrator reviewed each area (validator, tests, DOI check, link check, spot checks of the science) and committed area by area.
 

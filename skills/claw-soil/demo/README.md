@@ -8,4 +8,4 @@ The three JSON files are unmodified responses from the USDA-NRCS Soil Data Acces
 
 `tests/fixtures/` holds the same files plus responses for mukey 426520 (Leola loamy sand, Portage County, Wisconsin; includes organic horizons) and an empty response (`{}`) for a point in Lake Michigan.
 
-Licence: SSURGO is a work of the US Government (USDA-NRCS) and is in the public domain. Citation: Soil Survey Staff, Natural Resources Conservation Service, United States Department of Agriculture. Soil Survey Geographic (SSURGO) Database. Available online. Accessed 2026-10-15.
+License: SSURGO is a work of the US Government (USDA-NRCS) and is in the public domain. Citation: Soil Survey Staff, Natural Resources Conservation Service, United States Department of Agriculture. Soil Survey Geographic (SSURGO) Database. Available online. Accessed 2026-10-15.

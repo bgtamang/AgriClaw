@@ -49,7 +49,7 @@ check("pseudo1" %in% g2$genes$gene_id, "--feature-type gene,pseudogene includes 
 f_iv <- write_csv(data.frame(name = "q1", chr = "Gm01", start = 1000, end = 2000, peak_pos = 1550), "iv.csv")
 r <- run_lookup(opts(intervals = f_iv, gff = gff, assembly = "AgriClaw-mini-1.0"))
 check(setequal(r$genes$gene_id, c("geneB", "geneC", "geneD", "geneF")),
-      "interval 1000-2000 keeps genes touching either end and the spanning gene; drops 999 and 2001 neighbours and other chromosomes")
+      "interval 1000-2000 keeps genes touching either end and the spanning gene; drops 999 and 2001 neighbors and other chromosomes")
 dist <- stats::setNames(r$genes$distance_to_peak_bp, r$genes$gene_id)
 check(identical(unname(dist[c("geneB", "geneC", "geneD", "geneF")]), c(550, 0, 450, 0)),
       "distance to peak: 0 inside the gene, otherwise the gap to the nearest gene end")
@@ -81,7 +81,7 @@ check(is.character(err) && grepl("window", err), "SNP mode without a window stop
 
 # 5. Chromosome names -----------------------------------------------------------------------------------
 check(identical(chrom_key(c("Gm01", "Chr01", "chr1", "1", "01", "Chromosome_1", "chr1A", "1A", "Mt")),
-                c("1", "1", "1", "1", "1", "1", "1a", "1a", "mt")), "chromosome keys normalise prefixes and zeros")
+                c("1", "1", "1", "1", "1", "1", "1a", "1a", "mt")), "chromosome keys normalize prefixes and zeros")
 for (nm in c("1", "Chr01", "chr1", "Gm1")) {
   f <- write_csv(data.frame(chr = nm, start = 1000, end = 2000), "nm.csv")
   rn <- run_lookup(opts(intervals = f, gff = gff, assembly = "AgriClaw-mini-1.0"))

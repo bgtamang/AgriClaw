@@ -13,7 +13,7 @@
 #           --assembly Wm82.a4.v1
 #   Rscript scripts/gene_lookup.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-gene-lookup"
 VERSION <- "1.0.0"
@@ -300,7 +300,7 @@ map_chromosomes <- function(user_chr, target_chr, chr_map = NULL) {
   amb <- character(); miss <- character()
   for (k in which(is.na(out$target_chr))) {
     hit <- target_chr[tk == chrom_key(u[k])]
-    if (length(hit) == 1L) { out$target_chr[k] <- hit; out$method[k] <- "name normalised" }
+    if (length(hit) == 1L) { out$target_chr[k] <- hit; out$method[k] <- "name normalized" }
     else if (length(hit) > 1L) amb <- c(amb, sprintf("%s -> %s", u[k], paste(hit, collapse = " or ")))
     else miss <- c(miss, u[k])
   }
@@ -593,7 +593,7 @@ run_lookup <- function(opt, fetcher = http_get_text) {
   }
   cm <- map_chromosomes(iv$chr, targets, chr_map)
   iv$target_chr <- cm$target_chr[match(iv$chr, cm$user_chr)]
-  renamed <- cm[cm$method == "name normalised", , drop = FALSE]
+  renamed <- cm[cm$method == "name normalized", , drop = FALSE]
   if (nrow(renamed)) notes <- c(notes, sprintf("Chromosome names matched by number: %s.",
                                                paste(sprintf("%s -> %s", renamed$user_chr, renamed$target_chr), collapse = ", ")))
   if (!is.null(seq_len_tab)) {

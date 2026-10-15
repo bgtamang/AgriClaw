@@ -58,7 +58,7 @@ check(all(b$origin[b$entry == "Check A"] == "ref"), "rcbd: extra entry-list colu
 r1b <- build_design(O(design = "rcbd", entry_list = el_path, reps = 4, seed = 11))
 check(identical(r1$book, r1b$book), "rcbd: same seed gives an identical field book")
 r1c <- build_design(O(design = "rcbd", entry_list = el_path, reps = 4, seed = 12))
-check(!identical(r1$book$entry, r1c$book$entry), "rcbd: a different seed gives a different randomisation")
+check(!identical(r1$book$entry, r1c$book$entry), "rcbd: a different seed gives a different randomization")
 check(r1$error_df == (4 - 1) * (24 - 1), "rcbd: skeleton error df = (r - 1)(t - 1)")
 
 # 2. Field dimensions and block shape are honoured; impossible fields fail with options
@@ -72,7 +72,7 @@ expect_error(build_design(O(design = "rcbd", entries = 12, reps = 4, seed = 2, f
 
 # 3. Serpentine and cartesian numbering
 sp <- r2$book[order(r2$book$plot), ]
-check(all(abs(diff(sp$row)) + abs(diff(sp$col)) == 1), "serpentine: consecutive plots are neighbours")
+check(all(abs(diff(sp$row)) + abs(diff(sp$col)) == 1), "serpentine: consecutive plots are neighbors")
 r3 <- build_design(O(design = "rcbd", entries = 12, reps = 4, seed = 2, field_rows = 4, field_cols = 12, numbering = "cartesian", plot_start = 101))
 cp <- r3$book[order(r3$book$plot), ]
 check(identical(cp$plot, 101:148) && all(diff(cp$row * 100 + cp$col) > 0), "cartesian: row-major numbering from --plot-start")
@@ -211,7 +211,7 @@ check(all(utils::read.csv(file.path(out, "tables", "design_checks.csv"))$passed)
 nos <- run_cli(c("--design", "rcbd", "--entries", "6", "--reps", "2", "--out", shQuote(file.path(tmp, "noseed"))))
 cmd <- readLines(file.path(tmp, "noseed", "reproducibility", "commands.sh"))
 check(nos$status == 0L && any(grepl("--seed", cmd)), "a random seed is drawn and written into commands.sh")
-bad <- run_cli(c("--design", "rcbd", "--colour", "red"))
+bad <- run_cli(c("--design", "rcbd", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 unlink(tmp, recursive = TRUE)

@@ -1,6 +1,6 @@
 ---
 name: claw-met-gxe
-description: Analyse multi-environment trials (MET) from per-environment genotype BLUEs with statgenGxE - genotype-by-environment (GxE) variance components and heritability across environments, MET genotype BLUPs (weighted by stage-1 standard errors when given), AMMI and GGE biplots (which-won-where), Finlay-Wilkinson regression, stability (Shukla stability variance, Wricke ecovalence, Lin-Binns superiority, static stability) and mega-environments. Use when the user has the same genotypes in several trials, locations or years and asks about GxE, adaptation, yield stability, the best genotype across or within environments, AMMI or GGE biplots, mega-environments, or heritability over environments.
+description: Analyze multi-environment trials (MET) from per-environment genotype BLUEs with statgenGxE - genotype-by-environment (GxE) variance components and heritability across environments, MET genotype BLUPs (weighted by stage-1 standard errors when given), AMMI and GGE biplots (which-won-where), Finlay-Wilkinson regression, stability (Shukla stability variance, Wricke ecovalence, Lin-Binns superiority, static stability) and mega-environments. Use when the user has the same genotypes in several trials, locations or years and asks about GxE, adaptation, yield stability, the best genotype across or within environments, AMMI or GGE biplots, mega-environments, or heritability over environments.
 license: MIT
 compatibility: R >= 4.2 with statgenGxE, statgenSTA, lme4, emmeans and nlme (agricolae only for the tests; openssl optional). No internet needed.
 metadata:
@@ -41,7 +41,7 @@ One or more CSVs (`--input a.csv,b.csv` are stacked), one row per genotype per e
 
 - the trait units, and whether higher or lower is better (`--best max|min`; use `min` for days to maturity or disease score);
 - how environments are structured: locations x years, or trials nested in regions or management scenarios. This decides `--location/--year` or `--nesting`; leave both out if unsure;
-- whether genotype names are harmonised across trials (the same line spelled two ways becomes two genotypes);
+- whether genotype names are harmonized across trials (the same line spelled two ways becomes two genotypes);
 - whether the trials represent the target population of environments, because heritability and BLUPs refer only to the environments sampled;
 - whether stage 1 used the same model in every trial, so that the SEs are comparable.
 
@@ -82,7 +82,7 @@ The demo analyses `demo/met_input.csv`: 40 synthetic genotypes in 8 trials with 
   - Wricke's ecovalence (statgenGxE `wricke`).
   - Shukla's (1972) stability variance: sigma2_i = p W_i / ((p-2)(q-1)) - sum(W) / ((p-1)(p-2)(q-1)), computed from the ecovalence W. It equals `agricolae::stability.par` "Sigma-square" divided by its replicate count, and its mean equals the GxE mean square (both tested).
   - statgenGxE's `static` is each genotype's **variance across environments**, i.e. static stability (Becker & Leon 1988). statgenGxE's help page calls it Shukla's stability variance, but it is not (source and test).
-- **Stability is not performance.** Static stability favours unresponsive, often low-yielding genotypes, so always read stability next to the mean (the figure plots both).
+- **Stability is not performance.** Static stability favors unresponsive, often low-yielding genotypes, so always read stability next to the mean (the figure plots both).
 - **Mega-environments** (`gxeMegaEnv`): trials are grouped by their AMMI2 winning genotype. A grouping is a mega-environment only if it repeats across years (Yan et al. 2000); the script warns when there are fewer than 8 trials. Tested: two simulated groups and their winners recovered.
 - **Number of environments.** Rule of thumb: with fewer than about 5 environments, GxE variance, stability and biplots are weakly estimated; the report warns. Fewer than 3 skips AMMI, GGE, stability and mega-environments.
 

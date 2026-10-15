@@ -14,7 +14,7 @@
 #   Rscript scripts/met_gxe.R --input a/met_input.csv,b/met_input.csv --trait yield_kg_ha --best max
 #   Rscript scripts/met_gxe.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-met-gxe"
 VERSION <- "1.0.0"
@@ -174,7 +174,7 @@ read_inputs <- function(paths) {
   list(data = do.call(rbind, dl), paths = paths)
 }
 
-# Standardised MET table: env, genotype, y, optional se2 (stage-1 variance),
+# Standardized MET table: env, genotype, y, optional se2 (stage-1 variance),
 # optional location/year/nesting columns. Fails loudly on structural problems.
 prepare_met <- function(raw, opt) {
   for (cl in c(opt$env, opt$genotype, opt$trait))
@@ -386,7 +386,7 @@ run_megaenv <- function(td, trait, best, exclude, d) {
            error = function(e) structure(list(msg = conditionMessage(e)), class = "skipped"))
 }
 
-analyse_met <- function(d, opt, weight_source = "none") {
+analyze_met <- function(d, opt, weight_source = "none") {
   trait <- opt$trait
   best <- match.arg(tolower(opt$best), c("max", "min"))
   npc <- as.integer(opt$npc)
@@ -507,7 +507,7 @@ draw_figures <- function(res, out_dir) {
     for (k in seq_along(hi)) graphics::lines(xx, est$GenMean[hi[k]] + est$Sens[hi[k]] * eff, col = PAL[k], lwd = 2)
     graphics::rug(xm, col = INK2)
     graphics::legend("topleft", legend = paste0(lab, ": ", est$Genotype[hi]), col = PAL[1:3], lwd = 2, bty = "n", cex = 0.7, text.col = INK2)
-    graphics::mtext("Finlay-Wilkinson regressions (grey = all genotypes)", side = 3, line = 1, adj = 0, font = 2, cex = 0.85, col = INK)
+    graphics::mtext("Finlay-Wilkinson regressions (gray = all genotypes)", side = 3, line = 1, adj = 0, font = 2, cex = 0.85, col = INK)
     graphics::plot(est$GenMean, est$Sens, pch = 16, col = PAL[1], cex = 0.8, xlab = paste("genotype mean,", res$trait), ylab = "sensitivity (slope)", main = "")
     graphics::abline(h = 1, v = mean(est$GenMean), col = MUTED, lty = 2)
     graphics::mtext("sensitivity vs mean", side = 3, line = 1.6, adj = 0, font = 2, cex = 0.85, col = INK)
@@ -651,7 +651,7 @@ write_report <- function(res, opt, out_dir, warn, figs, inputs) {
   }
   if (!inherits(res$stability, "skipped")) {
     L <- c(L, "## Stability (genotypes observed in every environment)", "",
-           "Superiority (Lin & Binns 1988): distance to the best genotype in each environment, low = good. Wricke's ecovalence and Shukla's (1972) stability variance: contribution to G x E, low = stable. Static stability (environmental variance; Becker & Leon 1988; labelled 'static' in statgenGxE): low = little change across environments, usually low-yielding genotypes.", "",
+           "Superiority (Lin & Binns 1988): distance to the best genotype in each environment, low = good. Wricke's ecovalence and Shukla's (1972) stability variance: contribution to G x E, low = stable. Static stability (environmental variance; Becker & Leon 1988; labeled 'static' in statgenGxE): low = little change across environments, usually low-yielding genotypes.", "",
            md_table(utils::head(res$stability, 15)), "")
   }
   if (!inherits(res$megaenv, "skipped")) {
@@ -717,7 +717,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   if (!nzchar(opt$out)) opt$out <- file.path("agriclaw_output", SKILL)
   rd <- read_inputs(opt$input)
   prep <- prepare_met(rd$data, opt)
-  res <- analyse_met(prep$dat, opt, prep$weight_source)
+  res <- analyze_met(prep$dat, opt, prep$weight_source)
   dir.create(opt$out, recursive = TRUE, showWarnings = FALSE)
   save_outputs(res, opt$out)
   figs <- draw_figures(res, opt$out)

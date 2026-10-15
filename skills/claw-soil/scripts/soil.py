@@ -10,7 +10,7 @@ Usage:
     python scripts/soil.py --mukey 242963
     python scripts/soil.py --texture-input lab_samples.csv
 
-Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 """
 
 from __future__ import annotations

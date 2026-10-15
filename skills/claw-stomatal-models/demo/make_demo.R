@@ -3,7 +3,7 @@
 # Writes demo/stomatal_demo.csv in the tidy layout of claw-licor-6800.
 #
 # Each point is a self-consistent leaf gas-exchange state: given A, chamber
-# CO2 (Ca) and water vapour (H2O_s), leaf temperature, boundary-layer
+# CO2 (Ca) and water vapor (H2O_s), leaf temperature, boundary-layer
 # conductance and pressure, gsw is solved by fixed-point iteration so that the
 # stomatal model holds at the leaf surface, where hs, Cs and D are computed
 # exactly as PhotoGEA::calculate_gas_properties will compute them back from

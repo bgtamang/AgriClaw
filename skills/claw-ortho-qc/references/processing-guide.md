@@ -1,17 +1,17 @@
 # Processing guide: orthomosaics and DSMs for plot trials (OpenDroneMap)
 
-**This guide is advice, not code.** `claw-ortho-qc` does not run OpenDroneMap and cannot check most of what follows; it only checks the products afterwards. Numbers come from the cited sources; everything marked *rule of thumb* is a starting point to adapt to the crop, sensor and site.
+**This guide is advice, not code.** `claw-ortho-qc` does not run OpenDroneMap and cannot check most of what follows; it only checks the products afterward. Numbers come from the cited sources; everything marked *rule of thumb* is a starting point to adapt to the crop, sensor and site.
 
 ## 1. Plan the flight
 
 - **Pixel size (ground sampling distance, GSD).** GSD = flying height x sensor pixel size / focal length. Read the camera's GSD at a given height from its specification sheet. Choose the height so that the narrowest plot, after trimming its edges, still spans enough pixels: *rule of thumb* at least 5-10 pixels for plot-mean vegetation indices, and pixels of 1-2 cm or finer for canopy cover of young plants.
 - **Overlap.** OpenDroneMap recommends 70-80% overlap, slightly off-nadir (5-10 degrees), for 2D and 2.5D products, and closer to 80-83% for complex vegetation (ODM, Flying tips). Uniform canopies are hard to match, so stay at the high end over crops.
-- **Time of day and weather.** Fly close to solar noon and at the same time of day on every date (*rule of thumb*: within about two hours of solar noon), under stable light (clear sky or uniform overcast, not passing clouds) and light wind: moving leaves blur the mosaic and spoil surface models. Assmann et al. (2019) give a standardised protocol for flight planning, weather, geolocation and radiometric calibration with multispectral sensors.
+- **Time of day and weather.** Fly close to solar noon and at the same time of day on every date (*rule of thumb*: within about two hours of solar noon), under stable light (clear sky or uniform overcast, not passing clouds) and light wind: moving leaves blur the mosaic and spoil surface models. Assmann et al. (2019) give a standardized protocol for flight planning, weather, geolocation and radiometric calibration with multispectral sensors.
 - **Repeat flights identically.** Same flight plan, height, overlap and camera settings on every date, so that products are comparable and one plot grid (`claw-plot-grid`) fits every flight.
 
 ## 2. Georeferencing with ground control points (GCPs)
 
-- **How many and where.** A minimum of 5 GCPs works for most jobs and 8-10 suffice for larger projects; spread them evenly, some near the corners and some near the centre, covering high and low ground; space them further apart than one image footprint; keep them 10-30 m inside the project perimeter; make each GCP visible in at least 5 images (ODM, Ground control points).
+- **How many and where.** A minimum of 5 GCPs works for most jobs and 8-10 suffice for larger projects; spread them evenly, some near the corners and some near the center, covering high and low ground; space them further apart than one image footprint; keep them 10-30 m inside the project perimeter; make each GCP visible in at least 5 images (ODM, Ground control points).
 - **File format.** `gcp_list.txt` starts with the projection (EPSG code, PROJ string or `WGS84 UTM 15N`), followed by one line per observation: `geo_x geo_y geo_z im_x im_y image_name [gcp_name]` (ODM, Ground control points). Use 0.0, not NaN, when an elevation is unknown.
 - **Independent check points.** Keep some surveyed points out of the adjustment and report their errors: accuracy judged only from the control points is overestimated, and accuracy improves with the number and even distribution of GCPs (Sanz-Ablanedo et al. 2018). James et al. (2019) set out how to design, report and assess structure-from-motion surveys.
 - **Permanent markers.** Fixed or RTK-surveyed GCPs used on every date keep the flights co-registered. Check co-registration by overlaying the plot grid on each date's mosaic.
@@ -20,10 +20,10 @@
 
 - **ODM option.** `--radiometric-calibration` takes `none` (default; the output stays in digital numbers), `camera` (black level, vignetting, row gradient and exposure compensation from the EXIF tags) or `camera+sun` (experimental: also the downwelling light sensor, accounting for sun angle) (ODM, radiometric-calibration). For reflectance, `none` is wrong.
 - **Reflectance panels.** The ODM documentation does not describe calibration with reflectance panels. Photograph a calibrated reflectance panel before and after each flight anyway (*rule of thumb*: panel level, unshaded, filling a good part of the frame) so that an empirical-line correction (Smith & Milton 1999) can be applied in software that supports panels, or checked by hand against the panel's known reflectance.
-- **Keep radiometry intact.** Use `--texturing-skip-global-seam-leveling` (ODM: useful for radiometric data), because global seam levelling alters pixel values to hide seams.
+- **Keep radiometry intact.** Use `--texturing-skip-global-seam-leveling` (ODM: useful for radiometric data), because global seam leveling alters pixel values to hide seams.
 - **Bands.** Process all bands together, not one folder per band (ODM, Multispectral). `--primary-band` picks the band used for reconstruction (sharp and in focus); use `--skip-band-alignment` only when the bands are already aligned (ODM, arguments). Supported multispectral cameras include the MicaSense RedEdge-MX and Altum, Sentera 6X, DJI Phantom 4 Multispectral and DJI Mavic 3 Multispectral (ODM, Multispectral).
 - **Check the output.** Run `claw-ortho-qc --expect reflectance`: values should lie between 0 and 1. Note the band order ODM wrote, and pass it to `claw-vi-extract --bands`.
-- Aasen et al. (2018) review sensor technology, measurement procedures and data correction for quantitative UAV spectral data; Tmušić et al. (2020) summarise current practice for UAS environmental monitoring.
+- Aasen et al. (2018) review sensor technology, measurement procedures and data correction for quantitative UAV spectral data; Tmušić et al. (2020) summarize current practice for UAS environmental monitoring.
 
 ## 4. Orthomosaic and surface-model settings (ODM)
 

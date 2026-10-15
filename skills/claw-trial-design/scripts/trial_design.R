@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# claw-trial-design: randomise a field trial with agricolae / FielDHub and lay it
+# claw-trial-design: randomize a field trial with agricolae / FielDHub and lay it
 # out on the field grid so that blocks are compact rectangles, whole plots are
 # contiguous, strip-plot strips stay intact and every augmented block holds every
 # check. Writes a field book, a field map, a design summary and design checks.
@@ -10,7 +10,7 @@
 #   Rscript scripts/trial_design.R --design alpha --entry-list entries.csv --reps 3 --block-size 6
 #   Rscript scripts/trial_design.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-trial-design"
 VERSION <- "1.0.0"
@@ -18,14 +18,14 @@ VERSION <- "1.0.0"
 USAGE <- "Usage: Rscript scripts/trial_design.R --design DESIGN [options]
 
 Designs (package function used):
-  crd        completely randomised (agricolae::design.crd)
-  rcbd       randomised complete blocks (agricolae::design.rcbd)
+  crd        completely randomized (agricolae::design.crd)
+  rcbd       randomized complete blocks (agricolae::design.rcbd)
   latin      Latin square(s) (agricolae::design.lsd)
   alpha      resolvable alpha / incomplete blocks (agricolae::design.alpha or
              FielDHub::alpha_lattice, whichever has the higher efficiency factor)
   rowcol     resolvable row-column (FielDHub::row_column)
   augmented  augmented RCBD, unreplicated tests + checks in every block (agricolae::design.dau)
-  prep       partially replicated, spatially optimised (FielDHub::partially_replicated)
+  prep       partially replicated, spatially optimized (FielDHub::partially_replicated)
   diagonal   unreplicated with diagonal checks (FielDHub::diagonal_arrangement)
   split      split-plot in RCBD (agricolae::design.split)
   strip      strip-plot / split-block (agricolae::design.strip)
@@ -50,7 +50,7 @@ Design parameters:
   --factor-c SPEC    third factor (factorial)
   --prep-fraction F  share of test entries planted twice (prep; default 0.25)
   --check-reps N     copies of each check (prep; default 4)
-  --iterations N     optimisation iterations (rowcol; default 1000)
+  --iterations N     optimization iterations (rowcol; default 1000)
   --alpha-engine E   auto (default), agricolae or fieldhub
 Field layout:
   --field-rows R     rows in the field grid (required for diagonal)
@@ -201,7 +201,7 @@ RESERVED <- c("trial", "plot_id", "plot", "row", "col", "rep", "block", "design"
 
 fail <- function(...) stop(paste0(...), call. = FALSE)
 
-normalise_design <- function(x) {
+normalize_design <- function(x) {
   key <- gsub("[^a-z]", "", tolower(x))
   if (key %in% names(ALIASES)) key <- ALIASES[[key]]
   if (!key %in% DESIGNS)
@@ -296,7 +296,7 @@ parse_factor <- function(spec, default_name) {
 }
 
 # Run agricolae (which calls set.seed(seed, kinds) and so changes the session's
-# RNG kind) and restore the previous RNG kind afterwards. Printed output is
+# RNG kind) and restore the previous RNG kind afterward. Printed output is
 # discarded; agricolae prints design parameters with cat().
 with_agricolae <- function(expr) {
   old <- RNGkind()
@@ -426,7 +426,7 @@ gen_alpha <- function(el, opt) {
   if (k == 0) {
     k <- near_sqrt_divisor(v)
     auto_k <- TRUE
-    if (is.na(k)) fail(sprintf("%d entries is prime: no block size divides it. Add or drop entries (e.g. checks) so the count factorises, or use rowcol/rcbd.", v))
+    if (is.na(k)) fail(sprintf("%d entries is prime: no block size divides it. Add or drop entries (e.g. checks) so the count factorizes, or use rowcol/rcbd.", v))
   }
   need(k >= 2 && k < v, sprintf("--block-size must be between 2 and %d.", v - 1))
   if (v %% k != 0) {
@@ -488,7 +488,7 @@ gen_alpha <- function(el, opt) {
                efficiency_upper_bound = round(alpha_upper_bound(v, r, s), 4),
                concurrence_min = conc[["min"]], concurrence_max = conc[["max"]],
                concurrence_guarantee = if (pick == "agricolae") "alpha(0,1): every pair of entries shares at most one block" else
-                 "none stated by FielDHub (A-optimised design); see concurrence_max")
+                 "none stated by FielDHub (A-optimized design); see concurrence_max")
   for (nm in names(effs)) info[[paste0("efficiency_factor_", nm)]] <- round(effs[[nm]], 4)
   if (pick == "fieldhub") {
     bm <- fh$res$blocksModel
@@ -599,7 +599,7 @@ pick_dims <- function(total, opt) {
   c(max(d), total / max(d))
 }
 
-# Smallest |log(rows / cols)| over factorisations of n with 2 <= rows <= cols.
+# Smallest |log(rows / cols)| over factorizations of n with 2 <= rows <= cols.
 best_aspect <- function(n) {
   d <- divisors(n)
   d <- d[d >= 2 & d <= sqrt(n)]
@@ -757,7 +757,7 @@ gen_strip <- function(el, opt) {
   bk <- d$book
   rep <- as.integer(as.character(bk$block))
   a <- as.character(bk[[3]]); b <- as.character(bk[[4]])
-  # Row of each A level and column of each B level, in the order agricolae randomised them.
+  # Row of each A level and column of each B level, in the order agricolae randomized them.
   fr <- fc <- integer(nrow(bk))
   for (q in unique(rep)) {
     i <- which(rep == q)
@@ -1014,7 +1014,7 @@ skeleton_error_df <- function(book, design) {
 # ---------------------------------------------------------------------------
 
 build_design <- function(opt) {
-  design <- normalise_design(opt$design)
+  design <- normalize_design(opt$design)
   if (opt$seed == 0) {
     set.seed(NULL)
     opt$seed <- sample.int(999999L, 1L)
@@ -1126,7 +1126,7 @@ design_warnings <- function(res) {
     if (i$error_df_checks < 10)
       w <- c(w, sprintf("Error df = (blocks - 1) x (checks - 1) = %d, below the rule-of-thumb minimum of about 10-12: tests of entry differences will have little power. Add checks or blocks.", i$error_df_checks))
     if (i$filler_plots > 0)
-      w <- c(w, sprintf("New entries do not divide evenly over %d blocks: %d FILLER plot(s) pad the shorter blocks. Plant them with a border variety and do not analyse them.", i$blocks, i$filler_plots))
+      w <- c(w, sprintf("New entries do not divide evenly over %d blocks: %d FILLER plot(s) pad the shorter blocks. Plant them with a border variety and do not analyze them.", i$blocks, i$filler_plots))
     if (i$checks < 2) w <- c(w, "Only one check: block effects are estimated from a single variety. Use at least 2 checks.")
   }
   if (d == "latin" && i$squares == 1 && !is.na(res$error_df) && res$error_df < 10)
@@ -1137,7 +1137,7 @@ design_warnings <- function(res) {
       w <- c(w, sprintf("%.0f%% of test entries are replicated; p-rep designs typically replicate about 20-30%% (25%% per FielDHub's reading of Cullis et al. 2006).", 100 * sh))
   }
   if (d == "diagonal" && i$filler_plots > 0)
-    w <- c(w, sprintf("%d FILLER plot(s) were added by FielDHub to complete the field; plant them but do not analyse them.", i$filler_plots))
+    w <- c(w, sprintf("%d FILLER plot(s) were added by FielDHub to complete the field; plant them but do not analyze them.", i$filler_plots))
   if (d %in% c("split", "strip") && i[[grep("error_df", names(i))[1]]] < 4)
     w <- c(w, "Few error df for the whole-plot / row-strip factor: its effects are tested with little power. Add replicates if that factor matters.")
   if (!is.na(res$error_df) && res$error_df < 10 && !d %in% c("augmented", "latin", "split", "strip"))
@@ -1172,7 +1172,7 @@ design_summary <- function(res) {
 PALETTE <- c("#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948")
 INK <- "#0b0b0b"; INK2 <- "#52514e"; SURFACE <- "#fcfcfb"
 
-# Label colour with the higher WCAG contrast against the fill: white or ink.
+# Label color with the higher WCAG contrast against the fill: white or ink.
 text_on <- function(hex) {
   lum <- function(h) {
     rgb <- grDevices::col2rgb(h) / 255
@@ -1248,7 +1248,7 @@ draw_field_map <- function(res, out_dir) {
                   side = 1, line = 0.6, adj = 0, cex = 0.8, col = INK, font = 2)
   outl <- c(if (!all(is.na(b$rep))) "thick outline = replicate" else NULL,
             if (!all(is.na(b$block))) (if (all(is.na(b$rep))) "thick outline = block" else "thin outline = incomplete block") else NULL,
-            if ("whole_plot" %in% names(b)) "grey outline = whole plot" else NULL,
+            if ("whole_plot" %in% names(b)) "gray outline = whole plot" else NULL,
             sprintf("plot numbers %s from row 1, column 1 (top left)", res$opt$numbering))
   graphics::mtext(paste(outl, collapse = "; "), side = 1, line = 1.6, adj = 0, cex = 0.62, col = INK2)
   if (length(legend_lab)) {

@@ -46,7 +46,7 @@ simulate_panel <- function(n_per_pop = c(100, 100, 100), n_chr = 5, m_per_chr = 
                                        pos = pos[keep], stringsAsFactors = FALSE), pop = pop)
 }
 
-# Traits with known architecture (variance shares of the standardised trait).
+# Traits with known architecture (variance shares of the standardized trait).
 simulate_traits <- function(panel, seed = 1, qtn_share = 0.10, poly_share = 0.20,
                             pop_share = 0.15, null_pop_share = 0.30, qtn_chr = c("1", "3", "5")) {
   set.seed(seed + 1000)

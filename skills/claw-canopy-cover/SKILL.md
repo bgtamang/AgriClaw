@@ -1,6 +1,6 @@
 ---
 name: claw-canopy-cover
-description: Estimate per-plot green canopy cover (fractional vegetation cover, percent ground cover) from RGB drone/UAV orthomosaics with the excess-green index (ExG) and one Otsu threshold per flight, or ExG minus ExR with a zero threshold. Counts and excludes saturated (glare), dark (shadow) and no-data pixels, cross-checks the two methods, and writes a vegetation mask plus QC images. Use when the user asks for canopy cover, ground cover, green cover percentage, vegetation fraction, canopy closure or early vigour per plot from RGB or drone images.
+description: Estimate per-plot green canopy cover (fractional vegetation cover, percent ground cover) from RGB drone/UAV orthomosaics with the excess-green index (ExG) and one Otsu threshold per flight, or ExG minus ExR with a zero threshold. Counts and excludes saturated (glare), dark (shadow) and no-data pixels, cross-checks the two methods, and writes a vegetation mask plus QC images. Use when the user asks for canopy cover, ground cover, green cover percentage, vegetation fraction, canopy closure or early vigor per plot from RGB or drone images.
 license: MIT
 compatibility: R >= 4.2 with terra, sf and exactextractr (GDAL, GEOS, PROJ). No internet needed.
 metadata:
@@ -16,14 +16,14 @@ metadata:
 
 ## What it does
 
-Classifies every pixel of an RGB orthomosaic as green vegetation or background with a colour index on chromatic coordinates, using one threshold for the whole flight, and reports the canopy cover of each plot (coverage-weighted share of usable pixels). Saturated, very dark and no-data pixels are counted and left out, and a second method is computed as a cross-check.
+Classifies every pixel of an RGB orthomosaic as green vegetation or background with a color index on chromatic coordinates, using one threshold for the whole flight, and reports the canopy cover of each plot (coverage-weighted share of usable pixels). Saturated, very dark and no-data pixels are counted and left out, and a second method is computed as a cross-check.
 
 ## When to use / when not to use
 
 - Use for green cover from RGB (or the red, green and blue bands of a multispectral camera), typically from emergence to canopy closure, once per flight. Polygons come from `claw-plot-grid`; check the image first with `claw-ortho-qc`. Stack per-date tables for `claw-vi-timeseries`.
 - For NDVI or other indices from multispectral reflectance, use `claw-vi-extract` (its `--mask` gives an NDVI-based vegetation fraction).
 - Not for counting plants, measuring height (DSM), or senescence scoring: green-index methods treat yellow and brown leaves as background.
-- Near full canopy (cover above about 90%) colour thresholds saturate; use height or NDVI-based traits instead.
+- Near full canopy (cover above about 90%) color thresholds saturate; use height or NDVI-based traits instead.
 
 ## Inputs
 
@@ -68,8 +68,8 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/canopy_cover.R" --input rgb_ortho.tif --plo
 - **Index.** Chromatic coordinates r = R/(R+G+B), g = G/(R+G+B), b = B/(R+G+B) remove overall brightness. ExG = 2g - r - b (Woebbecke et al. 1995). ExR = 1.4r - g and ExGR = ExG - ExR = 3g - 2.4r - b, classified with a fixed zero threshold (Meyer & Neto 2008, who found it worked especially well on wheat-straw residue).
 - **One threshold per flight.** The Otsu (1979) threshold is computed once from pixels pooled across all plots, never per plot: a plot that is all canopy or all soil has a one-mode histogram that Otsu would split anyway (the tests show a per-plot threshold calling about half of a full canopy green).
 - **Bimodality check.** Otsu's separability (between-class / total variance) is 1 for two spikes, 0.75 for a uniform and 2/pi = 0.64 for a single normal histogram; below 0.8 (rule of thumb) the report warns that the image may lack one of the two classes.
-- **Cross-check.** Both ExG-Otsu and ExGR > 0 are reported; a median disagreement over 10 percentage points (rule of thumb) is flagged, because it points to residue, a colour cast (white balance) or a poor threshold.
-- **Saturated pixels** (any channel at the data-type maximum, 255 or 65535, or `--max-value`) have distorted colour and are left out. Files that declare NoData = 255 hide glare as missing data; the report says so.
+- **Cross-check.** Both ExG-Otsu and ExGR > 0 are reported; a median disagreement over 10 percentage points (rule of thumb) is flagged, because it points to residue, a color cast (white balance) or a poor threshold.
+- **Saturated pixels** (any channel at the data-type maximum, 255 or 65535, or `--max-value`) have distorted color and are left out. Files that declare NoData = 255 hide glare as missing data; the report says so.
 - **Dark pixels** (mean of R, G, B below 5% of full scale, `--dark-threshold`, rule of thumb) are left out: with 8-bit data a one-level change in G then moves ExG by about 0.1, so their class is noise. Deep shadow therefore lowers `n_pixels` instead of being guessed.
 - **Plot flags** (rules of thumb): saturated > 1%, dark > 10%, image coverage < 95%, no usable pixels. A median plot under 100 pixels raises a warning.
 - **Statistics.** Cover is the coverage-weighted mean of the 0/1 vegetation layer over usable pixels (exactextractr), so pixels cut by the plot edge count by the fraction inside.

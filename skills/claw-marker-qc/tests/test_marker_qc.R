@@ -236,7 +236,7 @@ check(identical(fm$geno, fv$geno) && nrow(fm$geno) == 560L && ncol(fm$geno) == 1
 # 11. Bad input fails loudly ------------------------------------------------------------------
 bad <- run_cli(c("--input", shQuote(f_vcf), "--out", shQuote(file.path(tmp, "bad"))))
 check(bad$status != 0L && any(grepl("germplasm", bad$output)), "missing --germplasm stops with a message")
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

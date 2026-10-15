@@ -10,7 +10,7 @@
 #   Rscript scripts/fluorescence.R --input licor.xlsx --format licor --dark-adapted yes
 #   Rscript scripts/fluorescence.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-fluorescence"
 VERSION <- "1.0.0"
@@ -241,9 +241,9 @@ read_licor <- function(path) {
   dat
 }
 
-# Standardise either input to columns fo, fm, fs, fm_prime, fo_prime, ppfd,
+# Standardize either input to columns fo, fm, fs, fm_prime, fo_prime, ppfd,
 # qabs, f_psii (+ any other columns, kept for grouping).
-standardise <- function(dat, format, absorptance, f_psii) {
+standardize <- function(dat, format, absorptance, f_psii) {
   if (format == "licor") {
     get <- function(k) if (LICOR_COLS[[k]] %in% names(dat)) suppressWarnings(as.numeric(dat[[LICOR_COLS[[k]]]])) else rep(NA_real_, nrow(dat))
     out <- data.frame(fo = get("fo"), fm = get("fm"), fs = get("fs"), fm_prime = get("fm_prime"),
@@ -277,7 +277,7 @@ standardise <- function(dat, format, absorptance, f_psii) {
   out
 }
 
-analyse <- function(s, dark_adapted = "unknown", fvfm_high = 0.86, fvfm_low = 0.75) {
+analyze <- function(s, dark_adapted = "unknown", fvfm_high = 0.86, fvfm_low = 0.75) {
   fo <- s$fo; fm <- s$fm
   if (dark_adapted == "no") fo <- fm <- rep(NA_real_, nrow(s))  # not dark-adapted: not used
   p <- fluor_params(fo, fm, s$fs, s$fm_prime, s$fo_prime, s$ppfd, s$absorptance, s$f_psii, s$qabs)
@@ -299,7 +299,7 @@ group_levels <- function(res, group_cols) {
   unique(group_key(res, group_cols)[o])
 }
 
-summarise_groups <- function(res, group_cols, exclude_flagged = FALSE) {
+summarize_groups <- function(res, group_cols, exclude_flagged = FALSE) {
   vars <- c("fv_fm", "phi_psii", "fvp_fmp", "qp", "ql", "npq", "etr_umol_m2_s")
   ok <- !nzchar(res$qc_invalid) & (!exclude_flagged | !nzchar(res$qc_check))
   key <- factor(group_key(res, group_cols), levels = group_levels(res, group_cols))
@@ -393,7 +393,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   fmt_in <- if (opt$format == "auto") detect_format(opt$input) else opt$format
   dat <- if (fmt_in == "licor") read_licor(opt$input) else
     utils::read.csv(opt$input, check.names = FALSE, stringsAsFactors = FALSE, strip.white = TRUE)
-  s <- standardise(dat, fmt_in, opt$absorptance, opt$f_psii)
+  s <- standardize(dat, fmt_in, opt$absorptance, opt$f_psii)
   group_cols <- if (nzchar(opt$group)) trimws(strsplit(opt$group, ",")[[1]]) else character()
   miss <- setdiff(group_cols, names(s))
   if (length(miss)) stop("Grouping column(s) not found: ", paste(miss, collapse = ", "), call. = FALSE)
@@ -405,7 +405,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   }
   if (!any(is.finite(s$fo) & is.finite(s$fm)))
     warn("No dark-adapted fo and fm: Fv/Fm, NPQ and estimated Fo' were not computed (qP and qL need a measured fo_prime).")
-  res <- analyse(s, opt$dark_adapted, opt$fvfm_high, opt$fvfm_low)
+  res <- analyze(s, opt$dark_adapted, opt$fvfm_high, opt$fvfm_low)
   if (opt$by_ppfd && any(is.finite(res$ppfd))) {
     res$ppfd_level <- round(res$ppfd, -1)
     group_cols <- c(group_cols, "ppfd_level")
@@ -479,7 +479,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   out_tab <- res[, unique(out_cols[out_cols %in% names(res)]), drop = FALSE]
   names(out_tab)[names(out_tab) == "ppfd"] <- "ppfd_umol_m2_s"
   save_table(out_tab, opt$out, "fluorescence_parameters.csv")
-  sm <- summarise_groups(res, group_cols, opt$exclude_flagged)
+  sm <- summarize_groups(res, group_cols, opt$exclude_flagged)
   save_table(sm, opt$out, "group_summary.csv")
   figs <- plot_fluor(res, setdiff(group_cols, "ppfd_level"), opt$out, opt$fvfm_high, opt$fvfm_low)
 

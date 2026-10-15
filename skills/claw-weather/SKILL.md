@@ -1,6 +1,6 @@
 ---
 name: claw-weather
-description: Summarise growing-season weather for a field location or station - daily and monthly temperature, rainfall/precipitation, reference evapotranspiration (ET0), a simple climatic water balance (P - ET0), frost and hard-freeze days, heat days, heavy rain, and dry spells - from free Open-Meteo historical data (ERA5 reanalysis grid) or the user's weather-station CSV. Missing days are counted and reported, never treated as zero, and in-season requests stop at the last complete day. Use when the user asks what the weather was like at a trial site, how much it rained, how many hot or frost days there were, how long the longest dry spell was, or wants weather context for a field season or a site comparison.
+description: Summarize growing-season weather for a field location or station - daily and monthly temperature, rainfall/precipitation, reference evapotranspiration (ET0), a simple climatic water balance (P - ET0), frost and hard-freeze days, heat days, heavy rain, and dry spells - from free Open-Meteo historical data (ERA5 reanalysis grid) or the user's weather-station CSV. Missing days are counted and reported, never treated as zero, and in-season requests stop at the last complete day. Use when the user asks what the weather was like at a trial site, how much it rained, how many hot or frost days there were, how long the longest dry spell was, or wants weather context for a field season or a site comparison.
 license: MIT
 compatibility: Python >= 3.9 with matplotlib; standard library otherwise. Internet access to open-meteo.com for --lat/--lon runs; --demo and --input run offline.
 metadata:
@@ -16,7 +16,7 @@ metadata:
 
 ## What it does
 
-Builds a daily weather table for a period and summarises it: season and monthly temperature, precipitation and FAO-56 reference ET0; a simple climatic water balance (P − ET0); counts of frost, hard-freeze, hot and heavy-rain days with sourced thresholds; and dry and wet spells. Data come from the Open-Meteo archive (gridded reanalysis/model data) or from the user's station CSV. Missing values are counted per variable and never filled with zeros.
+Builds a daily weather table for a period and summarizes it: season and monthly temperature, precipitation and FAO-56 reference ET0; a simple climatic water balance (P − ET0); counts of frost, hard-freeze, hot and heavy-rain days with sourced thresholds; and dry and wet spells. Data come from the Open-Meteo archive (gridded reanalysis/model data) or from the user's station CSV. Missing values are counted per variable and never filled with zeros.
 
 ## When to use / when not to use
 
@@ -53,7 +53,7 @@ python "${CLAUDE_SKILL_DIR}/scripts/weather.py" --lat 40.08 --lon -88.24 --start
 python "${CLAUDE_SKILL_DIR}/scripts/weather.py" --input station.csv --temp-units F --precip-units in --start-date 2025-04-15 --end-date 2025-10-15
 ```
 
-The demo is Champaign, Illinois, 1 April – 31 October 2025, from a bundled Open-Meteo response.
+The demo is Champaign, Illinois, April 1 – October 31, 2025, from a bundled Open-Meteo response.
 
 ## Outputs
 
@@ -71,7 +71,7 @@ The demo is Champaign, Illinois, 1 April – 31 October 2025, from a bundled Ope
 - **Missing data.** Totals and means use days with data only. Each variable's missing days are counted and shown next to the total, and months with gaps are marked `complete = no`. A total with missing days is a lower bound.
   - A missing day ends a dry or wet spell. Spells that border missing data are flagged, because their true length is unknown.
   - Absent dates in a station file count as missing.
-- **Threshold indices.** Counts cover the analysed period only (ETCCDI defines them per year):
+- **Threshold indices.** Counts cover the analyzed period only (ETCCDI defines them per year):
   - FD frost days, TN < 0 °C; SU summer days, TX > 25 °C; TR tropical nights, TN > 20 °C.
   - R10mm / R20mm, RR ≥ 10 / 20 mm; Rx1day, the largest 1-day total.
   - CDD and CWD: the longest run of dry (RR < 1 mm) and wet (RR ≥ 1 mm) days.
@@ -84,7 +84,7 @@ The demo is Champaign, Illinois, 1 April – 31 October 2025, from a bundled Ope
 - **Data source.** The Open-Meteo archive "best match" combines ECMWF IFS (9 km, from 2017) with the ERA5 (0.25°, ~25 km) and ERA5-Land (0.1°, ~11 km) reanalyses. It is a grid cell, not a station.
   - Open-Meteo computes ET0 with FAO-56 Penman–Monteith.
   - Daily mean 10 m wind is converted to 2 m with FAO-56 eq. 47 (u2 = u10 × 0.748). The tests check this against FAO-56 Example 14.
-- **In-season dates.** The end date is clamped to yesterday (Open-Meteo returns HTTP 400 for later dates). ERA5 is published about 5 days late. Trailing days with no archive data are filled from the forecast API (`&past_days=`, at most 92 days), labelled `forecast:past_days` and flagged as provisional.
+- **In-season dates.** The end date is clamped to yesterday (Open-Meteo returns HTTP 400 for later dates). ERA5 is published about 5 days late. Trailing days with no archive data are filled from the forecast API (`&past_days=`, at most 92 days), labeled `forecast:past_days` and flagged as provisional.
 
 ## Checks before reporting
 

@@ -77,7 +77,7 @@ The demo is rainfed field maize planted 2025-04-25 near Champaign, Illinois. It 
   - Maize Kc_end is 0.35 for grain dried in the field; use 0.60 for high-moisture harvest (footnote 11).
 - **Climate adjustment** (eq. 62 for Kc_mid, eq. 65 for Kc_end). It uses the mean u2 and RHmin over the stage's days, with FAO's limits (1 ≤ u2 ≤ 6 m/s, 20 ≤ RHmin ≤ 80%, 0.1 ≤ h ≤ 10 m). Kc_end is adjusted only when its table value is ≥ 0.45. Verified on FAO-56 Example 27 (1.07 and 1.30) and Box 15 (1.19).
 - **Soil water.** TAW = 1000 (θFC − θWP) Zr (eq. 82), or SSURGO available water storage interpolated at Zr. RAW = p × TAW (eq. 83). p comes from Table 22 and is adjusted daily as p + 0.04 (5 − ETc), limited to 0.1–0.8 (Table 22 footnote 2); use `--no-p-adjust` to keep it constant, as FAO-56 Example 37 does.
-- **Root depth.** The default is the Table 22 range end: the larger value for rainfed or stress modelling, the smaller for irrigation scheduling (Table 22 footnote 1). It is constant all season; root growth is not modelled.
+- **Root depth.** The default is the Table 22 range end: the larger value for rainfed or stress modeling, the smaller for irrigation scheduling (Table 22 footnote 1). It is constant all season; root growth is not modeled.
 - **Daily update** (eqs. 84–86): Ks = (TAW − Dr)/(TAW − RAW) when Dr > RAW, otherwise 1. ETc adj = Ks × Kc × ET0 (eq. 81), and 0 ≤ Dr ≤ TAW.
   - Rain, irrigation and capillary rise enter early in the day; water above field capacity is lost to deep percolation the same day; then Ks and ET apply. This is the convention of FAO-56 Example 38.
   - FAO-56 eq. 88 subtracts the day's ET before computing drainage, which gives less drainage on wetting days.

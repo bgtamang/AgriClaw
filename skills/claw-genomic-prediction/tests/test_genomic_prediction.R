@@ -58,7 +58,7 @@ p <- (colMeans(imp) + 1) / 2
 W_hand <- sweep(imp, 2, colMeans(imp))
 check(max(abs(rl$A - tcrossprod(W_hand) / (2 * sum(p * (1 - p))))) < 1e-10,
       "A = WW'/c from hand-imputed markers")
-check(max(abs(rl$W - W_hand)) < 1e-12, "W = mean-imputed, centred markers")
+check(max(abs(rl$W - W_hand)) < 1e-12, "W = mean-imputed, centered markers")
 check(rl$n_markers_used == 59L && rl$n_imputed == 50L, "monomorphic marker removed, 50 imputed calls counted")
 
 # 3. Demo data, and GBLUP == RR-BLUP (equivalent models).
@@ -195,7 +195,7 @@ for (s in 1:2) {
     check(stats::cor(p_brr, p_rr) > 0.99, "BRR (BGLR) agrees with RR-BLUP")
     dg <- bglr_diagnostics(attr(p_bb, "prefix"), 500, 5)
     check(length(dg$trace) == 300L && is.finite(dg$ess),
-          "BGLR residual-variance chain read and summarised")
+          "BGLR residual-variance chain read and summarized")
   }
 }
 m5 <- colMeans(acc5)
@@ -256,7 +256,7 @@ check(any(grepl("random k-fold", rep_txt)) && any(grepl("never reported as accur
       "report explains the scheme and states that training-set fit is not an accuracy")
 
 # 12. Unknown options are rejected.
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

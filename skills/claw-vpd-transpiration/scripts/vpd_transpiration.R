@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# claw-vpd-transpiration: whole-plant transpiration rate (TR) response to vapour
+# claw-vpd-transpiration: whole-plant transpiration rate (TR) response to vapor
 # pressure deficit (VPD) from gravimetric (pot-weight) phenotyping. Computes VPD
 # from air temperature and RH, TR from pot-weight loss with irrigation and
 # outlier screening, and compares a linear with a two-segment (breakpoint)
@@ -13,7 +13,7 @@
 #   Rscript scripts/vpd_transpiration.R --input tr_vpd.csv --tr-col tr_mg_m2_s
 #   Rscript scripts/vpd_transpiration.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-vpd-transpiration"
 VERSION <- "1.0.0"
@@ -35,7 +35,7 @@ Options:
   --tr-col COL        TR column for --input (default: tr_mg_m2_s)
   --vpd-col COL       VPD column for --input (default: vpd_kpa)
   --level L           fit per 'genotype' (pooled plants, default) or per 'plant'
-  --svp F             saturation vapour pressure: buck1981_moist (default),
+  --svp F             saturation vapor pressure: buck1981_moist (default),
                       buck1981 or fao56
   --selection S       'aicc+davies' (default) or 'aicc' (AICc only)
   --alpha A           Davies test level (default: 0.05)
@@ -230,8 +230,8 @@ parse_time <- function(x, what) {
 
 # --- VPD ---------------------------------------------------------------------
 
-# Saturation vapour pressure (kPa) over liquid water at air temperature t_c (degC).
-#   buck1981       0.61121 exp(17.502 t / (240.97 + t))   Buck (1981), pure water vapour
+# Saturation vapor pressure (kPa) over liquid water at air temperature t_c (degC).
+#   buck1981       0.61121 exp(17.502 t / (240.97 + t))   Buck (1981), pure water vapor
 #   buck1981_moist 0.61375 exp(17.502 t / (240.97 + t))   the same with an enhancement
 #                  factor of ~1.0042 for moist air near 1000 hPa; the coefficient
 #                  used in the published gravimetric workflow (Tamang & Sadok 2018)
@@ -433,7 +433,7 @@ window_env <- function(env, windows, discard_first_min) {
   do.call(rbind, rows)
 }
 
-# TR per pot and window. Leaf-area-normalised TR in mg H2O m-2 s-1:
+# TR per pot and window. Leaf-area-normalized TR in mg H2O m-2 s-1:
 #   TR = rate (g min-1) x 1000 / 60 / (leaf area cm2 / 10000)
 step_tr <- function(wq, plants, windows, discard_first_min = 0, min_readings = 10) {
   rows <- list()
@@ -720,7 +720,7 @@ prepare_raw <- function(opt, warn) {
     need_numeric(plants, "leaf_area_cm2", "plants file")
     if (any(plants$leaf_area_cm2 <= 0)) stop("plants file: leaf_area_cm2 must be > 0.", call. = FALSE)
   } else if (opt$level != "plant") {
-    stop("plants file needs leaf_area_cm2 to normalise TR before pooling plants. ",
+    stop("plants file needs leaf_area_cm2 to normalize TR before pooling plants. ",
          "Add it, or use --level plant to fit each pot on whole-plant TR (g/h).", call. = FALSE)
   }
 
@@ -893,7 +893,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   if (any(is.finite(rng) & rng < 1.5))
     warn(sprintf("%d group(s) span less than 1.5 kPa of VPD: too narrow to locate a breakpoint reliably.", sum(is.finite(rng) & rng < 1.5)))
   inc <- tab[[grp_col]][tab$model == "segmented (slope increases)"]
-  if (length(inc)) warn(sprintf("TR rises faster above the breakpoint in: %s. This is not a limited-transpiration response; check stomatal or temperature artefacts.", paste(inc, collapse = ", ")))
+  if (length(inc)) warn(sprintf("TR rises faster above the breakpoint in: %s. This is not a limited-transpiration response; check stomatal or temperature artifacts.", paste(inc, collapse = ", ")))
   wide <- tab[[grp_col]][grepl("^segmented", tab$model) & is.finite(tab$breakpoint_hi) & (tab$breakpoint_hi - tab$breakpoint_lo) > 1.5]
   if (length(wide)) warn(sprintf("Breakpoint 95%% CI wider than 1.5 kPa in: %s. Treat those thresholds as poorly determined.", paste(wide, collapse = ", ")))
   disagree <- tab[[grp_col]][grepl("Davies p", tab$note)]

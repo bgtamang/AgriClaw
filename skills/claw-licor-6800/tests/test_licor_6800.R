@@ -183,7 +183,7 @@ check(nrow(tidy) == 96L && all(c("a_umol_m2_s", "ci_umol_mol", "instrument_id", 
 rep_txt <- readLines(file.path(out, "report.md"))
 check(any(grepl("Oxygen is not 21%", rep_txt)), "report warns that c3_aci_2.xlsx logged 22% oxygen")
 
-bad_run <- run_cli(c("--demo", "--colour", "red"))
+bad_run <- run_cli(c("--demo", "--color", "red"))
 check(bad_run$status != 0L, "unknown option exits with an error")
 csv_run <- run_cli(c("--input", shQuote(file.path(out, "tables", "licor_tidy.csv")), "--out", shQuote(file.path(tmp, "x"))))
 check(csv_run$status != 0L && any(grepl("CSV", csv_run$output)), "a CSV input is rejected with a pointer to the next skill")

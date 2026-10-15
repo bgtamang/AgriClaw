@@ -11,7 +11,7 @@
 #   Rscript scripts/vi_extract.R --input s2.tif --plots plots.gpkg --sensor sentinel2-l2a
 #   Rscript scripts/vi_extract.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-vi-extract"
 VERSION <- "1.0.0"
@@ -34,7 +34,7 @@ USAGE <- "Usage: Rscript scripts/vi_extract.R [--demo] --input RASTER --plots PO
   --mask        none | ndvi | otsu: drop soil pixels below an NDVI threshold (default none)
   --mask-threshold  NDVI threshold for --mask ndvi
   --shadow-nir  also drop pixels with NIR reflectance below this value (default: off)
-  --buffer      buffer in metres applied to plots first; negative shrinks (default 0)
+  --buffer      buffer in meters applied to plots first; negative shrinks (default 0)
   --min-pixels  flag plots with fewer effective pixels than this (default 10)
   --date        flight or acquisition date YYYY-MM-DD, copied to the output tables
   --confirm-calibrated  proceed although values look like digital numbers
@@ -182,7 +182,7 @@ SENSORS <- list(
     note = "DJI P4 Multispectral bands: blue 450, green 560, red 650, red edge 730, NIR 840 nm (wavelength order assumed)."),
   "sentinel2-l2a" = list(
     bands = c(blue = "B02", green = "B03", red = "B04", rededge = "B05", nir = "B08"), scale = 1e-4, offset = -0.1, nodata = 0,
-    note = paste("ESA Sentinel-2 L2A from processing baseline 04.00 (25 January 2022) on: reflectance =",
+    note = paste("ESA Sentinel-2 L2A from processing baseline 04.00 (January 25, 2022) on: reflectance =",
                  "(DN + BOA_ADD_OFFSET) / QUANTIFICATION_VALUE = (DN - 1000) / 10000; DN 0 = no data.",
                  "Layers are matched by name (B02 ...); red edge = B05 (705 nm, 20 m).")),
   "sentinel2-l2a-harmonized" = list(
@@ -318,7 +318,7 @@ choose_bands <- function(r, opt) {
        paste(names(r), collapse = ", "), ".", call. = FALSE)
 }
 
-# Otsu (1979) threshold from a histogram: maximise the between-class variance
+# Otsu (1979) threshold from a histogram: maximize the between-class variance
 # sigma_B^2(k) = (mu_T w(k) - mu(k))^2 / (w(k) (1 - w(k))). Class 1 holds bins
 # 1..k; the threshold lies between bin k and bin k + 1. Empty bins between the
 # two modes give a plateau of equal maxima; the middle of the plateau is used.
@@ -394,7 +394,7 @@ pick_indices <- function(spec, roles) {
   want
 }
 
-# Plot polygons: checks, id column, buffer in metres, then the raster CRS.
+# Plot polygons: checks, id column, buffer in meters, then the raster CRS.
 prepare_plots <- function(path, layer, id_col, r, buffer_m) {
   if (!file.exists(path)) stop("Plot file not found: ", path, call. = FALSE)
   p <- if (nzchar(layer)) sf::st_read(path, layer = layer, quiet = TRUE) else sf::st_read(path, quiet = TRUE)
@@ -409,7 +409,7 @@ prepare_plots <- function(path, layer, id_col, r, buffer_m) {
   ids <- p[[id_col]]
   if (anyNA(ids) || anyDuplicated(ids))
     stop("Plot id column '", id_col, "' has missing or duplicated values.", call. = FALSE)
-  # Buffer in metres: the plots' own CRS if projected, else the raster's, else UTM.
+  # Buffer in meters: the plots' own CRS if projected, else the raster's, else UTM.
   rcrs <- sf::st_crs(terra::crs(r))
   work <- if (!isTRUE(sf::st_is_longlat(p))) sf::st_crs(p) else if (!terra::is.lonlat(r)) rcrs else {
     cc <- sf::st_coordinates(sf::st_transform(sf::st_centroid(sf::st_as_sfc(sf::st_bbox(p))), 4326))
@@ -480,7 +480,7 @@ run_extraction <- function(opt) {
   r0 <- terra::rast(opt$input)
   if (!nzchar(terra::crs(r0))) stop("The raster has no CRS; it cannot be matched to the plots.", call. = FALSE)
   if (terra::is.lonlat(r0))
-    warn <- c(warn, "The raster is in lon/lat degrees; plots were buffered in metres (UTM) and transformed to it. Prefer a projected raster.")
+    warn <- c(warn, "The raster is in lon/lat degrees; plots were buffered in meters (UTM) and transformed to it. Prefer a projected raster.")
   pp <- prepare_plots(opt$plots, opt$layer, opt$id_col, r0, opt$buffer)
   plots <- pp$plots
   ids <- plots[[pp$id_col]]
@@ -619,7 +619,7 @@ run_extraction <- function(opt) {
   med_px <- stats::median(pp$area_m2 / pa)
   if (med_px < 10)
     warn <- c(warn, sprintf(paste("Mixed pixels: a median plot covers only %.1f pixel(s) of %.2f m2. Plot values mix",
-                                  "neighbouring plots, alleys and soil; treat them as unreliable (rule of thumb: at least",
+                                  "neighboring plots, alleys and soil; treat them as unreliable (rule of thumb: at least",
                                   "10 whole pixels inside each plot)."), med_px, pa))
   nf <- sum(nzchar(flag))
   if (nf) warn <- c(warn, sprintf("%d of %d plot(s) flagged (%s). See the flag column.", nf, nrow(wide),

@@ -66,7 +66,7 @@ The demo reads two A-Ci log files shipped with PhotoGEA (`system.file("extdata",
 
   Full list: `references/tidy_columns.md`. QC columns: `qc_missing_values`, `qc_ci_negative`, `qc_ci_gt_ca`, `qc_gsw_negative`, `qc_tleaf_out_of_range`, `qc_duplicate` (these six make `qc_hard_fail`), `qc_unstable`, `qc_small_delta_co2` (cautions), and `qc_flags` (text).
 - `tables/file_summary.csv` (rows, serials, file opened, software version per file), `tables/qc_flag_counts.csv`, `tables/curve_summary.csv` (points, files, instruments, leaf-temperature range and setpoint sequence per curve), `tables/confounding_summary.csv` and `tables/confounding_counts.csv`.
-- `figures/qc_overview.png`: A vs Ci coloured by instrument with hard failures marked; leaf temperature by row.
+- `figures/qc_overview.png`: A vs Ci colored by instrument with hard failures marked; leaf temperature by row.
 - `report.md`: warnings first, then the tables above.
 
 ## Expert decisions
@@ -76,7 +76,7 @@ The demo reads two A-Ci log files shipped with PhotoGEA (`system.file("extdata",
 - **Instrument ID** = `<Console s/n>/<Head s/n>` from the file header (the head holds the IRGAs), else `--instrument-col`, else `unknown:<file>` with a warning.
 - **Twins and duplicates.** The LI-6800 can save each log twice (plaintext `X` and `X.xlsx`); when both are given (or found by `--input-dir`) the plaintext is read and the `.xlsx` skipped, with a note. Rows that repeat an observation already read from another file (same instrument and timestamp) are flagged `qc_duplicate`, a hard failure, so fits use the first copy. The check needs a known instrument ID, because two instruments can log in the same second.
 - **Hard failures** are physically impossible or broken readings: missing A/Ci/gsw; Ci < 0; Ci > Ca while A > 0 (a leaf taking up CO2 must have Ci below Ca; von Caemmerer & Farquhar 1981); gsw < 0; leaf temperature outside 5-45 C (rule of thumb for a detached or faulty thermocouple). Ci > Ca with A < 0 (below the compensation point) is legitimate and not flagged.
-- **Cautions** (rules of thumb): `qc_unstable` when fewer stability criteria were met than defined (`Stable < Total`; PhotoGEA articles drop such points for stomatal models); `qc_small_delta_co2` when |CO2_r - CO2_s| < 1 umol/mol, where A rests on a difference near analyser noise and chamber leaks weigh more (Long & Bernacchi 2003). It is expected near the CO2 compensation point of an A-Ci curve. Leaf-temperature drift within a curve > 2 C is reported.
+- **Cautions** (rules of thumb): `qc_unstable` when fewer stability criteria were met than defined (`Stable < Total`; PhotoGEA articles drop such points for stomatal models); `qc_small_delta_co2` when |CO2_r - CO2_s| < 1 umol/mol, where A rests on a difference near analyzer noise and chamber leaks weigh more (Long & Bernacchi 2003). It is expected near the CO2 compensation point of an A-Ci curve. Leaf-temperature drift within a curve > 2 C is reported.
 - **Confounding** is counted in curves (rows if no `--curve-cols`): *completely confounded* when no instrument measured more than one level; *partially confounded* when some level was never measured on some instrument; *crossed* otherwise, with a warning when Cramer's V >= 0.5 (rule of thumb). The fix is design: balance instruments across genotypes/treatments, or block on instrument (fixed block, random effect or covariate). Complete confounding has no statistical fix.
 - **Oxygen.** Rows with oxygen other than 21% are reported, because A-Ci fits use the logged value.
 

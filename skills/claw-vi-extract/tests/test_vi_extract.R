@@ -87,7 +87,7 @@ cand <- seq(min(y), max(y), length.out = 2001)
 sbv <- vapply(cand, function(t) { a <- y <= t; if (all(a) || !any(a)) return(NA_real_)
   mean(a) * mean(!a) * (mean(y[a]) - mean(y[!a]))^2 }, numeric(1))
 check(abs(t_o - cand[which.max(sbv)]) < 2 * diff(range(y)) / 256,
-      "Otsu threshold maximises the between-class variance of the raw values")
+      "Otsu threshold maximizes the between-class variance of the raw values")
 
 # 3. Known per-plot reflectance, plots aligned to the pixel grid
 res <- 0.1
@@ -162,7 +162,7 @@ nd <- (nv - 0.05) / (nv + 0.05)
 check(abs(o3$wide$ndvi - sum(w * nd) / sum(w)) < TOL, "coverage-weighted NDVI mean")
 check(abs(o3$wide$n_pixels - 18) < 1e-9 && o3$wide$n_pure_pixels == 12, "effective (18) and whole (12) pixel counts")
 
-# 6. Buffers in metres, and plots in another CRS (lon/lat)
+# 6. Buffers in meters, and plots in another CRS (lon/lat)
 o4 <- run_extraction(opt_for(r1, p1, buffer = -0.5))
 check(all(abs(o4$wide$plot_area_m2 - 1) < 1e-9) && all(abs(o4$wide$n_pixels - 100) < 1e-9), "-0.5 m buffer leaves 1 x 1 m (100 pixels)")
 expect_error(run_extraction(opt_for(r1, p1, buffer = -1.1)), "removes", "a buffer that deletes plots is refused")
@@ -171,7 +171,7 @@ p1ll <- file.path(tmp, "uniform_ll.gpkg"); if (file.exists(p1ll)) unlink(p1ll)
 sf::st_write(pll, p1ll, quiet = TRUE)
 o5 <- run_extraction(opt_for(r1, p1ll, buffer = -0.5))
 check(max(abs(o5$wide$ndvi - o4$wide$ndvi)) < 1e-9 && max(abs(o5$wide$n_pixels - 100)) < 0.05,
-      "lon/lat plots are buffered in metres and give the same values")
+      "lon/lat plots are buffered in meters and give the same values")
 
 # 7. Sentinel-2 L2A scaling with the -1000 offset; DN 0 = no data; mixed pixels
 refl <- c(B02 = 0.0312, B03 = 0.0655, B04 = 0.0421, B05 = 0.1288, B08 = 0.4106, B11 = 0.2000)
@@ -230,7 +230,7 @@ check(nrow(wd) == 12L && all(c("plot_id", "date", "ndvi", "ndre", "mcari2", "cir
 check(all(wd$ndvi > 0.7 & wd$ndvi < 0.95) && all(is.na(wd$flag) | wd$flag == ""), "demo plot NDVI plausible and unflagged")
 check(file.size(file.path(out, "demo_input", "ortho_multispectral.tif")) < 500000, "demo raster is under 500 KB")
 check(length(Sys.glob(file.path(out, "reproducibility", "checksums.*"))) == 1L, "demo writes a checksum file")
-expect_error(main(c("--demo", "--colour", "red")), "Unknown option", "unknown option is rejected")
+expect_error(main(c("--demo", "--color", "red")), "Unknown option", "unknown option is rejected")
 expect_error(main(c("--input", r1, "--out", file.path(tmp, "noplots"))), "--plots", "missing --plots is rejected")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

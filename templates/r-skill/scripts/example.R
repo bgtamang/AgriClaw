@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# claw-example: summarise a numeric trait by group (n, mean, SD, CV) and flag
+# claw-example: summarize a numeric trait by group (n, mean, SD, CV) and flag
 # groups with too few observations. Template for AgriClaw R skills: copy this
 # file, keep the helper section unchanged, and replace the analysis section.
 #
@@ -8,7 +8,7 @@
 #   Rscript scripts/example.R --input data.csv --trait yield_kg_ha --group genotype
 #   Rscript scripts/example.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-example"
 VERSION <- "1.0.0"
@@ -18,7 +18,7 @@ USAGE <- "Usage: Rscript scripts/example.R [--demo] [--input FILE.csv] [--trait 
 
   --demo     run on demo/example.csv
   --input    CSV file, one row per observation
-  --trait    numeric column to summarise (default: yield_kg_ha)
+  --trait    numeric column to summarize (default: yield_kg_ha)
   --group    grouping column (default: genotype)
   --min-n    flag groups with fewer observations than this (default: 3)
   --out      output folder (default: agriclaw_output/claw-example)
@@ -153,7 +153,7 @@ check_columns <- function(dat, trait, group) {
   invisible(TRUE)
 }
 
-summarise_trait <- function(dat, trait, group, min_n = 3) {
+summarize_trait <- function(dat, trait, group, min_n = 3) {
   check_columns(dat, trait, group)
   groups <- sort(unique(dat[[group]]))
   rows <- lapply(groups, function(g) {
@@ -184,7 +184,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   dat <- read_input(opt$input)
   check_columns(dat, opt$trait, opt$group)
   n_na <- sum(is.na(dat[[opt$trait]]))
-  res <- summarise_trait(dat, opt$trait, opt$group, opt$min_n)
+  res <- summarize_trait(dat, opt$trait, opt$group, opt$min_n)
   save_table(res, opt$out, "summary.csv")
 
   open_png(opt$out, "means.png")

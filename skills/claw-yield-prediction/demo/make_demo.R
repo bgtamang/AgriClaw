@@ -12,7 +12,7 @@ out_dir <- local({
 # different sensor calibration offset (shifts every NDVI value of that
 # environment) and its own season weather. The offsets and weather totals are
 # unrelated to the environment means, as with 4 environments in practice: they
-# identify an environment (a random split can memorise its mean) but do not
+# identify an environment (a random split can memorize its mean) but do not
 # transfer to a new one.
 envs <- data.frame(env = c("IL2024", "IA2024", "IL2025", "IA2025"),
                    year = c(2024, 2024, 2025, 2025),
@@ -22,7 +22,7 @@ envs <- data.frame(env = c("IL2024", "IA2024", "IL2025", "IA2025"),
                    gdd_season_c = c(1480, 1420, 1395, 1450),
                    dap_shift = c(0, 3, -2, 2), stringsAsFactors = FALSE)
 
-# Sixty genotypes. Maturity and early vigour raise yield and are visible to the
+# Sixty genotypes. Maturity and early vigor raise yield and are visible to the
 # sensors (senescence date, early NDVI); "other" is yield potential they miss.
 n_geno <- 60
 geno <- data.frame(genotype = sprintf("G%03d", seq_len(n_geno)),

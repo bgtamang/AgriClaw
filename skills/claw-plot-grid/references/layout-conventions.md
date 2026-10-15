@@ -6,8 +6,8 @@ Read this when the user's field book uses different words for the layout, or whe
 
 ```
             planting direction (bearing) ->
-   c2 +--------+--------+--------+  ...         ranges increase from c1 towards c2
-      | R6 C1  | R6 C2  | R6 C3  |              columns increase from c1 towards c4
+   c2 +--------+--------+--------+  ...         ranges increase from c1 toward c2
+      | R6 C1  | R6 C2  | R6 C3  |              columns increase from c1 toward c4
       +--------+--------+--------+              (here to the RIGHT of the planting
         alley                                    direction when you stand at c1
       +--------+--------+--------+               facing c2: --across right)
@@ -63,11 +63,11 @@ serpentine, --sweep across, start c1    serpentine, --sweep along, start c3
 
 | Symptom | Likely cause |
 |---|---|
-| Block about 3.3 times too long or short | feet read as metres or the reverse |
+| Block about 3.3 times too long or short | feet read as meters or the reverse |
 | Grid shifted by one plot length | plot length includes the alley, or the corner is a stake in the alley |
-| Grid rotated a few degrees | magnetic bearing used as true; or corners digitised in a different CRS |
+| Grid rotated a few degrees | magnetic bearing used as true; or corners digitized in a different CRS |
 | Numbers mirror the planting map | wrong `--start-corner` or `--across` |
-| Alternate columns numbered backwards | `--numbering rowwise` versus `serpentine` |
+| Alternate columns numbered backward | `--numbering rowwise` versus `serpentine` |
 
 ## References
 

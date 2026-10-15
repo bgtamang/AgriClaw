@@ -8,7 +8,7 @@ Usage:
     python scripts/weather.py --lat 40.08 --lon -88.24 --start-date 2025-04-01 --end-date 2025-10-31
     python scripts/weather.py --input station.csv --temp-units C --precip-units mm --start-date 2025-04-01
 
-Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 """
 
 from __future__ import annotations
@@ -329,7 +329,7 @@ def read_station_csv(path: str, temp_units: str | None, precip_units: str | None
     if "srad_mj_m2" in header:
         spec["srad_mj_m2"] = (header["srad_mj_m2"], lambda v: v)
     if not spec:
-        raise ValueError("The CSV has no recognised weather columns (tmax, tmin, precip, et0, ...).")
+        raise ValueError("The CSV has no recognized weather columns (tmax, tmin, precip, et0, ...).")
     rows, seen = [], set()
     for i, r in enumerate(raw, start=2):
         d = parse_date(r[header["date"]], f"Row {i}: date")
@@ -386,7 +386,7 @@ def valid(rows: list[dict], col: str) -> list[float]:
     return [r[col] for r in rows if r[col] is not None]
 
 
-def summarise(rows: list[dict]) -> dict:
+def summarize(rows: list[dict]) -> dict:
     """Totals and means over days with data; missing days are counted, not zeroed."""
     s = {"n_days": len(rows)}
     for col in DAILY_COLS:
@@ -417,7 +417,7 @@ def monthly(rows: list[dict]) -> list[dict]:
         months.setdefault(r["date"].strftime("%Y-%m"), []).append(r)
     out = []
     for m in sorted(months):
-        s = summarise(months[m])
+        s = summarize(months[m])
         out.append({"month": m, "n_days": s["n_days"],
                     "mean_tmax_c": s["mean_tmax_c"], "mean_tmin_c": s["mean_tmin_c"],
                     "precip_mm": s["total_precip_mm"], "et0_mm": s["total_et0_mm"],
@@ -430,7 +430,7 @@ def monthly(rows: list[dict]) -> list[dict]:
 
 def threshold_indices(rows: list[dict], hot_c: float = HOT_C, very_hot_c: float = VERY_HOT_C,
                       hard_freeze_c: float = HARD_FREEZE_C, extra_rain_mm: float | None = None):
-    """Counts over the analysed period. Each index uses one variable; days where that
+    """Counts over the analyzed period. Each index uses one variable; days where that
     variable is missing are counted separately (n_missing)."""
     defs = [
         ("FD", "frost days", "tmin_c", lambda v: v < 0.0, "TN < 0 °C", "ETCCDI (Zhang et al. 2011)"),
@@ -679,7 +679,7 @@ def write_report(out: Path, ctx: dict) -> None:
         L.append(f"| {m['month']} | {m['n_days']} | {fmt(m['mean_tmax_c'])} | {fmt(m['mean_tmin_c'])} | "
                  f"{fmt(m['precip_mm'])} | {fmt(m['et0_mm'])} | {fmt(m['p_minus_et0_mm'])} | {m['complete']} |")
     L += ["", "## Threshold indices", "",
-          "Counts over the analysed period (ETCCDI defines them per year; here they cover only "
+          "Counts over the analyzed period (ETCCDI defines them per year; here they cover only "
           f"{ctx['start']} to {ctx['end']}). Days with the variable missing are not counted.", "",
           "| Index | Meaning | Rule | Days | Missing days | Source |", "|---|---|---|---|---|---|"]
     for t in ctx["indices"]:
@@ -705,7 +705,7 @@ def write_report(out: Path, ctx: dict) -> None:
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="weather.py", description=__doc__.splitlines()[0])
     ap.add_argument("--demo", action="store_true",
-                    help="Champaign, IL, 1 April - 31 October 2025 (bundled Open-Meteo data)")
+                    help="Champaign, IL, April 1 - October 31, 2025 (bundled Open-Meteo data)")
     ap.add_argument("--lat", type=float, help="latitude, decimal degrees")
     ap.add_argument("--lon", type=float, help="longitude, decimal degrees")
     ap.add_argument("--start-date", help="first day, YYYY-MM-DD (required unless --demo)")
@@ -734,7 +734,7 @@ def main(argv: list[str] | None = None, today: date | None = None, fetcher=http_
             args.start_date = args.start_date or DEMO["start"]
             args.end_date = args.end_date or DEMO["end"]
         if not args.start_date:
-            ap.error("--start-date is required (ask the user for the period to summarise)")
+            ap.error("--start-date is required (ask the user for the period to summarize)")
         if not (args.demo or args.input) and (args.lat is None or args.lon is None):
             ap.error("give --lat and --lon, or --input FILE.csv, or --demo")
         for v, lo, hi, name in ((args.lat, -90, 90, "--lat"), (args.lon, -180, 180, "--lon")):
@@ -789,7 +789,7 @@ def main(argv: list[str] | None = None, today: date | None = None, fetcher=http_
         if any(r["source"] == "forecast:past_days" for r in rows) and not any("forecast API" in w for w in warnings):
             warnings.append("Some days come from the forecast API (provisional).")
 
-        summary = summarise(rows)
+        summary = summarize(rows)
         months = monthly(rows)
         indices, events, spells = threshold_indices(rows, args.hot_c, args.very_hot_c, HARD_FREEZE_C,
                                                     args.heavy_rain_mm)

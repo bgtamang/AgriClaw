@@ -11,7 +11,7 @@
 #   Rscript scripts/canopy_cover.R --input rgb_ortho.tif --plots plots.gpkg --index exgr
 #   Rscript scripts/canopy_cover.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-canopy-cover"
 VERSION <- "1.0.0"
@@ -29,7 +29,7 @@ USAGE <- "Usage: Rscript scripts/canopy_cover.R [--demo] --input RGB_RASTER --pl
   --threshold       auto (default: Otsu for exg, 0 for exgr), otsu, zero, or a number
   --max-value       saturation level (default: 255 for 8-bit, 65535 for 16-bit, 1 for float)
   --dark-threshold  pixels darker than this fraction of full brightness are left out (default 0.05)
-  --buffer          buffer in metres applied to the plots; negative shrinks (default 0)
+  --buffer          buffer in meters applied to the plots; negative shrinks (default 0)
   --date            flight date YYYY-MM-DD, copied to the output table
   --qc-plots        number of plots shown in the QC image (default 6)
   --sample-size     pixels sampled for the histogram and Otsu threshold (default 200000)
@@ -162,7 +162,7 @@ need_pkgs <- function(pkgs) {
   invisible(TRUE)
 }
 
-# Chromatic coordinates r, g, b = R/(R+G+B) ... and the two colour indices.
+# Chromatic coordinates r, g, b = R/(R+G+B) ... and the two color indices.
 # ExG = 2g - r - b (Woebbecke et al. 1995); ExR = 1.4r - g and
 # ExGR = ExG - ExR = 3g - 2.4r - b (Meyer & Neto 2008).
 color_indices <- function(R, G, B) {
@@ -176,7 +176,7 @@ color_indices <- function(R, G, B) {
   list(exg = exg, exgr = exgr)
 }
 
-# Otsu (1979) threshold from a histogram: maximise the between-class variance
+# Otsu (1979) threshold from a histogram: maximize the between-class variance
 # sigma_B^2(k) = (mu_T w(k) - mu(k))^2 / (w(k) (1 - w(k))). Class 1 holds bins
 # 1..k; the threshold lies between bin k and bin k + 1. Empty bins between the
 # two modes give a plateau of equal maxima; the middle of the plateau is used.
@@ -220,7 +220,7 @@ parse_rgb_map <- function(s) {
   m[c("red", "green", "blue")]
 }
 
-# Plot polygons: checks, id column, buffer in metres, then the raster CRS.
+# Plot polygons: checks, id column, buffer in meters, then the raster CRS.
 prepare_plots <- function(path, layer, id_col, r, buffer_m) {
   if (!file.exists(path)) stop("Plot file not found: ", path, call. = FALSE)
   p <- if (nzchar(layer)) sf::st_read(path, layer = layer, quiet = TRUE) else sf::st_read(path, quiet = TRUE)
@@ -427,7 +427,7 @@ run_cover <- function(opt) {
   diff_pp <- abs(res$canopy_cover_pct - res[[sprintf("cover_%s_pct", other)]])
   if (stats::median(diff_pp, na.rm = TRUE) > 10)
     warn <- c(warn, sprintf(paste("ExG (Otsu) and ExGR (> 0) disagree by a median of %.1f percentage points: residue,",
-                                  "colour cast or a poor threshold. Inspect figures/qc_plots.png before using either."),
+                                  "color cast or a poor threshold. Inspect figures/qc_plots.png before using either."),
                             stats::median(diff_pp, na.rm = TRUE)))
   nf <- sum(nzchar(flag))
   if (nf) warn <- c(warn, sprintf("%d of %d plot(s) flagged (%s). See the flag column.", nf, nrow(res),
@@ -547,7 +547,7 @@ write_report <- function(res, opt, out_dir) {
              "", "## Limitations", "",
              "- Green canopy only: senescent, chlorotic or purple leaves count as background; residue with a green tint, algae and weeds count as canopy.",
              "- Cover is the fraction of usable pixels; saturated and dark pixels are left out, so heavy shadow or glare biases it.",
-             "- Mixed pixels at leaf edges are classified whole; coarse pixels bias cover towards the dominant class.",
+             "- Mixed pixels at leaf edges are classified whole; coarse pixels bias cover toward the dominant class.",
              "", "## References", "",
              "- Woebbecke DM, Meyer GE, Von Bargen K, Mortensen DA (1995) Color indices for weed identification under various soil, residue, and lighting conditions. Transactions of the ASAE 38:259-269. https://doi.org/10.13031/2013.27838",
              "- Meyer GE, Neto JC (2008) Verification of color vegetation indices for automated crop imaging applications. Computers and Electronics in Agriculture 63:282-293. https://doi.org/10.1016/j.compag.2008.03.009",

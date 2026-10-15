@@ -12,7 +12,7 @@
 #           --traits yield_kg_ha,height_cm --ld-distance 250000
 #   Rscript scripts/gwas_crop.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-gwas-crop"
 VERSION <- "1.0.0"
@@ -26,7 +26,7 @@ Input
                       column per line; .csv/.tsv/.gz) or a VCF (.vcf/.vcf.gz)
   --pheno FILE        CSV with one row per line (BLUEs), an ID column and trait columns
   --id-col NAME       line ID column in --pheno (default: genotype)
-  --traits A,B        trait columns to analyse (required)
+  --traits A,B        trait columns to analyze (required)
   --covar A,B         extra covariate columns in --pheno (numeric or categorical)
 
 Model
@@ -168,7 +168,7 @@ write_repro_bundle <- function(out_dir, argv, inputs = character()) {
 # ---------------------------------------------------------------------------
 
 COL_BLUE <- "#2a78d6"; COL_ORANGE <- "#eb6834"; COL_INK <- "#0b0b0b"
-COL_INK2 <- "#52514e"; COL_MUTED <- "#898781"; COL_BAND <- "#e1e0d9"; COL_GREY <- "#a3a29b"
+COL_INK2 <- "#52514e"; COL_MUTED <- "#898781"; COL_BAND <- "#e1e0d9"; COL_GRAY <- "#a3a29b"
 
 open_text <- function(path) {
   if (!nzchar(path) || !file.exists(path)) stop("File not found: ", path, call. = FALSE)
@@ -299,7 +299,7 @@ impute_mean <- function(G, max_missing = 0.2) {
   list(G = G, keep = keep, n_imputed = n_imp, frac_imputed = n_imp / length(G))
 }
 
-# Principal components of the standardised marker matrix (lines x markers).
+# Principal components of the standardized marker matrix (lines x markers).
 marker_pcs <- function(X, k = 10) {
   p <- colMeans(X) / 2
   poly <- p > 0 & p < 1
@@ -445,7 +445,7 @@ plot_manhattan <- function(res, out, file, trait, line_p = NA, line_label = "") 
   x <- res$pos + offs[res$chr]
   y <- res$minus_log10_p
   ci <- match(res$chr, chrs)
-  col <- ifelse(ci %% 2 == 1, COL_BLUE, COL_GREY)
+  col <- ifelse(ci %% 2 == 1, COL_BLUE, COL_GRAY)
   col[res$significant] <- COL_ORANGE
   open_png(out, file, width = 10, height = 4.5)
   op <- graphics::par(mar = c(4.5, 4.5, 3.5, 1), col.axis = COL_INK2, fg = COL_INK2)
@@ -657,7 +657,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   save_table(reg_all, opt$out, "qtl_regions.csv")
   save_table(data.frame(line = ids, pcs$scores, check.names = FALSE), opt$out, "principal_components.csv")
 
-  model_desc <- sprintf("Mixed model y = covariates + marker + g + e, with polygenic effect g ~ N(0, Vg K); kinship %s (%s), %s; %s; MAF >= %.2f; variance components by EMMA REML; marker effects by generalised least squares (statgenGWAS %s).",
+  model_desc <- sprintf("Mixed model y = covariates + marker + g + e, with polygenic effect g ~ N(0, Vg K); kinship %s (%s), %s; %s; MAF >= %.2f; variance components by EMMA REML; marker effects by generalized least squares (statgenGWAS %s).",
                         opt$kinship, if (opt$loco) "chromosome-specific, leave one chromosome out" else "one genome-wide matrix",
                         if (opt$n_pcs > 0) sprintf("%d PCs as fixed covariates", opt$n_pcs) else "no PCs",
                         if (length(covar)) paste("covariates:", paste(covar, collapse = ", ")) else "no other covariates",
@@ -672,7 +672,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
     if (length(warn)) c("## Warnings", "", paste("-", warn), "") else NULL,
     "## Summary", "",
     sprintf("- Genotypes: `%s`; phenotypes: `%s`", opt$geno, opt$pheno),
-    sprintf("- Lines analysed: %d; markers after missing-data filter: %d", n, nrow(G)),
+    sprintf("- Lines analyzed: %d; markers after missing-data filter: %d", n, nrow(G)),
     sprintf("- Model: %s", model_desc),
     sprintf("- Threshold: %s", if (opt$threshold == "fdr") sprintf("Benjamini-Hochberg FDR <= %.2f over tested markers", opt$alpha)
             else sprintf("Bonferroni, family-wise alpha %.2f over tested markers", opt$alpha)),

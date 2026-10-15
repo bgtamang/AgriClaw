@@ -12,7 +12,7 @@
 #   Rscript scripts/ortho_qc.R --input rgb.tif --plots plots.gpkg --dsm dsm.tif --dtm dtm.tif --expect rgb
 #   Rscript scripts/ortho_qc.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-ortho-qc"
 VERSION <- "1.0.0"
@@ -24,7 +24,7 @@ USAGE <- "Usage: Rscript scripts/ortho_qc.R [--demo] --input RASTER [--plots POL
   --plots         plot polygons, e.g. from claw-plot-grid (enables extent, coverage and GSD-vs-plot checks)
   --layer         layer name inside --plots (default: first layer)
   --id-col        plot id column (default: plot_id, else plot, else row number)
-  --dsm, --dtm    digital surface model and bare-ground terrain model (metres)
+  --dsm, --dtm    digital surface model and bare-ground terrain model (meters)
   --expect        reflectance | rgb | dn | any (default any): what the values should be
   --expect-bands  number of bands the file should have
   --scale         multiply values by this before reflectance checks (e.g. 0.0001; default 1)
@@ -197,13 +197,13 @@ declared_nodata <- function(path) {
 
 # Number of pixels a fully covered plot would hold, in the raster's own units.
 expected_pixels <- function(plots_r, r) {
-  if (is_ll(r)) return(as.numeric(sf::st_area(plots_r)) / prod(gsd_metres(r)))
+  if (is_ll(r)) return(as.numeric(sf::st_area(plots_r)) / prod(gsd_meters(r)))
   as.numeric(sf::st_area(plots_r)) / prod(terra::res(r))
 }
 
 is_ll <- function(r) isTRUE(suppressWarnings(terra::is.lonlat(r)))
 
-gsd_metres <- function(r) {
+gsd_meters <- function(r) {
   rs <- terra::res(r)
   if (is_ll(r)) {
     lat <- mean(as.vector(terra::ext(r))[3:4]) * pi / 180
@@ -285,11 +285,11 @@ dsm_checks <- function(qc, opt, r, plots, pm, ids, ptab) {
   qc <- qc_add(qc, "dsm_crs", if (same) "pass" else "warn", terra::crs(dsm, describe = TRUE)$name, "same as orthomosaic",
                if (same) "DSM and orthomosaic share a CRS." else "DSM CRS differs from the orthomosaic: plots are transformed separately; check that the two line up.")
   dt <- terra::datatype(dsm)[1]
-  gd <- gsd_metres(dsm)
+  gd <- gsd_meters(dsm)
   qc <- qc_add(qc, "dsm_resolution", "info", sprintf("%.2f cm", 100 * gd[1]), "-",
-               sprintf("DSM pixel %.2f cm (orthomosaic %.2f cm).", 100 * gd[1], 100 * gsd_metres(r)[1]))
+               sprintf("DSM pixel %.2f cm (orthomosaic %.2f cm).", 100 * gd[1], 100 * gsd_meters(r)[1]))
   if (identical(dt, "INT1U")) {
-    qc <- qc_add(qc, "dsm_values", "fail", dt, "elevations in metres (float or 16/32-bit)",
+    qc <- qc_add(qc, "dsm_values", "fail", dt, "elevations in meters (float or 16/32-bit)",
                  "The DSM is 8-bit: it looks like an image or hillshade, not elevations.")
     return(list(qc = qc, ptab = ptab, dsm = dsm, chm = NULL))
   }
@@ -310,7 +310,7 @@ dsm_checks <- function(qc, opt, r, plots, pm, ids, ptab) {
   bad <- rng[1] < TH$dsm_min || rng[2] > TH$dsm_max
   qc <- qc_add(qc, "dsm_values", if (bad) "fail" else "pass", sprintf("%.2f to %.2f", rng[1], rng[2]),
                sprintf("within %g to %g m", TH$dsm_min, TH$dsm_max),
-               if (bad) "Elevations outside any plausible range in metres: wrong units (feet?), a no-data value read as data, or not a DSM." else "Elevations plausible.")
+               if (bad) "Elevations outside any plausible range in meters: wrong units (feet?), a no-data value read as data, or not a DSM." else "Elevations plausible.")
   if (!is.null(pd)) {
     vs <- exactextractr::exact_extract(!is.na(dsm_c), pd, "sum", progress = FALSE)
     ptab$dsm_coverage <- pmin(1, vs / expected_pixels(pd, dsm_c))
@@ -333,7 +333,7 @@ dsm_checks <- function(qc, opt, r, plots, pm, ids, ptab) {
     relief <- as.numeric(q[[2]] - q[[1]])
     qc <- qc_add(qc, "dsm_relief", if (relief > TH$relief_warn) "warn" else "pass", sprintf("%.2f m", relief),
                  sprintf("warn > %g m (1st-99th percentile over plots)", TH$relief_warn),
-                 if (relief > TH$relief_warn) "Large elevation range over the plots: artefacts, a very steep field, or wrong units." else "Elevation range over plots plausible.")
+                 if (relief > TH$relief_warn) "Large elevation range over the plots: artifacts, a very steep field, or wrong units." else "Elevation range over plots plausible.")
   }
   chm <- NULL
   if (nzchar(opt$dtm)) {
@@ -389,15 +389,15 @@ run_qc <- function(opt) {
   if (!nzchar(cr)) {
     qc <- qc_add(qc, "crs", "fail", "none", "CRS defined", "No CRS: plots cannot be placed. Re-export with the CRS from the processing software.")
   } else if (is_ll(r)) {
-    qc <- qc_add(qc, "crs", "warn", terra::crs(r, describe = TRUE)$name, "projected, metres",
-                 "Geographic CRS (degrees): pixel size and buffers are not in metres. Export in the local UTM zone, or reproject once with nearest-neighbour resampling.")
+    qc <- qc_add(qc, "crs", "warn", terra::crs(r, describe = TRUE)$name, "projected, meters",
+                 "Geographic CRS (degrees): pixel size and buffers are not in meters. Export in the local UTM zone, or reproject once with nearest-neighbor resampling.")
   } else {
     lu <- terra::linearUnits(r)
     ok <- is.finite(lu) && abs(lu - 1) < 1e-9
-    qc <- qc_add(qc, "crs", if (ok) "pass" else "warn", terra::crs(r, describe = TRUE)$name, "projected, metres",
-                 if (ok) "Projected CRS in metres." else sprintf("Projected CRS but units are not metres (1 unit = %.6f m).", lu))
+    qc <- qc_add(qc, "crs", if (ok) "pass" else "warn", terra::crs(r, describe = TRUE)$name, "projected, meters",
+                 if (ok) "Projected CRS in meters." else sprintf("Projected CRS but units are not meters (1 unit = %.6f m).", lu))
   }
-  gs <- gsd_metres(r)
+  gs <- gsd_meters(r)
   shape <- abs(gs[1] - gs[2]) / max(gs)
   qc <- qc_add(qc, "pixel_shape", if (shape > TH$pix_shape) "warn" else "pass", sprintf("%.2f x %.2f cm", 100 * gs[1], 100 * gs[2]),
                sprintf("x and y within %.0f%%", 100 * TH$pix_shape),
@@ -417,7 +417,7 @@ run_qc <- function(opt) {
                sprintf("%d band(s)%s.", nb, if (!is.na(alpha)) sprintf("; band %d is an alpha mask", alpha) else ""))
   dt_status <- if (opt$expect == "reflectance" && any(dts == "INT1U")) "warn" else "pass"
   qc <- qc_add(qc, "datatype", dt_status, paste(dts, collapse = ","), if (opt$expect == "reflectance") "not 8-bit for reflectance" else "-",
-               if (dt_status == "warn") "8-bit reflectance is a quantised display product, not for quantitative indices." else "Data type recorded.")
+               if (dt_status == "warn") "8-bit reflectance is a quantized display product, not for quantitative indices." else "Data type recorded.")
   nd <- declared_nodata(opt$input)
   int_max <- if (all(terra::datatype(r)[data_bands] %in% names(DTYPE_MAX))) DTYPE_MAX[[terra::datatype(r)[data_bands[1]]]] else NA_real_
   max_value <- if (!is.na(opt$max_value)) opt$max_value else int_max
@@ -473,7 +473,7 @@ run_qc <- function(opt) {
     st <- if (min(across) < TH$px_across_fail) "fail" else if (min(across) < TH$px_across_warn) "warn" else "pass"
     qc <- qc_add(qc, "gsd_vs_plot", st, sprintf("min %.1f px across (narrowest plot %.2f m)", min(across), min(side)),
                  sprintf("warn < %d, fail < %d pixels across the narrowest plot side", TH$px_across_warn, TH$px_across_fail),
-                 if (st == "pass") "Enough pixels across each plot." else "Pixels are coarse relative to the plots: values mix neighbours, alleys and soil (mixed pixels).")
+                 if (st == "pass") "Enough pixels across each plot." else "Pixels are coarse relative to the plots: values mix neighbors, alleys and soil (mixed pixels).")
     ptab <- data.frame(id = ids, inside_extent = inside, area_m2 = as.numeric(sf::st_area(pm)), stringsAsFactors = FALSE)
   }
 
@@ -529,7 +529,7 @@ run_qc <- function(opt) {
     st <- if (sfrac > TH$sat_fail) "fail" else if (sfrac > TH$sat_warn) "warn" else "pass"
     qc <- qc_add(qc, "saturation", st, sprintf("%.4f%s", sfrac, if (!is.null(plots)) " (worst plot)" else ""),
                  sprintf("warn > %.3f, fail > %.2f of pixels at %s", TH$sat_warn, TH$sat_fail, format(max_value)),
-                 if (st == "pass") "Little or no saturation." else "Saturated pixels (glare, overexposure): their colour and reflectance are clipped.")
+                 if (st == "pass") "Little or no saturation." else "Saturated pixels (glare, overexposure): their color and reflectance are clipped.")
   }
 
   dres <- NULL
@@ -570,7 +570,7 @@ draw_figures <- function(res, out_dir) {
                      main = sprintf("Overview (%s, linear stretch)
 plot outlines: yellow ok, orange/red low coverage", cb$label),
                      cex.main = 0.85)
-    } else terra::plot(r[[db[1]]], main = "Overview (band 1)", col = grDevices::grey.colors(50))
+    } else terra::plot(r[[db[1]]], main = "Overview (band 1)", col = grDevices::gray.colors(50))
     TRUE
   }, error = function(e) FALSE)
   if (!ok) graphics::plot.new()

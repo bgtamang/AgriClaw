@@ -8,7 +8,7 @@ A skill isn't a thin wrapper around a function. It captures the decisions an exp
 
 - which design or model to use, and when not to use it;
 - the thresholds and defaults that matter, with their sources;
-- the questions to ask before analysing (units, design, assembly, …);
+- the questions to ask before analyzing (units, design, assembly, …);
 - the diagnostics to check before believing a result.
 
 Ask yourself: "What do I know about this analysis that a first-year graduate student would get wrong?"

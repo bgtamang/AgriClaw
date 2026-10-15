@@ -55,13 +55,13 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/qtl_mapping.R" --geno f2_geno.csv --map gma
 Rscript "${CLAUDE_SKILL_DIR}/scripts/qtl_mapping.R" --control magic.yaml --kinship loco --traits yield_kg_ha
 ```
 
-Permutations dominate run time (about 1000 scans per trait); with an X chromosome, X-specific permutations add many more. Use `--cores` to parallelise.
+Permutations dominate run time (about 1000 scans per trait); with an X chromosome, X-specific permutations add many more. Use `--cores` to parallelize.
 
 ## Outputs
 
 - `report.md`: warnings first, data and QC summary, method, thresholds, QTL table (position, interval in cM and Mb, LOD, significance, PVE, additive/dominance effects with SE), limitations.
 - `tables/peaks.csv`: one row per peak and trait: `pos_cM`, `ci_lo_cM`/`ci_hi_cM` (and `_Mb`), `lod`, `significance` (genome-wide 5% or suggestive 10%), thresholds, `n`, `pve_pct`, nearest and interval-end markers, `a_effect`/`a_se` (= (BB - AA)/2), `d_effect`/`d_se` (F2), `AB_minus_AA` (backcross).
-- `tables/peak_effects.csv`: genotype means or founder allele effects (centred) with SE at each peak.
+- `tables/peak_effects.csv`: genotype means or founder allele effects (centered) with SE at each peak.
 - `tables/thresholds.csv`, `tables/lod_scores.csv` (every position x trait), `tables/marker_qc.csv`, `tables/individual_qc.csv`, `tables/phenotype_summary.csv`, `tables/duplicate_pairs.csv` (if any).
 - `figures/lod_<trait>.png` (LOD curves with 5% and 10% thresholds), `figures/effects_<trait>_chr<c>_<pos>.png` (effects along the chromosome above the LOD curve).
 - `qtl2_input/` (CSV route): the qtl2 files and `cross.yaml` built from the input, readable with `qtl2::read_cross2()`.
@@ -73,7 +73,7 @@ Permutations dominate run time (about 1000 scans per trait); with an X chromosom
 - **Scan**: Haley-Knott regression (Haley & Knott 1992), the qtl2 default, a fast approximation to interval mapping (Lander & Botstein 1989). `--kinship loco` fits a linear mixed model with leave-one-chromosome-out kinship (Broman et al. 2019) for populations with residual relatedness (multiparent designs, families); permutations are then much slower. Multiparent crosses are scanned with founder allele probabilities (additive allele model, as in the qtl2 user guide).
 - **Thresholds**: 1000 permutations (`--n-perm`; qtl2 user-guide value; permutation thresholds of Churchill & Doerge 1994), genome-wide alpha = 0.05 (significant) and 0.10 (suggestive). With an X chromosome, separate autosome and X thresholds (Broman et al. 2006). Each trait is permuted separately with the same seed.
 - **Intervals**: 1.5-LOD support intervals (R/qtl `lodint` default and qtl2 user-guide example) or 95% Bayes credible intervals (`--interval bayes`), both expanded to flanking markers. Manichaikul et al. (2006) showed both behave appropriately, unlike bootstrap intervals. Peaks above the 10% threshold; one per chromosome and trait unless `--peakdrop` is set (the user guide uses 1.8 "with caution").
-- **Effects**: `qtl2::fit1` at the peak (proper standard errors; `scan1coef` SEs are not exact with zero-sum constraints). Additive a = (BB - AA)/2, dominance d = AB - (AA + BB)/2 (F2), AB - AA (backcross), centred founder allele effects (multiparent).
+- **Effects**: `qtl2::fit1` at the peak (proper standard errors; `scan1coef` SEs are not exact with zero-sum constraints). Additive a = (BB - AA)/2, dominance d = AB - (AA + BB)/2 (F2), AB - AA (backcross), centered founder allele effects (multiparent).
 - **PVE** = 1 - 10^(-2 LOD / n): exact for Haley-Knott, since LOD = (n/2) log10(RSS0/RSS1); approximate for the mixed model. Per QTL, not additive across QTL.
 - **QC rules of thumb** (adjustable): segregation distortion flagged at chi-square p < 0.05 / number of markers (Bonferroni); markers or individuals with > 20% missing calls; pairs of individuals with > 95% identical genotypes (`qtl2::compare_geno`); trait skewness > 1; values beyond 4 SD; fewer than 100 individuals (low power, Beavis effect); intervals wider than 20 cM.
 

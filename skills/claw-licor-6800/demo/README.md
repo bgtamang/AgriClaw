@@ -1,7 +1,7 @@
 # Demo data
 
 `--demo` reads two LI-6800 Excel logs that ship with the PhotoGEA R package
-(MIT licence), loaded in place with `system.file("extdata", package = "PhotoGEA")`
+(MIT license), loaded in place with `system.file("extdata", package = "PhotoGEA")`
 rather than copied here:
 
 - `c3_aci_1.xlsx`: three 16-point A-Ci curves (soybean and tobacco) logged on

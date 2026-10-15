@@ -9,7 +9,7 @@ Usage:
     python scripts/gdd.py --input station.csv --temp-units F --lat 40.08 \
         --plant-date 2025-04-25 --crop corn
 
-Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 """
 
 from __future__ import annotations
@@ -673,7 +673,7 @@ def write_report(out: Path, ctx: dict) -> None:
           f"- Location: {format_latlon(ctx['lat'], ctx['lon'])}",
           f"- Weather source: {ctx['source_desc']}",
           f"- Crop: {ctx['crop']}; planting date {ctx['plant']} (counted as day 1)",
-          f"- Season analysed: {ctx['plant']} to {ctx['end']} ({ctx['n_days']} days)",
+          f"- Season analyzed: {ctx['plant']} to {ctx['end']} ({ctx['n_days']} days)",
           f"- Method: {ctx['method']}; Tbase {ctx['base_c']:g} °C ({c_to_f(ctx['base_c']):g} °F)"
           + (f"; Tupper {ctx['upper_c']:g} °C ({c_to_f(ctx['upper_c']):g} °F)"
              if ctx["upper_c"] is not None and ctx["method"] == "modified" else "; no upper threshold"),
@@ -745,7 +745,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--input", help="station CSV with date, tmax, tmin (use instead of fetching)")
     ap.add_argument("--temp-units", choices=["C", "F"], help="units of tmax/tmin in --input (required with --input)")
     ap.add_argument("--plant-date", help="planting date YYYY-MM-DD (required)")
-    ap.add_argument("--end-date", help=f"last day to analyse (default: planting + {DEFAULT_SEASON_DAYS} days, "
+    ap.add_argument("--end-date", help=f"last day to analyze (default: planting + {DEFAULT_SEASON_DAYS} days, "
                                        "clamped to the last day with data)")
     ap.add_argument("--crop", choices=["corn", "soybean", "other"], help="crop (required)")
     ap.add_argument("--method", choices=["average", "modified"], help="GDD method (default: modified for corn/soybean)")

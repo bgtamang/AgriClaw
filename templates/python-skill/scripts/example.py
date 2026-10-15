@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""claw-example: summarise a numeric trait by group (n, mean, SD, CV) and flag
+"""claw-example: summarize a numeric trait by group (n, mean, SD, CV) and flag
 groups with too few observations. Template for AgriClaw Python skills: copy
 this file, keep the helper section unchanged, and replace the analysis section.
 
@@ -7,7 +7,7 @@ Usage:
     python scripts/example.py --demo
     python scripts/example.py --input data.csv --trait yield_kg_ha --group genotype
 
-Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 """
 
 from __future__ import annotations
@@ -99,7 +99,7 @@ def read_rows(path: str) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def summarise_trait(rows: list[dict], trait: str, group: str, min_n: int = 3) -> list[dict]:
+def summarize_trait(rows: list[dict], trait: str, group: str, min_n: int = 3) -> list[dict]:
     if not rows:
         raise ValueError("Input has no rows.")
     missing = [c for c in (trait, group) if c not in rows[0]]
@@ -147,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
     out.mkdir(parents=True, exist_ok=True)
 
     try:
-        res = summarise_trait(read_rows(args.input), args.trait, args.group, args.min_n)
+        res = summarize_trait(read_rows(args.input), args.trait, args.group, args.min_n)
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1

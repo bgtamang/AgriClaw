@@ -20,7 +20,7 @@ spec.loader.exec_module(mod)
 def test_known_answers():
     rows = [{"genotype": g, "yield_kg_ha": str(y)}
             for g, y in [("A", 1), ("A", 2), ("A", 3), ("B", 10), ("B", 20)]]
-    res = mod.summarise_trait(rows, "yield_kg_ha", "genotype", min_n=3)
+    res = mod.summarize_trait(rows, "yield_kg_ha", "genotype", min_n=3)
     assert [r["mean"] for r in res] == [2, 15]
     assert math.isclose(res[0]["sd"], 1.0)
     assert math.isclose(res[1]["sd"], math.sqrt(50))
@@ -29,7 +29,7 @@ def test_known_answers():
 
 def test_missing_column_is_named():
     with pytest.raises(ValueError, match="biomass_g"):
-        mod.summarise_trait([{"genotype": "A", "yield_kg_ha": "1"}], "biomass_g", "genotype")
+        mod.summarize_trait([{"genotype": "A", "yield_kg_ha": "1"}], "biomass_g", "genotype")
 
 
 def test_cli_demo(tmp_path):

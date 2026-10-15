@@ -1,6 +1,6 @@
 ---
 name: claw-example
-description: Summarise a numeric trait by group (n, mean, SD, CV) from a CSV and flag groups with too few observations. Template skill that shows the AgriClaw layout; use as a starting point for new skills, not for real analyses.
+description: Summarize a numeric trait by group (n, mean, SD, CV) from a CSV and flag groups with too few observations. Template skill that shows the AgriClaw layout; use as a starting point for new skills, not for real analyses.
 license: MIT
 compatibility: R >= 4.2, base R only. No internet needed.
 metadata:

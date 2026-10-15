@@ -11,7 +11,7 @@
 #   Rscript scripts/qtl_mapping.R --control magic.yaml --kinship loco
 #   Rscript scripts/qtl_mapping.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-qtl-mapping"
 VERSION <- "1.0.0"
@@ -482,7 +482,7 @@ effect_contrasts <- function(crosstype, n_geno) {
 
 # Effects at one peak with qtl2::fit1 (proper standard errors). Biparental:
 # additive a = (BB - AA)/2 (and dominance d = AB - (AA + BB)/2 for F2), plus
-# genotype means. Multiparent: founder allele effects centred to sum to zero.
+# genotype means. Multiparent: founder allele effects centered to sum to zero.
 peak_effects <- function(sc, trait, chr, pos) {
   pr_pk <- qtl2::pull_genoprobpos(sc$probs, sc$map, chr, pos)
   y <- sc$pheno[, trait]
@@ -783,7 +783,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
                                "(second parent) allele increases the trait. Dominance d = %s%s - (%s%s + %s%s)/2 ",
                                "(F2 only). Genotype means are in `tables/peak_effects.csv`."),
                         al[2], al[2], al[1], al[1], al[2], al[1], al[2], al[1], al[1], al[2], al[2]) else
-                "Founder allele effects (centred to sum to zero) are in `tables/peak_effects.csv`.",
+                "Founder allele effects (centered to sum to zero) are in `tables/peak_effects.csv`.",
               "")
   }
   body <- c(body, "## Figures", "",

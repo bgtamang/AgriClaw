@@ -42,7 +42,7 @@
     },
     {
       "name": "claw-weather",
-      "description": "Summarise growing-season weather for a field location or station - daily and monthly temperature, rainfall/precipitation, reference evapotranspiration (ET0), a simple climatic water balance (P - ET0), frost and hard-freeze days, heat days, heavy rain, and dry spells - from free Open-Meteo historical data (ERA5 reanalysis grid) or the user's weather-station CSV. Missing days are counted and reported, never treated as zero, and in-season requests stop at the last complete day. Use when the user asks what the weather was like at a trial site, how much it rained, how many hot or frost days there were, how long the longest dry spell was, or wants weather context for a field season or a site comparison.",
+      "description": "Summarize growing-season weather for a field location or station - daily and monthly temperature, rainfall/precipitation, reference evapotranspiration (ET0), a simple climatic water balance (P - ET0), frost and hard-freeze days, heat days, heavy rain, and dry spells - from free Open-Meteo historical data (ERA5 reanalysis grid) or the user's weather-station CSV. Missing days are counted and reported, never treated as zero, and in-season requests stop at the last complete day. Use when the user asks what the weather was like at a trial site, how much it rained, how many hot or frost days there were, how long the longest dry spell was, or wants weather context for a field season or a site comparison.",
       "summary": "Growing-season weather: temperature, rain, reference ET, heat and dry spells",
       "domain": "field",
       "language": "Python",
@@ -72,7 +72,7 @@
     },
     {
       "name": "claw-met-gxe",
-      "description": "Analyse multi-environment trials (MET) from per-environment genotype BLUEs with statgenGxE - genotype-by-environment (GxE) variance components and heritability across environments, MET genotype BLUPs (weighted by stage-1 standard errors when given), AMMI and GGE biplots (which-won-where), Finlay-Wilkinson regression, stability (Shukla stability variance, Wricke ecovalence, Lin-Binns superiority, static stability) and mega-environments. Use when the user has the same genotypes in several trials, locations or years and asks about GxE, adaptation, yield stability, the best genotype across or within environments, AMMI or GGE biplots, mega-environments, or heritability over environments.",
+      "description": "Analyze multi-environment trials (MET) from per-environment genotype BLUEs with statgenGxE - genotype-by-environment (GxE) variance components and heritability across environments, MET genotype BLUPs (weighted by stage-1 standard errors when given), AMMI and GGE biplots (which-won-where), Finlay-Wilkinson regression, stability (Shukla stability variance, Wricke ecovalence, Lin-Binns superiority, static stability) and mega-environments. Use when the user has the same genotypes in several trials, locations or years and asks about GxE, adaptation, yield stability, the best genotype across or within environments, AMMI or GGE biplots, mega-environments, or heritability over environments.",
       "summary": "Multi-environment trials: GxE variance, heritability, stability, Finlay-Wilkinson, AMMI/GGE",
       "domain": "trials",
       "language": "R",
@@ -82,7 +82,7 @@
     },
     {
       "name": "claw-trial-analysis",
-      "description": "Analyse a single field trial with mixed models in statgenSTA - spatial P-spline models (SpATS) and design-based models (lme4) for RCBD, alpha-lattice / incomplete-block, row-column, augmented, p-rep and unreplicated designs. Gives genotype BLUEs and BLUPs, generalised heritability (Cullis or Oakey H2), CV, variance components, outliers, spatial-trend maps and a spatial vs non-spatial model comparison, and writes BLUEs with weights for multi-environment analysis or GWAS. Use when the user asks to analyse a yield trial, compute genotype means, BLUEs or BLUPs, heritability or repeatability, correct for field spatial trends, or prepare stage-1 means for a MET or GWAS.",
+      "description": "Analyze a single field trial with mixed models in statgenSTA - spatial P-spline models (SpATS) and design-based models (lme4) for RCBD, alpha-lattice / incomplete-block, row-column, augmented, p-rep and unreplicated designs. Gives genotype BLUEs and BLUPs, generalized heritability (Cullis or Oakey H2), CV, variance components, outliers, spatial-trend maps and a spatial vs non-spatial model comparison, and writes BLUEs with weights for multi-environment analysis or GWAS. Use when the user asks to analyze a yield trial, compute genotype means, BLUEs or BLUPs, heritability or repeatability, correct for field spatial trends, or prepare stage-1 means for a MET or GWAS.",
       "summary": "Single-trial mixed models (SpATS spatial or lme4): BLUEs, BLUPs, heritability, outliers",
       "domain": "trials",
       "language": "R",
@@ -92,8 +92,8 @@
     },
     {
       "name": "claw-trial-design",
-      "description": "Randomise and lay out field trials with agricolae and FielDHub - RCBD, alpha-lattice (incomplete blocks), row-column, Latin square, CRD, augmented RCBD with checks, partially replicated (p-rep), diagonal-check, split-plot, strip-plot and factorial designs. Writes a field book CSV (plot, row, column, rep, block, entry, check flag, factor levels), a field map PNG and a design summary with efficiency and seed. Use when the user asks to design or randomise a trial, make a field layout, plot plan, planting map or field book, choose between RCBD and alpha-lattice, place checks in an early-generation yield trial, or set up a split-plot or strip-plot experiment.",
-      "summary": "Randomise and lay out trials: RCBD, alpha-lattice, row-column, augmented, p-rep, split, strip",
+      "description": "Randomize and lay out field trials with agricolae and FielDHub - RCBD, alpha-lattice (incomplete blocks), row-column, Latin square, CRD, augmented RCBD with checks, partially replicated (p-rep), diagonal-check, split-plot, strip-plot and factorial designs. Writes a field book CSV (plot, row, column, rep, block, entry, check flag, factor levels), a field map PNG and a design summary with efficiency and seed. Use when the user asks to design or randomize a trial, make a field layout, plot plan, planting map or field book, choose between RCBD and alpha-lattice, place checks in an early-generation yield trial, or set up a split-plot or strip-plot experiment.",
+      "summary": "Randomize and lay out trials: RCBD, alpha-lattice, row-column, augmented, p-rep, split, strip",
       "domain": "trials",
       "language": "R",
       "status": "tested",
@@ -202,7 +202,7 @@
     },
     {
       "name": "claw-rnaseq-import",
-      "description": "Import Salmon (quant.sf), kallisto (abundance.tsv) or featureCounts RNA-seq quantifications into gene-level counts with tximport, build the transcript-to-gene table (tx2gene) from a GFF3/GTF or a table, catch transcript ID mismatches (version suffixes, Phytozome vs Ensembl ID styles, wrong annotation release), and run sample QC - mapping rate, library size, detected genes, sample correlations, PCA on VST and outlier flags. Built for crops and non-model plants (soybean, maize, wheat, rice) whose annotation comes from GFF3 files rather than OrgDb packages. Use when the user has Salmon or kallisto output folders, quant.sf files or a featureCounts matrix and asks to import them, summarise transcripts to genes, make a gene count matrix, check RNA-seq sample quality, or find outlier samples before differential expression.",
+      "description": "Import Salmon (quant.sf), kallisto (abundance.tsv) or featureCounts RNA-seq quantifications into gene-level counts with tximport, build the transcript-to-gene table (tx2gene) from a GFF3/GTF or a table, catch transcript ID mismatches (version suffixes, Phytozome vs Ensembl ID styles, wrong annotation release), and run sample QC - mapping rate, library size, detected genes, sample correlations, PCA on VST and outlier flags. Built for crops and non-model plants (soybean, maize, wheat, rice) whose annotation comes from GFF3 files rather than OrgDb packages. Use when the user has Salmon or kallisto output folders, quant.sf files or a featureCounts matrix and asks to import them, summarize transcripts to genes, make a gene count matrix, check RNA-seq sample quality, or find outlier samples before differential expression.",
       "summary": "Import Salmon, kallisto or featureCounts output to gene counts, with sample QC",
       "domain": "transcriptomics",
       "language": "R",
@@ -212,7 +212,7 @@
     },
     {
       "name": "claw-canopy-cover",
-      "description": "Estimate per-plot green canopy cover (fractional vegetation cover, percent ground cover) from RGB drone/UAV orthomosaics with the excess-green index (ExG) and one Otsu threshold per flight, or ExG minus ExR with a zero threshold. Counts and excludes saturated (glare), dark (shadow) and no-data pixels, cross-checks the two methods, and writes a vegetation mask plus QC images. Use when the user asks for canopy cover, ground cover, green cover percentage, vegetation fraction, canopy closure or early vigour per plot from RGB or drone images.",
+      "description": "Estimate per-plot green canopy cover (fractional vegetation cover, percent ground cover) from RGB drone/UAV orthomosaics with the excess-green index (ExG) and one Otsu threshold per flight, or ExG minus ExR with a zero threshold. Counts and excludes saturated (glare), dark (shadow) and no-data pixels, cross-checks the two methods, and writes a vegetation mask plus QC images. Use when the user asks for canopy cover, ground cover, green cover percentage, vegetation fraction, canopy closure or early vigor per plot from RGB or drone images.",
       "summary": "Per-plot green canopy cover from RGB drone orthomosaics",
       "domain": "remote-sensing",
       "language": "R",
@@ -232,7 +232,7 @@
     },
     {
       "name": "claw-plot-grid",
-      "description": "Build plot polygons (GeoPackage) for a field trial from the four field corners, or one corner plus a bearing, and the layout - ranges x columns (rows), plot length, plot width (rows x row spacing), alleys - with serpentine or row-wise plot numbering from any start corner. Converts lon/lat to the local UTM zone so plots, buffers and areas are in metres, trims plot ends and sides, joins a claw-trial-design field book, and draws a numbered plot map. Use when the user asks for a plot grid, plot boundaries, plot shapefile or polygons, a field map, or needs plots to extract drone/UAV or satellite data per plot or to match plot numbers to an orthomosaic.",
+      "description": "Build plot polygons (GeoPackage) for a field trial from the four field corners, or one corner plus a bearing, and the layout - ranges x columns (rows), plot length, plot width (rows x row spacing), alleys - with serpentine or row-wise plot numbering from any start corner. Converts lon/lat to the local UTM zone so plots, buffers and areas are in meters, trims plot ends and sides, joins a claw-trial-design field book, and draws a numbered plot map. Use when the user asks for a plot grid, plot boundaries, plot shapefile or polygons, a field map, or needs plots to extract drone/UAV or satellite data per plot or to match plot numbers to an orthomosaic.",
       "summary": "Plot polygons from field corners and layout, joined to the field book",
       "domain": "remote-sensing",
       "language": "R",
@@ -332,7 +332,7 @@
     },
     {
       "name": "claw-vpd-transpiration",
-      "description": "Transpiration response to vapour pressure deficit (VPD) from gravimetric phenotyping (pot weights on balances or load cells). Computes VPD from air temperature and relative humidity, whole-plant transpiration rate (TR) from pot-weight loss with irrigation, spike and gap screening, and fits linear versus two-segment (breakpoint) TR-VPD regressions chosen by AICc and the Davies test. Reports the VPD breakpoint (threshold) with its 95% CI, the slopes before and after, the % slope reduction, and night-time TR. Use when the user has pot weights or TR and VPD data from growth chambers or greenhouses and asks about limited transpiration (the LT trait), water-saving or slow-wilting traits, TR response to evaporative demand, a VPD breakpoint or threshold, nocturnal transpiration, or segmented regression of transpiration on VPD.",
+      "description": "Transpiration response to vapor pressure deficit (VPD) from gravimetric phenotyping (pot weights on balances or load cells). Computes VPD from air temperature and relative humidity, whole-plant transpiration rate (TR) from pot-weight loss with irrigation, spike and gap screening, and fits linear versus two-segment (breakpoint) TR-VPD regressions chosen by AICc and the Davies test. Reports the VPD breakpoint (threshold) with its 95% CI, the slopes before and after, the % slope reduction, and night-time TR. Use when the user has pot weights or TR and VPD data from growth chambers or greenhouses and asks about limited transpiration (the LT trait), water-saving or slow-wilting traits, TR response to evaporative demand, a VPD breakpoint or threshold, nocturnal transpiration, or segmented regression of transpiration on VPD.",
       "summary": "Transpiration response to VPD from pot weights, with breakpoint models",
       "domain": "physiology",
       "language": "R",

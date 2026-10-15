@@ -9,7 +9,7 @@
 #   Rscript scripts/vi_timeseries.R --input vi_long.csv --vi ndvi --planting-date 2025-05-12
 #   Rscript scripts/vi_timeseries.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-vi-timeseries"
 VERSION <- "1.0.0"
@@ -18,7 +18,7 @@ USAGE <- "Usage: Rscript scripts/vi_timeseries.R [--demo] [--input FILE.csv] [op
 
 Input
   --input          long CSV, one row per plot x date (e.g. from claw-vi-extract)
-  --vi             VI column to analyse (default: ndvi)
+  --vi             VI column to analyze (default: ndvi)
   --plot-col       plot identifier column (default: plot_id)
   --date-col       observation date column, YYYY-MM-DD (default: date)
   --planting-date  planting date YYYY-MM-DD for every plot; or give a
@@ -233,7 +233,7 @@ parse_iso_date <- function(x, what) {
 check_vi_scale <- function(y, vi) {
   if (!grepl("(^|_)(g?ndvi|ndre|ndwi|osavi|savi|evi2?|gndvi)($|_)", tolower(vi))) return(NULL)
   if (any(abs(y) > 1.5, na.rm = TRUE))
-    stop(sprintf("'%s' has values up to %g: normalised-difference indices lie in [-1, 1]. Is the column scaled (e.g. x 10000)? Rescale it before running.",
+    stop(sprintf("'%s' has values up to %g: normalized-difference indices lie in [-1, 1]. Is the column scaled (e.g. x 10000)? Rescale it before running.",
                  vi, max(abs(y), na.rm = TRUE)), call. = FALSE)
   if (any(abs(y) > 1, na.rm = TRUE))
     return(sprintf("%d value(s) of '%s' are outside [-1, 1]; check the index calculation.",
@@ -336,7 +336,7 @@ prepare_series <- function(dat, opt, gdd_tab = NULL) {
     if (anyNA(obs$planting)) stop("Column 'planting_date' has missing values.", call. = FALSE)
   } else obs$planting <- as.Date(NA)
   if (opt$axis %in% c("dap", "gdd") && anyNA(obs$planting))
-    stop("No planting date. Ask the user for it (never guess), then pass --planting-date YYYY-MM-DD or add a planting_date column. If it is truly unknown, --axis doy analyses calendar day of year, but plots planted on different dates are then not comparable.",
+    stop("No planting date. Ask the user for it (never guess), then pass --planting-date YYYY-MM-DD or add a planting_date column. If it is truly unknown, --axis doy analyzes calendar day of year, but plots planted on different dates are then not comparable.",
          call. = FALSE)
   if (!all(is.na(obs$planting))) {
     np <- tapply(obs$planting, obs$plot, function(x) length(unique(x)))
@@ -406,7 +406,7 @@ dl_elmore <- function(t, p) {
        1 / (1 + exp(-p[["rau"]] * (t - p[["eos"]]))))
 }
 
-# The same models on u = (t - t0) / span in [0, 1], reparameterised so that
+# The same models on u = (t - t0) / span in [0, 1], reparameterized so that
 # amp >= 0 and eos = sos + gap >= sos (keeps the curve a single hump).
 beck_u <- function(u, vmin, amp, sos, rsp, gap, rau) {
   vmin + amp * (1 / (1 + exp(-rsp * (u - sos))) + 1 / (1 + exp(rau * (u - sos - gap))) - 1)
@@ -705,7 +705,7 @@ noise_sd <- function(parts) {
 # the pooled noise SD. The reference is a bisquare fit of the same curve with
 # the pooled noise SD as its fixed scale, so an outlier is judged the same way
 # whatever weighting the reported curve uses: an unweighted fit dragged down by
-# a cloud would otherwise flag the cloud's neighbours too, and an upper-envelope
+# a cloud would otherwise flag the cloud's neighbors too, and an upper-envelope
 # fit can absorb an upward error into the curve.
 flag_outliers <- function(r, sigma) {
   out <- rep("", length(r))
@@ -716,9 +716,9 @@ flag_outliers <- function(r, sigma) {
   out
 }
 
-# Analyse one plot. Returns status, metrics, per-observation results and the
+# Analyze one plot. Returns status, metrics, per-observation results and the
 # fitted curve on the evaluation grid.
-analyse_plot <- function(t, y, w0, opt) {
+analyze_plot <- function(t, y, w0, opt) {
   o <- order(t)
   t <- t[o]
   y <- y[o]
@@ -797,7 +797,7 @@ run_timeseries <- function(prep, opt) {
   # against it, and assemble the tables.
   fits <- lapply(plots, function(p) {
     d <- obs[obs$plot == p, , drop = FALSE]
-    a <- analyse_plot(d$t, d$y, d$w0, opt)
+    a <- analyze_plot(d$t, d$y, d$w0, opt)
     list(d = d[a$order, , drop = FALSE], a = a)
   })
   ok <- vapply(fits, function(f) f$a$status == "fitted", TRUE)

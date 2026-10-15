@@ -50,7 +50,7 @@ opt_for <- function(paths, ...) {
   o
 }
 
-# 1. Colour indices by hand
+# 1. Color indices by hand
 ci <- color_indices(60, 120, 20)                  # r = 0.3, g = 0.6, b = 0.1
 check(abs(ci$exg - 0.8) < 1e-12, "ExG = 2g - r - b = 0.8")
 check(abs(ci$exgr - 0.98) < 1e-12, "ExGR = ExG - (1.4r - g) = 0.98")
@@ -159,7 +159,7 @@ check(max(abs(dt$canopy_cover_pct - dt$true_cover_pct)[dt$plot_id != "P05"]) <= 
       "demo cover within 2 pp of the true cover (except the shadowed plot)")
 check(file.size(file.path(out, "demo_input", "rgb_ortho.tif")) < 500000, "demo raster is under 500 KB")
 check(length(Sys.glob(file.path(out, "reproducibility", "checksums.*"))) == 1L, "demo writes a checksum file")
-expect_error(main(c("--demo", "--colour", "red")), "Unknown option", "unknown option is rejected")
+expect_error(main(c("--demo", "--color", "red")), "Unknown option", "unknown option is rejected")
 expect_error(main(c("--input", p8$raster, "--out", file.path(tmp, "x"))), "--plots", "missing --plots is rejected")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

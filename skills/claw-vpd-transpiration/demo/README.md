@@ -11,4 +11,4 @@ True responses (TR in mg H2O m-2 s-1): `G1` two segments with a breakpoint at 2.
 
 Planted problems for the quality control to find: an irrigation of +150 g on `P07` at 10:20, a one-reading +25 g spike on `P02` at 08:41, and a 20-min logger dropout on `P10` from 12:30.
 
-Real data from the published gravimetric platform (Tamang & Sadok 2018) are in https://github.com/bgtamang/Gravimetric-phenotyping-of-water-saving-traits; that repository has no licence file, so its data are not copied here.
+Real data from the published gravimetric platform (Tamang & Sadok 2018) are in https://github.com/bgtamang/Gravimetric-phenotyping-of-water-saving-traits; that repository has no license file, so its data are not copied here.

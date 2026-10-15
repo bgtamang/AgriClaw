@@ -85,7 +85,7 @@ The demo uses 12 synthetic soybean plots (weights in lb at harvest moisture), ha
 - Read the warnings, and stop and ask the user if:
   - the harvest moisture is missing but results will be compared with other trials or market yields;
   - a crop without a default standard moisture is used;
-  - any `flags` appear (a wrong unit is the usual cause, e.g. row spacing in inches given as metres);
+  - any `flags` appear (a wrong unit is the usual cause, e.g. row spacing in inches given as meters);
   - the user's "plot length" may be the planted length rather than the harvested length.
 - Plausibility: US soybean trials are usually 2–6 t/ha and corn 8–16 t/ha (rule of thumb). Values far outside suggest a unit or area error.
 

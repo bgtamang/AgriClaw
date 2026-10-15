@@ -3,7 +3,7 @@
 #
 # 12 sealed pots in 2 growth chambers, logged every minute from 04:00 to 14:00:
 #   04:00-05:00  night step (dark, 20 degC)
-#   05:00-07:00  lights on, warm-up (not analysed)
+#   05:00-07:00  lights on, warm-up (not analyzed)
 #   07:00-14:00  seven 1-h daytime VPD steps at 30 degC (0.9 to 3.9 kPa)
 # True responses (TR in mg H2O m-2 s-1, VPD in kPa):
 #   G1  two segments, breakpoint 2.0 kPa, slopes 32 then 6

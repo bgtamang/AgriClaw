@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 # claw-coexpression: weighted gene co-expression network analysis (WGCNA) of
-# variance-stabilised RNA-seq data. Filters low-expression and low-variance genes,
+# variance-stabilized RNA-seq data. Filters low-expression and low-variance genes,
 # flags outlier samples, optionally removes batch effects (ComBat), picks the
 # soft-threshold power for a signed network, detects modules (blockwiseModules),
 # computes module eigengenes, module-trait correlations with BH correction, hub
@@ -12,7 +12,7 @@
 #   Rscript scripts/coexpression.R --counts counts.csv --traits traits.csv --batch batch
 #   Rscript scripts/coexpression.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-coexpression"
 VERSION <- "1.0.0"
@@ -21,7 +21,7 @@ USAGE <- "Usage: Rscript scripts/coexpression.R [--demo] (--expr VST.csv | --cou
          [--traits TRAITS.csv] [options]
 
   --demo              run on the bundled simulated expression data (demo/)
-  --expr              genes x samples CSV of variance-stabilised (DESeq2 VST) or log-CPM values;
+  --expr              genes x samples CSV of variance-stabilized (DESeq2 VST) or log-CPM values;
                       first column gene_id (e.g. claw-de-analysis tables/vst.csv)
   --counts            genes x samples CSV of raw counts: filtered and VST-transformed here
   --traits            CSV with a 'sample' column and trait columns (numeric; text columns with
@@ -40,7 +40,7 @@ USAGE <- "Usage: Rscript scripts/coexpression.R [--demo] (--expr VST.csv | --cou
   --merge-cut-height  merge modules whose eigengenes correlate above 1 - this (default: 0.25)
   --deep-split        tree-cut sensitivity 0-4 (default: 2)
   --max-block-size    genes per network block (default: 5000)
-  --outlier-z         flag samples with standardised connectivity below this (default: -2.5)
+  --outlier-z         flag samples with standardized connectivity below this (default: -2.5)
   --remove-outliers   remove flagged samples before building the network (reported)
   --allow-small-n     run with fewer than 15 samples (not recommended; results are noise-prone)
   --hub-n             hub genes listed per module (default: 10)
@@ -212,7 +212,7 @@ vst_from_counts <- function(counts, min_count = 10, min_fraction = 0.1) {
 check_log_scale <- function(m) {
   if (anyNA(m)) fail("--expr has missing values; WGCNA here needs complete data.")
   if (min(m) >= 0 && max(m) > 100)
-    fail("--expr values reach ", signif(max(m), 3), ": they look like counts or normalised counts, ",
+    fail("--expr values reach ", signif(max(m), 3), ": they look like counts or normalized counts, ",
          "not a log-scale (VST/log-CPM) matrix. Use --counts for raw counts, or give VST values ",
          "(claw-de-analysis tables/vst.csv).")
   invisible(TRUE)
@@ -264,7 +264,7 @@ remove_batch <- function(dat, batch, protect = NULL, batch_name = "batch") {
         tab <- table(b, protect[[p]])
         if (all(rowSums(tab > 0) == 1) && all(colSums(tab > 0) == 1))
           fail("Batch '", batch_name, "' is completely confounded with '", p, "': removing the batch would ",
-               "remove the biology. Analyse without batch removal and report the confounding.")
+               "remove the biology. Analyze without batch removal and report the confounding.")
       }
     }
     mod <- stats::model.matrix(stats::as.formula(paste("~", paste(names(protect), collapse = " + "))), data = protect)
@@ -272,7 +272,7 @@ remove_batch <- function(dat, batch, protect = NULL, batch_name = "batch") {
   t(suppressMessages(sva::ComBat(dat = t(dat), batch = b, mod = mod)))
 }
 
-# Standardised sample connectivity (Oldham et al. 2012): signed adjacency
+# Standardized sample connectivity (Oldham et al. 2012): signed adjacency
 # ((1 + r) / 2)^2 between samples, k = row sums, Z.k = (k - mean) / sd.
 sample_zk <- function(dat_expr) {
   a <- ((1 + stats::cor(t(dat_expr))) / 2)^2
@@ -417,7 +417,7 @@ plot_samples <- function(dat_expr, zk, z_cut, out) {
   graphics::plot(hc, main = "Sample clustering (Euclidean, average)", xlab = "", sub = "", cex = 0.6)
   col <- ifelse(zk < z_cut, "#C0392B", "#7F8C8D")
   graphics::barplot(zk, names.arg = rownames(dat_expr), las = 2, col = col, cex.names = 0.6,
-                    ylab = "Standardised connectivity Z.k", main = "Sample connectivity")
+                    ylab = "Standardized connectivity Z.k", main = "Sample connectivity")
   graphics::abline(h = z_cut, lty = 2)
 }
 
@@ -561,7 +561,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
       if (!is.null(tr$traits)) tr$traits <- tr$traits[rownames(dat), , drop = FALSE]
       if (nrow(dat) < 15 && !opt$allow_small_n) fail("Fewer than 15 samples remain after removing outliers.")
     } else {
-      warn <- c(warn, sprintf("Sample(s) %s have standardised connectivity Z.k < %g (possible outliers); they were kept. Inspect figures/sample_outliers.png and consider --remove-outliers.",
+      warn <- c(warn, sprintf("Sample(s) %s have standardized connectivity Z.k < %g (possible outliers); they were kept. Inspect figures/sample_outliers.png and consider --remove-outliers.",
                               paste(flagged, collapse = ", "), opt$outlier_z))
     }
   }
@@ -578,9 +578,9 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   gene_ids <- colnames(dat)
   sizes <- table(labels)
   n_mod <- sum(names(sizes) != "0")
-  if (n_mod == 0) warn <- c(warn, "No modules found: every gene is grey (unassigned).")
-  grey_frac <- mean(labels == 0)
-  if (grey_frac > 0.6) warn <- c(warn, sprintf("%.0f%% of genes are unassigned (grey).", 100 * grey_frac))
+  if (n_mod == 0) warn <- c(warn, "No modules found: every gene is unassigned (module 0).")
+  unassigned_frac <- mean(labels == 0)
+  if (unassigned_frac > 0.6) warn <- c(warn, sprintf("%.0f%% of genes are unassigned (module 0).", 100 * unassigned_frac))
 
   # tables
   kme <- res$kme
@@ -642,9 +642,9 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
                    sel$signed_r2[match(res$power, fit$Power)], fit$mean.k.[match(res$power, fit$Power)]),
            sprintf("- blockwiseModules: minModuleSize %g, mergeCutHeight %g, deepSplit %g, maxBlockSize %g (%d block(s)).",
                    opt$min_module_size, opt$merge_cut_height, opt$deep_split, opt$max_block_size, length(res$net$TOMFiles)),
-           sprintf("- %d modules; %d of %d genes (%.0f%%) unassigned (grey, module 0).", n_mod, sum(labels == 0),
-                   length(labels), 100 * grey_frac), "",
-           "| module | colour | genes | top hub (kME) |", "|---|---|---|---|")
+           sprintf("- %d modules; %d of %d genes (%.0f%%) unassigned (module 0).", n_mod, sum(labels == 0),
+                   length(labels), 100 * unassigned_frac), "",
+           "| module | color | genes | top hub (kME) |", "|---|---|---|---|")
   for (m in sort(setdiff(as.integer(names(sizes)), 0))) {
     h <- hubs[hubs$module == m, ][1, ]
     rep <- c(rep, sprintf("| %d | %s | %d | %s (%.2f) |", m, WGCNA::labels2colors(m), sizes[[as.character(m)]], h$gene_id, h$kME))
@@ -654,10 +654,10 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   if (!is.null(mt)) {
     sig <- mt[mt$significant, , drop = FALSE]
     rep <- c(rep, "## Module-trait associations", "",
-             sprintf("Pearson correlation of module eigengenes with traits; Student p-values; BH correction over all %d module x trait tests (grey excluded). Minimum |r| for unadjusted p < %g with n = %d: %.2f.",
+             sprintf("Pearson correlation of module eigengenes with traits; Student p-values; BH correction over all %d module x trait tests (unassigned module excluded). Minimum |r| for unadjusted p < %g with n = %d: %.2f.",
                      nrow(mt), opt$alpha, nrow(dat), r_min), "")
     if (nrow(sig)) {
-      rep <- c(rep, "| module | colour | trait | r | padj |", "|---|---|---|---|---|",
+      rep <- c(rep, "| module | color | trait | r | padj |", "|---|---|---|---|---|",
                sprintf("| %s | %s | %s | %.2f | %.2e |", sig$module, sig$module_color, sig$trait, sig$r, sig$padj), "")
     } else rep <- c(rep, sprintf("No module-trait correlation at padj < %g.", opt$alpha), "")
     rep <- c(rep, "![Module-trait](figures/module_trait.png)", "", "![kME vs GS](figures/kme_vs_gene_significance.png)", "")

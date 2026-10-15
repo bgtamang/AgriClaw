@@ -56,19 +56,19 @@ check(all(one$vpd_leaf_kpa > one$true_d_kpa), "LI-6800 VPDleaf (to chamber air) 
 # so the near-exact recovery check uses scatter of sd 1e-6 mol m-2 s-1.
 set.seed(12)
 tiny <- sim_set("medlyn", data.frame(curve = "x", g0 = 0.03, g1 = 4), noise = 1e-6)
-r1 <- analyse_stomatal(tiny, opt)$params
+r1 <- analyze_stomatal(tiny, opt)$params
 check(abs(r1$medlyn_g1_kpa05 - 4) / 4 < 1e-4 && abs(r1$medlyn_g0_mol_m2_s - 0.03) < 1e-5,
       "near-noise-free Medlyn curve: g1 and g0 recovered to 1e-4")
 set.seed(13)
 tiny_bb <- sim_set("ball-berry", data.frame(curve = "x", g0 = 0.02, g1 = 9), noise = 1e-6)
-r1b <- analyse_stomatal(tiny_bb, modifyList(opt, list(models = "ball-berry")))$params
+r1b <- analyze_stomatal(tiny_bb, modifyList(opt, list(models = "ball-berry")))$params
 check(abs(r1b$bb_g1 - 9) / 9 < 1e-4 && abs(r1b$bb_g0_mol_m2_s - 0.02) < 1e-5,
       "near-noise-free Ball-Berry curve: g1 and g0 recovered to 1e-4")
 
 # 2. Recovery of known g0 and g1 from noisy curves (gsw scatter sd 0.01) ---------------
 set.seed(21)
 tb <- data.frame(curve = sprintf("bb%02d", 1:10), g0 = stats::runif(10, 0.01, 0.05), g1 = stats::runif(10, 6, 12))
-rb <- analyse_stomatal(sim_set("ball-berry", tb), modifyList(opt, list(models = "ball-berry")))$params
+rb <- analyze_stomatal(sim_set("ball-berry", tb), modifyList(opt, list(models = "ball-berry")))$params
 rb <- rb[match(tb$curve, rb$curve_id), ]
 e_g1 <- (rb$bb_g1 - tb$g1) / tb$g1
 e_g0 <- rb$bb_g0_mol_m2_s - tb$g0
@@ -82,7 +82,7 @@ check(max(abs(e_g0)) <= 0.02, "Ball-Berry g0 within 0.02 mol m-2 s-1")
 
 set.seed(31)
 tm <- data.frame(curve = sprintf("md%02d", 1:10), g0 = stats::runif(10, 0.01, 0.05), g1 = stats::runif(10, 2, 6))
-rm_ <- analyse_stomatal(sim_set("medlyn", tm), modifyList(opt, list(models = "medlyn")))$params
+rm_ <- analyze_stomatal(sim_set("medlyn", tm), modifyList(opt, list(models = "medlyn")))$params
 rm_ <- rm_[match(tm$curve, rm_$curve_id), ]
 e_m1 <- (rm_$medlyn_g1_kpa05 - tm$g1) / tm$g1
 e_m0 <- rm_$medlyn_g0_mol_m2_s - tm$g0
@@ -95,18 +95,18 @@ check(max(abs(e_m0)) <= 0.02, "Medlyn g0 within 0.02 mol m-2 s-1")
 check(all(rm_$qc_flags == "" | rm_$qc_flags == "negative_g0"), "clean simulated curves raise no unit flags")
 
 # Precomputed leaf-surface columns give the same fit as the raw LI-6800 columns.
-r1 <- analyse_stomatal(tiny, opt)$params
+r1 <- analyze_stomatal(tiny, opt)$params
 pre <- tiny
 pre$rh_leaf_pct <- 100 * pre$true_hs
 pre$cs_umol_mol <- pre$true_cs_umol_mol
 pre$vpd_leaf_surface_kpa <- pre$true_d_kpa
 pre <- pre[, c("curve", "a_umol_m2_s", "gsw_mol_m2_s", "rh_leaf_pct", "cs_umol_mol", "vpd_leaf_surface_kpa")]
-r_pre <- analyse_stomatal(pre, opt)$params
+r_pre <- analyze_stomatal(pre, opt)$params
 check(isTRUE(all.equal(r_pre$medlyn_g1_kpa05, r1$medlyn_g1_kpa05, tolerance = 1e-7)) &&
       isTRUE(all.equal(r_pre$bb_g1, r1$bb_g1, tolerance = 1e-7)), "precomputed and raw inputs give identical fits")
 
 # 3. Unit mistakes are caught before fitting ------------------------------------------------
-err <- function(d, o = opt) tryCatch({ analyse_stomatal(d, o); "no error" }, error = function(e) conditionMessage(e))
+err <- function(d, o = opt) tryCatch({ analyze_stomatal(d, o); "no error" }, error = function(e) conditionMessage(e))
 check(grepl("Pa", err(transform(pre, vpd_leaf_surface_kpa = vpd_leaf_surface_kpa * 1000))), "VPD in Pa is caught")
 check(grepl("hPa", err(transform(pre, vpd_leaf_surface_kpa = vpd_leaf_surface_kpa * 10))), "VPD in hPa is caught")
 check(grepl("mmol", err(transform(pre, gsw_mol_m2_s = gsw_mol_m2_s * 1000))), "gsw in mmol m-2 s-1 is caught")
@@ -120,12 +120,12 @@ check(grepl("Pa", err(lic, modifyList(opt, list(vpd_source = "licor")))), "LI-68
 
 gap <- raw
 gap$e_mol_m2_s[3] <- NA
-rg <- analyse_stomatal(gap, opt)
+rg <- analyze_stomatal(gap, opt)
 check(rg$params$n_points_used == nrow(raw) - 1L && grepl("missing_inputs", rg$data$excluded_reason[3]),
       "a row with missing E is excluded with a reason, not dropped silently")
 
 # 4. iWUE = A / gsw ---------------------------------------------------------------------------
-pts <- analyse_stomatal(raw, opt)$points
+pts <- analyze_stomatal(raw, opt)$points
 check(isTRUE(all.equal(pts$iwue_umol_mol, raw$a_umol_m2_s / raw$gsw_mol_m2_s)), "iWUE = A / gsw at every point")
 
 # 5. PhotoGEA "Analyzing Ball-Berry Data" article ------------------------------------------------
@@ -142,7 +142,7 @@ bbt <- data.frame(instrument = g$instrument, species = g$species, plot = g$plot,
 # The article drops three curves it judged abnormal and excludes unstable points.
 drop <- paste(bbt$instrument, bbt$species, bbt$plot) %in% c("ripe4 soybean 1a", "ripe4 soybean 1b", "ripe4 soybean 5")
 ob <- modifyList(opt, list(curve_cols = "instrument,species,plot", models = "ball-berry"))
-rv <- analyse_stomatal(bbt[!drop, ], ob)$params
+rv <- analyze_stomatal(bbt[!drop, ], ob)$params
 check(identical(rv$curve_id, c("ripe4 - tobacco - 2", "ripe5 - soybean - 1", "ripe5 - soybean - 5a",
                                "ripe5 - soybean - 5c", "ripe5 - tobacco - 5")), "article: five curves")
 check(isTRUE(all.equal(rv$bb_g0_mol_m2_s, c(0.08778255, 0.21437406, 0.10722148, 0.11118324, 0.13565311), tolerance = 1e-6)),

@@ -10,7 +10,7 @@
 #       --trait yield_kg_ha --family-col family --cv kfold,lofo --h2 0.6
 #   Rscript scripts/genomic_prediction.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-genomic-prediction"
 VERSION <- "1.0.0"
@@ -213,7 +213,7 @@ code_markers <- function(X, coding = "auto") {
   list(M = M, coding = coding)
 }
 
-# A.mat (rrBLUP): mean imputation, monomorphic markers removed; W = centred
+# A.mat (rrBLUP): mean imputation, monomorphic markers removed; W = centered
 # imputed markers so that A = W W' / c and RR-BLUP on W equals GBLUP on A.
 build_relationship <- function(M) {
   n_na <- sum(is.na(M))
@@ -453,7 +453,7 @@ run_cv_multienv <- function(ph, rel, schemes, k, reps, seed) {
   list(folds = do.call(rbind, folds_out), preds = do.call(rbind, preds_out))
 }
 
-summarise_cv <- function(folds, h2 = 0) {
+summarize_cv <- function(folds, h2 = 0) {
   key <- unique(folds[, c("scheme", "model")])
   rows <- lapply(seq_len(nrow(key)), function(j) {
     d <- folds[folds$scheme == key$scheme[j] & folds$model == key$model[j], ]
@@ -615,7 +615,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   t0 <- Sys.time()
   cv <- if (multienv) run_cv_multienv(ph, rel, schemes, k, reps, seed) else
     run_cv_single(ph, rel, models, schemes, k, reps, seed, bglr)
-  summ <- summarise_cv(cv$folds, opt$h2)
+  summ <- summarize_cv(cv$folds, opt$h2)
   if (multienv) {
     env_summ <- stats::aggregate(r ~ scheme + env, cv$folds, function(x) mean(x, na.rm = TRUE))
     names(env_summ)[3] <- "predictive_ability_mean"

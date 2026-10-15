@@ -65,7 +65,7 @@ opt <- DEFAULTS
 opt$curve_cols <- "curve"
 opt$cores <- cores
 t0 <- Sys.time()
-res <- analyse_aci(read_tidy(csv), opt)
+res <- analyze_aci(read_tidy(csv), opt)
 cat(sprintf("20 simulated curves fitted in %.0f s on %d core(s)\n",
             as.numeric(difftime(Sys.time(), t0, units = "secs")), cores))
 p <- res$params[match(truth$curve, res$params$curve_id), ]

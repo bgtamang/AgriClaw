@@ -45,7 +45,7 @@ metric <- function(cv, scheme, model, col) cv$metrics[[col]][cv$metrics$scheme =
 m <- pred_metrics(c(1, 2, 3, 4), c(2, 2, 2, 2))
 check(is.na(m[["r"]]) && abs(m[["rmse"]] - sqrt(1.5)) < 1e-12 && abs(m[["bias"]] + 0.5) < 1e-12,
       "constant prediction: r undefined, RMSE and bias by hand")
-check(abs(m[["r2_sse"]] - (1 - 6 / 5)) < 1e-12, "R2 = 1 - SSE/SST is -0.2 for a constant off-centre prediction")
+check(abs(m[["r2_sse"]] - (1 - 6 / 5)) < 1e-12, "R2 = 1 - SSE/SST is -0.2 for a constant off-center prediction")
 check(abs(m[["rrmse_pct"]] - 100 * sqrt(1.5) / 2.5) < 1e-9, "relative RMSE = RMSE / mean observed")
 m <- pred_metrics(1:4, 2 * (1:4))
 check(abs(m[["r"]] - 1) < 1e-12 && abs(m[["r2_cor"]] - 1) < 1e-12 && abs(m[["r2_sse"]] - (1 - 30 / 5)) < 1e-12,
@@ -266,7 +266,7 @@ check(setequal(fl$feature[fl$used], c("greenup_dap", "ndvi_at_dap50", "ndvi_at_d
       "demo --cutoff 60 keeps only features known by DAP 60")
 rep_txt <- readLines(file.path(out, "report.md"))
 check(any(grepl("## Warnings", rep_txt)) && any(grepl("seed 1", rep_txt)), "report has warnings and records the seed")
-check(run_cli(c("--demo", "--colour", "red"))$status != 0L, "unknown option exits with an error")
+check(run_cli(c("--demo", "--color", "red"))$status != 0L, "unknown option exits with an error")
 check(any(grepl("--feature-time", run_cli("--help")$output)), "--help prints usage")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

@@ -140,7 +140,7 @@ fr <- utils::read.csv(file.path(out, "tables", "functional_rgr.csv"))
 fa <- fr[fr$group == "A" & fr$at_harvest, ]
 truth_a <- 0.20 * (1 - (40 / (1 + ((40 - 0.08) / 0.08) * exp(-0.20 * fa$time))) / 40)
 check(mean(fa$rgr_lo <= truth_a & fa$rgr_hi >= truth_a) >= 0.8, "demo: genotype A bands cover the true logistic RGR(t)")
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

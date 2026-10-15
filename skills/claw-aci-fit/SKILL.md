@@ -16,7 +16,7 @@ metadata:
 
 ## What it does
 
-Fits each A-Ci curve with PhotoGEA's maximum-likelihood fitters (`fit_c3_aci`, `fit_c4_aci`) and reports parameters normalised to 25 C and at leaf temperature with relative-likelihood confidence intervals, sets parameters PhotoGEA judges unreliable to NA, computes Jmax from J, and runs curve QC. C3 parameters are **apparent**: the fits assume infinite mesophyll conductance (Cc = Ci).
+Fits each A-Ci curve with PhotoGEA's maximum-likelihood fitters (`fit_c3_aci`, `fit_c4_aci`) and reports parameters normalized to 25 C and at leaf temperature with relative-likelihood confidence intervals, sets parameters PhotoGEA judges unreliable to NA, computes Jmax from J, and runs curve QC. C3 parameters are **apparent**: the fits assume infinite mesophyll conductance (Cc = Ci).
 
 ## When to use / when not to use
 

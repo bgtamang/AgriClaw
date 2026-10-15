@@ -16,7 +16,7 @@ metadata:
 
 ## What it does
 
-Runs a fixed list of checks on an orthomosaic (and optionally the plot grid, a DSM and a DTM) and reports each as pass, warn or fail against a stated threshold, with a per-plot table of coverage, saturation and canopy height. It catches the problems that silently corrupt plot values: wrong or missing CRS, digital numbers instead of reflectance, NoData holes, glare, plots off the image, and DSM artefacts. `references/processing-guide.md` gives OpenDroneMap processing advice for plot trials.
+Runs a fixed list of checks on an orthomosaic (and optionally the plot grid, a DSM and a DTM) and reports each as pass, warn or fail against a stated threshold, with a per-plot table of coverage, saturation and canopy height. It catches the problems that silently corrupt plot values: wrong or missing CRS, digital numbers instead of reflectance, NoData holes, glare, plots off the image, and DSM artifacts. `references/processing-guide.md` gives OpenDroneMap processing advice for plot trials.
 
 ## When to use / when not to use
 
@@ -28,14 +28,14 @@ Runs a fixed list of checks on an orthomosaic (and optionally the plot grid, a D
 
 - `--input`: the orthomosaic (GeoTIFF or any GDAL raster).
 - `--plots` (optional, recommended): plot polygons; enables extent, coverage, saturation-per-plot and pixel-size-versus-plot checks.
-- `--dsm`, `--dtm` (optional): surface and bare-ground terrain models in metres.
+- `--dsm`, `--dtm` (optional): surface and bare-ground terrain models in meters.
 - `--expect`: what the values should be: `reflectance` (multispectral reflectance, 0-1 after `--scale`), `rgb`, `dn` (raw digital numbers) or `any` (default: describe only).
 
 **Ask the user, never guess:**
 
 1. What the file should contain (reflectance, RGB, raw DN) and, for integer reflectance, its scale factor (for example 0.0001).
 2. How many bands it should have and their order (needed later by `claw-vi-extract`).
-3. The vertical units and datum of the DSM/DTM (metres above the ellipsoid or sea level?), and how the DTM was made.
+3. The vertical units and datum of the DSM/DTM (meters above the ellipsoid or sea level?), and how the DTM was made.
 4. The tallest plausible crop height for `--max-height-m` (default 4 m suits maize; use about 1.5 m for soybean).
 
 ## How to run
@@ -69,22 +69,22 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/ortho_qc.R" --input rgb.tif --plots plots.g
 | Check | Pass / warn / fail rule | Why |
 |---|---|---|
 | `rotation` | fail if the geotransform has rotation terms | most tools mis-place rotated pixels; warp to north-up first |
-| `crs` | fail if missing; warn if lon/lat or not metres | plots, buffers and areas need metres |
+| `crs` | fail if missing; warn if lon/lat or not meters | plots, buffers and areas need meters |
 | `pixel_shape` | warn if x and y pixel sizes differ by > 1% | anisotropic resampling |
 | `gsd` | warn above `--max-gsd-cm` | user's requirement |
 | `gsd_vs_plot` | warn < 5, fail < 1 pixel across the narrowest plot side | mixed pixels (rule of thumb) |
 | `band_count` | fail if not `--expect-bands`; RGB warns unless 3 or 4 | wrong file or stack |
-| `datatype` | warn for 8-bit data when reflectance is expected | 8-bit reflectance is a quantised display product |
+| `datatype` | warn for 8-bit data when reflectance is expected | 8-bit reflectance is a quantized display product |
 | `nodata_declared` | warn if NoData equals the saturation level (255, 65535) | glare would read as missing data |
 | `zero_as_nodata` | warn if > 1% of pixels are 0 in every band and no NoData is declared | collars read as data (rule of thumb) |
 | `extent` | fail if a plot is entirely outside the image; warn if partly outside | wrong field, CRS mismatch, truncated mosaic |
 | `value_range` (reflectance) | fail if any band's 99th percentile > 1.5; warn if > 1% negative or > 1% above 1 | digital numbers or a missing scale; offset applied twice; glare (rules of thumb) |
 | `plot_coverage` | warn < 0.95, fail < 0.75 of a plot's area with data | holes and edges bias plot means (rules of thumb) |
-| `saturation` | warn > 0.5%, fail > 5% of pixels at the saturation level (worst plot) | clipped colour and reflectance (rules of thumb) |
+| `saturation` | warn > 0.5%, fail > 5% of pixels at the saturation level (worst plot) | clipped color and reflectance (rules of thumb) |
 | `dsm_values` | fail for 8-bit DSMs or elevations outside -500 to 9000 m | not elevations, wrong units, or unflagged NoData |
 | `dsm_coverage` | as `plot_coverage` | holes in the surface model |
 | `dsm_spikes` | warn > 0.1%, fail > 1% of plot pixels more than `--spike-m` (1 m) from their 5 x 5 median | matching errors, birds, dust, moving leaves (rules of thumb) |
-| `dsm_relief` | warn if the 1st-99th percentile range over plots exceeds 20 m | artefacts or wrong units in a trial field (rule of thumb) |
+| `dsm_relief` | warn if the 1st-99th percentile range over plots exceeds 20 m | artifacts or wrong units in a trial field (rule of thumb) |
 | `canopy_height` | warn if a plot's median DSM - DTM < -0.2 m or its 95th percentile > `--max-height-m` | DSM/DTM vertical offset or misregistration; spikes or the wrong DTM (rules of thumb) |
 
 - Value statistics use a seeded random sample of pixels at least half inside the plots (`--sample-size`, `--seed`), or a regular grid over the whole image without plots. Coverage, saturation and spikes per plot use every pixel, weighted by the fraction inside the plot (exactextractr).

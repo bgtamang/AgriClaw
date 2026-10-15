@@ -68,7 +68,7 @@ if (requireNamespace("phenofit", quietly = TRUE)) {
 } else {
   cat("note: phenofit not installed; formula cross-check skipped\n")
 }
-# reparameterised fitting forms reproduce the published forms
+# reparameterized fitting forms reproduce the published forms
 u <- (tt - 10) / 120
 check(max(abs(beck_u(u, 0.2, 0.65, (40 - 10) / 120, 0.15 * 120, 55 / 120, 0.12 * 120) -
                 dl_beck(tt, pb))) < 1e-12, "beck_u on the unit axis equals dl_beck")
@@ -106,7 +106,7 @@ errs <- t(vapply(1:20, function(i) {
   t <- sim_dates(i)
   set.seed(3000 + i)
   y <- dl_beck(t, p) + rnorm(length(t), 0, 0.02)
-  a <- analyse_plot(t, y, rep(1, length(t)), with_opt(method = "dl-beck"))
+  a <- analyze_plot(t, y, rep(1, length(t)), with_opt(method = "dl-beck"))
   metric_errors(a, function(x) dl_beck(x, p), t)
 }, numeric(5)))
 mx <- apply(abs(errs), 2, max)
@@ -123,7 +123,7 @@ errs_e <- t(vapply(1:10, function(i) {
           rsp = p[["rsp"]], eos = p[["eos"]], rau = p[["rau"]], m7 = 0.0015)
   set.seed(3000 + i)
   y <- dl_elmore(t, pe) + rnorm(length(t), 0, 0.02)
-  a <- analyse_plot(t, y, rep(1, length(t)), with_opt(method = "dl-elmore"))
+  a <- analyze_plot(t, y, rep(1, length(t)), with_opt(method = "dl-elmore"))
   metric_errors(a, function(x) dl_elmore(x, pe), t)
 }, numeric(5)))
 mx <- apply(abs(errs_e), 2, max)
@@ -137,7 +137,7 @@ for (meth in c("loess", "sg")) {
     t <- sim_dates(i)
     set.seed(3000 + i)
     y <- dl_beck(t, p) + rnorm(length(t), 0, 0.02)
-    metric_errors(analyse_plot(t, y, rep(1, length(t)), with_opt(method = meth)),
+    metric_errors(analyze_plot(t, y, rep(1, length(t)), with_opt(method = meth)),
                   function(x) dl_beck(x, p), t)
   }, numeric(5)))
   mx <- apply(abs(e), 2, max)
@@ -149,18 +149,18 @@ for (meth in c("loess", "sg")) {
 # 4. Sparse and one-sided series are refused for the double logistic -----------------
 p <- sim_params(1)
 t5 <- c(20, 45, 65, 90, 110)
-a <- analyse_plot(t5, dl_beck(t5, p), rep(1, 5), with_opt(method = "dl-beck"))
+a <- analyze_plot(t5, dl_beck(t5, p), rep(1, 5), with_opt(method = "dl-beck"))
 check(a$status == "sparse" && is.null(a$metrics), "5 dates: double logistic refused")
 check(a$simple$n_dates == 5 && abs(a$simple$max_obs_value - max(dl_beck(t5, p))) < 1e-12,
       "5 dates: simple metrics still reported")
 t6 <- c(20, 40, 55, 70, 90, 110)
-check(analyse_plot(t6, dl_beck(t6, p), rep(1, 6), with_opt(method = "dl-beck"))$status == "sparse",
+check(analyze_plot(t6, dl_beck(t6, p), rep(1, 6), with_opt(method = "dl-beck"))$status == "sparse",
       "6 dates: 6-parameter Beck model refused (needs 7)")
-check(analyse_plot(t6, dl_beck(t6, p), rep(1, 6), with_opt(method = "loess"))$status == "fitted",
+check(analyze_plot(t6, dl_beck(t6, p), rep(1, 6), with_opt(method = "loess"))$status == "fitted",
       "6 dates: LOESS allowed")
 check(grepl("at least 7", err_msg(min_dates_for("dl-beck", 5))), "--min-dates below p + 1 rejected")
 t_rise <- seq(15, 60, by = 5)
-a <- analyse_plot(t_rise, dl_beck(t_rise, p), rep(1, length(t_rise)), with_opt(method = "dl-beck"))
+a <- analyze_plot(t_rise, dl_beck(t_rise, p), rep(1, length(t_rise)), with_opt(method = "dl-beck"))
 check(a$status == "limb_missing", "rise only: double logistic refused (limb missing)")
 
 # 5. Cloud-like drops on satellite-like series: upper envelope removes the bias -------
@@ -171,7 +171,7 @@ sat <- function(i, weighting) {
   y <- dl_beck(t, p) + rnorm(length(t), 0, 0.015)
   k <- sample(3:(length(t) - 2), 6)
   y[k] <- y[k] - runif(6, 0.1, 0.4)
-  a <- analyse_plot(t, y, rep(1, length(t)), with_opt(weighting = weighting))
+  a <- analyze_plot(t, y, rep(1, length(t)), with_opt(weighting = weighting))
   c(metric_errors(a, function(x) dl_beck(x, p), t), caught = mean(a$weights[k] < 0.2),
     clean_w = mean(a$weights[-k]))
 }
@@ -193,7 +193,7 @@ up <- function(i, weighting) {
   y <- dl_beck(t, p) + rnorm(length(t), 0, 0.015)
   k <- which.min(abs(t - (p[["sos"]] + p[["eos"]]) / 2))
   y[k] <- y[k] + 0.15
-  a <- analyse_plot(t, y, rep(1, length(t)), with_opt(weighting = weighting))
+  a <- analyze_plot(t, y, rep(1, length(t)), with_opt(weighting = weighting))
   c(metric_errors(a, function(x) dl_beck(x, p), t), w = a$weights[k])
 }
 u_up <- t(vapply(1:10, up, numeric(6), weighting = "upper"))
@@ -321,7 +321,7 @@ unlink(out_g, recursive = TRUE)
 res_g <- run_cli(c("--demo", "--axis", "gdd", "--method", "loess", "--out", shQuote(out_g)))
 check(res_g$status == 0L && file.exists(file.path(out_g, "tables", "metrics.csv")),
       "demo on the GDD axis with LOESS runs")
-check(run_cli(c("--demo", "--colour", "red"))$status != 0L, "unknown option exits with an error")
+check(run_cli(c("--demo", "--color", "red"))$status != 0L, "unknown option exits with an error")
 check(any(grepl("--weighting", run_cli("--help")$output)), "--help prints usage")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

@@ -14,7 +14,7 @@
 #       --design "~ genotype + time + genotype:time" --test LRT --reduced "~ genotype + time"
 #   Rscript scripts/de_analysis.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-de-analysis"
 VERSION <- "1.0.0"
@@ -231,7 +231,7 @@ check_count_matrix <- function(m, noninteger_ok = FALSE, allow_noninteger = FALS
          "that the count model needs. Use tximport estimated counts (txi.rds from ",
          "claw-rnaseq-import) or featureCounts/HTSeq counts.")
   if (per_million)
-    return("Every sample has about 1,000,000 counts: if the counts were rarefied (downsampled), use the original counts; DESeq2 normalises library size itself.")
+    return("Every sample has about 1,000,000 counts: if the counts were rarefied (downsampled), use the original counts; DESeq2 normalizes library size itself.")
   if (frac_nonint > 0 && !noninteger_ok && !allow_noninteger) {
     logish <- max(m) < 50
     fail(sprintf("%.0f%% of values are not whole numbers. ", 100 * frac_nonint),
@@ -289,7 +289,7 @@ prepare_design <- function(samples, design, reference = list(), as_factor = char
     if (v %in% as_factor || is.character(x) || is.logical(x) || is.factor(x)) {
       samples[[v]] <- factor(as.character(x))
     } else if (is.numeric(x) && length(unique(x)) <= 6) {
-      warn <- c(warn, sprintf(paste0("'%s' is numeric with %d distinct values, so it is modelled as a ",
+      warn <- c(warn, sprintf(paste0("'%s' is numeric with %d distinct values, so it is modeled as a ",
                                      "continuous (linear) effect. If it is a group label (time point, ",
                                      "block), re-run with --as-factor %s."), v, length(unique(x)), v))
     }
@@ -634,7 +634,7 @@ plot_ma <- function(df, label, out, alpha) {
   on.exit({graphics::par(op); grDevices::dev.off()})
   graphics::plot(d$baseMean, yc, log = "x", pch = ifelse(abs(y) > lim, 2, 20), cex = 0.5,
                  col = ifelse(d$significant, "#C0392B", "#95A5A6"), ylim = c(-lim, lim),
-                 xlab = "Mean of normalised counts", ylab = ylab,
+                 xlab = "Mean of normalized counts", ylab = ylab,
                  main = sprintf("%s: %d up, %d down (padj < %g)", label, sum(d$direction == "up"),
                                 sum(d$direction == "down"), alpha))
   graphics::abline(h = 0, col = "grey40")
@@ -786,7 +786,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
                    res$info$n_kept, nrow(counts), opt$min_count, res$info$min_samples, res$info$df_resid),
            if (length(notes)) paste("-", notes) else NULL, "",
            "## Results", "",
-           sprintf("FDR (Benjamini-Hochberg) < %g; independent filtering optimised for alpha = %g%s.",
+           sprintf("FDR (Benjamini-Hochberg) < %g; independent filtering optimized for alpha = %g%s.",
                    opt$alpha, opt$alpha, if (opt$lfc_threshold > 0)
                      sprintf("; tests H0: |log2FC| <= %g", opt$lfc_threshold) else ""), "",
            "| comparison | tested | up | down | low-mean filtered | count outliers | filter threshold (baseMean) |",

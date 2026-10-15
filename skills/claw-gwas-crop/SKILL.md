@@ -16,7 +16,7 @@ metadata:
 
 ## What it does
 
-Tests every marker for association with each trait in a mixed linear model: y = covariates + marker + g + e, where the polygenic effect g ~ N(0, Vg K) uses a marker-based kinship matrix K. The model is fitted by statgenGWAS: EMMA REML variance components, then generalised least squares for each marker (Kang et al. 2008). The skill reports p-values, effects per ALT allele, genomic-control λ, QQ and Manhattan plots, a PCA of population structure, and QTL regions built from an LD distance.
+Tests every marker for association with each trait in a mixed linear model: y = covariates + marker + g + e, where the polygenic effect g ~ N(0, Vg K) uses a marker-based kinship matrix K. The model is fitted by statgenGWAS: EMMA REML variance components, then generalized least squares for each marker (Kang et al. 2008). The skill reports p-values, effects per ALT allele, genomic-control λ, QQ and Manhattan plots, a PCA of population structure, and QTL regions built from an LD distance.
 
 ## When to use / when not to use
 
@@ -35,9 +35,9 @@ Tests every marker for association with each trait in a mixed linear model: y = 
 
 **Ask the user (never guess):**
 
-- Are the phenotypes BLUEs or means per line? Raw plot data must go through `claw-trial-analysis` first. Prefer BLUEs over BLUPs: BLUPs are already shrunk towards the mean (Piepho et al. 2008), which shrinks marker effects again.
-- The units of each trait, and which traits to analyse.
-- Is there known structure (subpopulations, breeding programmes, maturity groups)? Should flowering time or another covariate be fitted, for example for yield?
+- Are the phenotypes BLUEs or means per line? Raw plot data must go through `claw-trial-analysis` first. Prefer BLUEs over BLUPs: BLUPs are already shrunk toward the mean (Piepho et al. 2008), which shrinks marker effects again.
+- The units of each trait, and which traits to analyze.
+- Is there known structure (subpopulations, breeding programs, maturity groups)? Should flowering time or another covariate be fitted, for example for yield?
 - Which genome assembly the marker positions use. `claw-gene-lookup` needs it.
 - The LD distance for candidate windows. Take it from `claw-ld-decay` (`tables/ld_window.csv`) rather than a remembered value.
 
@@ -86,7 +86,7 @@ Other options:
 - **LOCO** (`--loco`): each chromosome is tested with a kinship matrix built from the other chromosomes. This avoids the power loss from including the tested marker in K (Rincent et al. 2014).
   - In our simulations, LOCO alone gave λ 1.10 to 1.21 on traits without marker effects. Adding 2 PCs brought it to 0.93 to 1.12.
   - So with `--loco` in a structured panel, also add PCs.
-- **PCs as covariates** (`--n-pcs`, the Q+K model; Price et al. 2006; Yu et al. 2006). The default is 0, because kinship alone was calibrated in our tests. Add 2 to 5 PCs, choosing from the scree plot, when λ > 1.1 or the PCA shows discrete groups. The number of PCs is a judgement call: report it.
+- **PCs as covariates** (`--n-pcs`, the Q+K model; Price et al. 2006; Yu et al. 2006). The default is 0, because kinship alone was calibrated in our tests. Add 2 to 5 PCs, choosing from the scree plot, when λ > 1.1 or the PCA shows discrete groups. The number of PCs is a judgment call: report it.
 - **Missing genotypes:** statgenGWAS needs complete markers. Markers with more than 20% missing calls are dropped (`--max-missing`, rule of thumb), and the rest are mean-imputed (2 × ALT frequency). The report states the imputed fraction and recommends Beagle-type imputation above 10% (rule of thumb).
 - **MAF ≥ 0.05** (adjustable rule of thumb): markers carried by few lines give unstable tests.
 - **Thresholds:**

@@ -63,7 +63,7 @@ def test_error_fixture_is_reported():
 
 def test_missing_values_are_counted_not_zeroed():
     rows = mkrows([5.0, None, 0.0, 0.0, None, 12.0])
-    s = wx.summarise(rows)
+    s = wx.summarize(rows)
     assert s["total_precip_mm"] == 17.0 and s["n_missing_precip_mm"] == 2 and s["complete"] == "no"
     assert s["n_days_p_and_et0"] == 4 and s["p_minus_et0_mm"] == pytest.approx(17.0 - 16.0)
     spells = wx.dry_spells(rows)
@@ -189,7 +189,7 @@ def test_cli_demo(tmp_path):
               "figures/water_balance.png", "figures/monthly_summary.png", "reproducibility/commands.sh",
               "reproducibility/environment.txt", "reproducibility/checksums.sha256"]:
         assert (tmp_path / f).is_file(), f
-    # totals equal an independent sum of the bundled response for 1 April - 31 October 2025
+    # totals equal an independent sum of the bundled response for April 1 - October 31, 2025
     d = json.loads((SKILL_DIR / "demo" / "openmeteo_champaign_2025.json").read_text(encoding="utf-8"))["daily"]
     idx = [i for i, t in enumerate(d["time"]) if "2025-04-01" <= t <= "2025-10-31"]
     with open(tmp_path / "tables" / "season_summary.csv", newline="", encoding="utf-8") as f:

@@ -15,7 +15,7 @@
 #           --population ril --parents P1,P2
 #   Rscript scripts/marker_qc.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-marker-qc"
 VERSION <- "1.0.0"

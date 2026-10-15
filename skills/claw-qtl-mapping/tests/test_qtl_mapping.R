@@ -222,7 +222,7 @@ ae <- stats::setNames(e4$estimate[e4$effect %in% LETTERS[1:4]], e4$effect[e4$eff
 check(stats::cor(ae[LETTERS[1:4]], m4$eff) > 0.95 && ae[["A"]] > 0.8 && ae[["D"]] < -0.8,
       sprintf("riself4: founder allele effects recovered (A %.2f, B %.2f, C %.2f, D %.2f)",
               ae[["A"]], ae[["B"]], ae[["C"]], ae[["D"]]))
-cat(sprintf("riself4: peak chr 1 at %.1f cM (interval %.1f-%.1f, LOD %.1f); allele effects A %.2f B %.2f C %.2f D %.2f (true +1.5 0 0 -1.5, centred)\n",
+cat(sprintf("riself4: peak chr 1 at %.1f cM (interval %.1f-%.1f, LOD %.1f); allele effects A %.2f B %.2f C %.2f D %.2f (true +1.5 0 0 -1.5, centered)\n",
             p4$pos, p4$ci_lo, p4$ci_hi, p4$lod, ae[["A"]], ae[["B"]], ae[["C"]], ae[["D"]]))
 sc4l <- run_scan(cr4, "y", step = 1, kinship = "loco")
 pl4 <- get_peaks(sc4l, threshold = 3, interval = "lod", drop = 1.5)
@@ -323,7 +323,7 @@ check(identical(run_perm(scd, 50, seed = 3)$table, run_perm(scd, 50, seed = 3)$t
       "same seed gives the same thresholds")
 
 # 10. Unknown options are rejected.
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

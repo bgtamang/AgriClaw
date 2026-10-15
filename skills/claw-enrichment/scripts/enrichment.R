@@ -14,7 +14,7 @@
 #       --annotation kegg_gene2pathway.csv --term-names kegg_names.csv
 #   Rscript scripts/enrichment.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-enrichment"
 VERSION <- "1.0.0"
@@ -425,7 +425,7 @@ diagnose_ids <- function(query, ann_genes) {
   f_q <- mean(strip_isoform(query) %in% ann_genes)
   if (f_q > base + 0.2) hints <- c(hints, sprintf(paste0(
     "%.0f%% match after removing isoform suffixes from your gene list: the DE results are per ",
-    "transcript. Summarise to genes first (claw-rnaseq-import), then re-run."), 100 * f_q))
+    "transcript. Summarize to genes first (claw-rnaseq-import), then re-run."), 100 * f_q))
   trim <- ann_genes
   for (k in 1:3) {
     trim <- sub("\\.[^.]*$", "", trim)

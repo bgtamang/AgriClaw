@@ -29,14 +29,14 @@ run_cli <- function(args) {
 # 1. Known answers, computed by hand
 d <- data.frame(genotype = c("A", "A", "A", "B", "B"),
                 yield_kg_ha = c(1, 2, 3, 10, 20))
-r <- summarise_trait(d, "yield_kg_ha", "genotype", min_n = 3)
+r <- summarize_trait(d, "yield_kg_ha", "genotype", min_n = 3)
 check(isTRUE(all.equal(r$mean, c(2, 15))), "group means")
 check(isTRUE(all.equal(r$sd, c(1, sqrt(50)))), "group SDs")
 check(isTRUE(all.equal(r$cv_pct, c(50, 100 * sqrt(50) / 15))), "CV %")
 check(identical(r$low_n, c(FALSE, TRUE)), "low-n flag")
 
 # 2. Bad input fails loudly and names the problem
-err <- tryCatch(summarise_trait(d, "biomass_g", "genotype"),
+err <- tryCatch(summarize_trait(d, "biomass_g", "genotype"),
                 error = function(e) conditionMessage(e))
 check(is.character(err) && grepl("biomass_g", err), "missing column is named in the error")
 
@@ -55,7 +55,7 @@ s <- utils::read.csv(file.path(out, "tables", "summary.csv"))
 check(nrow(s) == 4L && all(s$n == 3L), "demo summary has 4 groups of 3")
 
 # 4. Unknown options are rejected
-bad <- run_cli(c("--demo", "--colour", "red"))
+bad <- run_cli(c("--demo", "--color", "red"))
 check(bad$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s)\n", n_checks, SKILL))

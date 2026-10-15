@@ -69,7 +69,7 @@ outlier_run <- NULL
 res_t <- lapply(seeds, function(sd) {
   s <- simulate_field(sd)
   if (sd == 6) s$d$y[s$d$plot_id == "P57"] <- s$d$y[s$d$plot_id == "P57"] + 6
-  r <- quiet(analyse(s$d, O(traits = "y", design = "rcbd", engine = "both")))
+  r <- quiet(analyze(s$d, O(traits = "y", design = "rcbd", engine = "both")))
   if (sd == 6) outlier_run <<- r
   bs <- r$blues[r$blues$model == "SpATS", ]; bl <- r$blues[r$blues$model == "lme4", ]
   sm <- r$summary
@@ -91,7 +91,7 @@ check(abs(cm["ve_s"] - 1) <= 0.25, "trend: SpATS residual variance within 0.25 o
 # 3. Same seeds without a trend: the two models agree and both recover H2
 res_n <- do.call(rbind, lapply(seeds, function(sd) {
   s <- simulate_field(sd, amp = 0)
-  r <- quiet(analyse(s$d, O(traits = "y", design = "rcbd", engine = "both")))
+  r <- quiet(analyze(s$d, O(traits = "y", design = "rcbd", engine = "both")))
   sm <- r$summary
   c(h2_s = sm$h2[sm$model == "SpATS"], h2_l = sm$h2[sm$model == "lme4"])
 }))
@@ -116,20 +116,20 @@ s <- simulate_field(7)
 
 # 5. Input checks fail loudly
 bad <- s$d; bad$row[5] <- NA
-expect_error(analyse(bad, O(traits = "y", design = "rcbd")), "Coordinates are incomplete", "incomplete coordinates are refused for spatial models")
-rl <- quiet(analyse(bad, O(traits = "y", design = "rcbd", engine = "lme4")))
+expect_error(analyze(bad, O(traits = "y", design = "rcbd")), "Coordinates are incomplete", "incomplete coordinates are refused for spatial models")
+rl <- quiet(analyze(bad, O(traits = "y", design = "rcbd", engine = "lme4")))
 check(identical(rl$info[[1]]$engines, "lme4") && any(grepl("Coordinates are incomplete", rl$warnings)) && nrow(rl$met) == 100,
       "lme4 block model runs with incomplete coordinates, which are ignored with a warning")
 dup <- s$d; dup$row[2] <- dup$row[1]; dup$col[2] <- dup$col[1]
-expect_error(analyse(dup, O(traits = "y", design = "rcbd")), "share a row/column position", "duplicated coordinates are refused")
+expect_error(analyze(dup, O(traits = "y", design = "rcbd")), "share a row/column position", "duplicated coordinates are refused")
 unrep <- s$d[s$d$rep == 1, c("entry", "y", "trial", "plot_id")]
-expect_error(analyse(unrep, O(traits = "y")), "No replicate, block or coordinate", "data with no design structure are refused")
+expect_error(analyze(unrep, O(traits = "y")), "No replicate, block or coordinate", "data with no design structure are refused")
 unrep$block <- rep(1:10, each = 10)
-expect_error(analyse(unrep, O(traits = "y")), "unreplicated.*need replicated checks or a spatial model",
+expect_error(analyze(unrep, O(traits = "y")), "unreplicated.*need replicated checks or a spatial model",
              "unreplicated trial without checks or coordinates is refused")
 txt <- s$d; txt$y <- as.character(txt$y); txt$y[3] <- "lodged"
-expect_error(analyse(txt, O(traits = "y")), "not numeric", "non-numeric trait is refused")
-expect_error(analyse(s$d, O(traits = "biomass_g")), "biomass_g", "missing trait is named in the error")
+expect_error(analyze(txt, O(traits = "y")), "not numeric", "non-numeric trait is refused")
+expect_error(analyze(s$d, O(traits = "biomass_g")), "biomass_g", "missing trait is named in the error")
 
 # 6. Augmented-style trials: unreplicated lines + 3 checks in each of 6 blocks
 set.seed(5)
@@ -139,11 +139,11 @@ aug <- do.call(rbind, lapply(1:6, function(b) data.frame(block = b, entry = samp
 aug$is_check <- aug$entry %in% chk
 geff <- stats::setNames(stats::rnorm(length(unique(aug$entry)), 0, 1), unique(aug$entry))
 aug$y <- 20 + geff[aug$entry] + rep(stats::rnorm(6, 0, 0.5), each = 11) + stats::rnorm(nrow(aug), 0, 0.5)
-ra <- quiet(analyse(aug[, c("block", "entry", "is_check", "y")], O(traits = "y")))
+ra <- quiet(analyze(aug[, c("block", "entry", "is_check", "y")], O(traits = "y")))
 check(ra$info[[1]]$design == "ibd" && identical(ra$info[[1]]$engines, "lme4") && !length(ra$info[[1]]$checkid_engines),
       "augmented, no coordinates: blocks model (ibd) with lme4; checks stay random genotypes in the BLUP model")
 check(nrow(ra$met) == 51 && all(chk %in% ra$met$genotype), "augmented, no coordinates: BLUEs for all 51 entries")
-rs <- quiet(analyse(aug, O(traits = "y", engine = "SpATS")))
+rs <- quiet(analyze(aug, O(traits = "y", engine = "SpATS")))
 check(identical(rs$info[[1]]$checkid_engines, "SpATS") && !any(chk %in% rs$blups$genotype) && sum(rs$blups$model == "SpATS") == 48,
       "augmented with coordinates: SpATS fits checks as fixed checkId effects; BLUPs for the 48 test lines only")
 check(rs$summary$status == "ok" && rs$summary$h2 > 0, "augmented with coordinates: spatial model fits and gives H2 > 0")
@@ -151,7 +151,7 @@ check(rs$summary$status == "ok" && rs$summary$h2 > 0, "augmented with coordinate
 # 7. Smoke test on statgenSTA's dropsRaw (one DROPS trial, spatial model only)
 data("dropsRaw", package = "statgenSTA", envir = environment())
 dr <- dropsRaw[dropsRaw$Experiment == "Gai12W", ]
-rd <- quiet(analyse(dr, O(traits = "grain.yield", genotype = "Variety_ID", trial = "Experiment", rep = "Replicate",
+rd <- quiet(analyze(dr, O(traits = "grain.yield", genotype = "Variety_ID", trial = "Experiment", rep = "Replicate",
                           block = "block", row = "Row", col = "Column", engine = "SpATS")))
 sm <- rd$summary
 check(rd$info[[1]]$design == "res.ibd", "dropsRaw: blocks nested in replicates detected (res.ibd)")

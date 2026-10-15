@@ -10,7 +10,7 @@ Usage:
     python scripts/water_balance.py --weather w.csv --crop soybean --plant-date 2025-05-20 \
         --theta-fc 0.32 --theta-wp 0.15 --irrigate
 
-Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 """
 
 from __future__ import annotations
@@ -458,7 +458,7 @@ def write_report(out: Path, ctx: dict) -> None:
           "- Rain, irrigation and capillary rise enter early in the day and water above field capacity drains the same "
           "day (FAO-56 Example 38). FAO-56 eq. 88 subtracts the day's ET before computing drainage, which gives less "
           "deep percolation on wetting days.",
-          "- Root depth is constant from planting; FAO-56 Example 38 shows root growth, which is not modelled.",
+          "- Root depth is constant from planting; FAO-56 Example 38 shows root growth, which is not modeled.",
           "- Kc values are FAO-56 typical values for standard (non-stressed, well-managed) conditions; local "
           "calibration of stage lengths and Kc is preferred.", ""]
     L += ["## References", ""] + [f"- {r}" for r in REFERENCES] + ["", f"*{SKILL} {VERSION}*"]
@@ -552,7 +552,7 @@ def main(argv: list[str] | None = None) -> int:
             zr = crop["zr"][0] if args.irrigate else crop["zr"][1]
             zr_src = (f"FAO-56 Table 22 range {crop['zr'][0]}-{crop['zr'][1]} m: "
                       + ("smaller value, for irrigation scheduling" if args.irrigate
-                         else "larger value, for rainfed / stress modelling"))
+                         else "larger value, for rainfed / stress modeling"))
             warnings.append(f"Root depth {zr} m was taken from FAO-56 Table 22 ({zr_src}); restrictive layers, "
                             "shallow water tables or young crops have shallower roots.")
         if not 0.1 <= zr <= 3.0:

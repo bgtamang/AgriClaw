@@ -127,7 +127,7 @@ Other options: `--method dl-elmore|loess|sg`, `--weighting robust`, `--threshold
 **Outlier flags.**
 - Each fitted plot is refitted with bisquare weights, using a noise SD pooled over all plots as the fixed scale. The pooled noise SD is the robust MAD of residuals, rescaled by n / residual degrees of freedom.
 - Observations more than 3.5 noise SD from that reference curve are flagged (rule of thumb).
-- The reference is the same whatever `--weighting` you chose, so an unweighted fit dragged down by a cloud does not flag its neighbours. An upward error absorbed by an upper-envelope fit is still flagged.
+- The reference is the same whatever `--weighting` you chose, so an unweighted fit dragged down by a cloud does not flag its neighbors. An upward error absorbed by an upper-envelope fit is still flagged.
 - A flight date is flagged when the median residual over at least 3 plots exceeds 2 noise SD (rule of thumb). This catches whole-flight calibration or illumination problems.
 
 ### Validation (tests/test_vi_timeseries.R, 76 checks)

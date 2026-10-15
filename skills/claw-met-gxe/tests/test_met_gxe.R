@@ -159,7 +159,7 @@ sel <- sort(unique(dropsPheno$Variety_ID))[1:50]
 dp <- dropsPheno[dropsPheno$Variety_ID %in% sel, c("Experiment", "Variety_ID", "grain.yield")]
 names(dp) <- c("trial", "genotype", "grain_yield_t_ha")
 prep <- prepare_met(dp, O(trait = "grain_yield_t_ha"))
-res <- analyse_met(prep$dat, O(trait = "grain_yield_t_ha"), prep$weight_source)
+res <- analyze_met(prep$dat, O(trait = "grain_yield_t_ha"), prep$weight_source)
 check(res$n_env == 10 && res$n_geno == 50, "dropsPheno: 10 environments x 50 genotypes")
 check(res$varcomp$h2 > 0 && res$varcomp$h2 < 1 && all(res$varcomp$components$variance > 0), "dropsPheno: positive variances, 0 < H2 < 1")
 check(cor(res$genotypes$blup, res$genotypes$raw_mean) > 0.98, "dropsPheno: MET BLUPs agree with genotype means for a complete table")

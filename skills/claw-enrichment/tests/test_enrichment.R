@@ -182,7 +182,7 @@ check(all(all_sig %in% c(planted_up, planted_down)), "demo: no null term is sign
 rep_txt <- readLines(file.path(out, "report.md"))
 check(any(grepl("--propagate", rep_txt)) && any(grepl("GO:0018298", rep_txt)),
       "demo report warns about unpropagated annotation and the obsolete GO ID")
-check(run_cli(c("--demo", "--colour", "red"))$status != 0L, "unknown option exits with an error")
+check(run_cli(c("--demo", "--color", "red"))$status != 0L, "unknown option exits with an error")
 noun <- run_cli(c("--genes", shQuote(de_tab), "--annotation", shQuote(ann_a1), "--out", shQuote(file.path(tmp, "o2"))))
 check(noun$status != 0L && any(grepl("--universe is required", noun$output)), "a gene list without --universe is refused")
 

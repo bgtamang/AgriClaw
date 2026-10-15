@@ -83,12 +83,12 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/de_analysis.R" --counts counts.csv --sample
 
 ## Expert decisions
 
-- **Counts, not abundances.** tximport counts go in with their average transcript lengths as offsets (`DESeqDataSetFromTximport`; Soneson et al. 2015). Inputs whose columns sum to about 10^6 (TPM/CPM) or that hold non-integers without offsets (FPKM, log values) are refused (Zhao et al. 2020 explain why such normalised values mislead between-sample comparisons).
-- **Pre-filter** ≥ 10 counts in at least the smallest group size: the DESeq2 vignette's suggestion, for speed and cleaner plots. The statistical filtering is DESeq2's independent filtering on the mean count, optimised for `alpha` (Bourgon et al. 2010); filtered genes get `padj = NA`.
+- **Counts, not abundances.** tximport counts go in with their average transcript lengths as offsets (`DESeqDataSetFromTximport`; Soneson et al. 2015). Inputs whose columns sum to about 10^6 (TPM/CPM) or that hold non-integers without offsets (FPKM, log values) are refused (Zhao et al. 2020 explain why such normalized values mislead between-sample comparisons).
+- **Pre-filter** ≥ 10 counts in at least the smallest group size: the DESeq2 vignette's suggestion, for speed and cleaner plots. The statistical filtering is DESeq2's independent filtering on the mean count, optimized for `alpha` (Bourgon et al. 2010); filtered genes get `padj = NA`.
 - **Wald test on the unshrunken estimate**, BH-adjusted, alpha 0.05 (DESeq2 defaults except alpha, which `results()` must receive to tune the filter). Cook's-distance outliers follow DESeq2's defaults: counts are replaced when a group has 7 or more replicates; otherwise a gene with an outlier in a group of 3 or more replicates gets p = NA (`status = count_outlier`).
-- **apeglm shrinkage is for ranking and plots only** (Zhu et al. 2019). The p-values come from the Wald test on the MLE; the shrunken column has no p-value. apeglm needs a model coefficient, so for a denominator that is not the reference level the factor is re-levelled and `nbinomWaldTest` re-run (DESeq2 vignette).
+- **apeglm shrinkage is for ranking and plots only** (Zhu et al. 2019). The p-values come from the Wald test on the MLE; the shrunken column has no p-value. apeglm needs a model coefficient, so for a denominator that is not the reference level the factor is re-leveled and `nbinomWaldTest` re-run (DESeq2 vignette).
 - **LRT** for 3+ level factors, interactions and time courses: it tests all dropped terms together; its `log2FoldChange` column describes only one coefficient (named in the report).
-- **`--lfc-threshold`** tests against a fold-change threshold. Filtering significant genes by fold change afterwards does not control the FDR for that threshold.
+- **`--lfc-threshold`** tests against a fold-change threshold. Filtering significant genes by fold change afterward does not control the FDR for that threshold.
 - **Refusals.** A compared group with one sample (no biological replicate; an unreplicated level outside the comparison only gives a warning), a design matrix that is not full rank (batch completely confounded with treatment, nesting, empty interaction cells; DESeq2 vignette, "Model matrix not full rank"), no residual degrees of freedom, and a missing reference level all stop the run with an explanation. Partly confounded batches give a warning.
 - **Replicates:** at least 2 per tested group are required; fewer than 3 gives a warning. Schurch et al. (2016) found that with 3 replicates most tools detect only 20-40% of the DE genes found with 42 replicates, and recommend at least 6 (12 to detect small fold changes).
 
@@ -96,7 +96,7 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/de_analysis.R" --counts counts.csv --sample
 
 - Negative-binomial simulations (1200 genes, 4 vs 4 in two batches, 10% DE at 2- to 4-fold): mean empirical FDR 0.06 over 5 seeds at nominal 0.05 (0.065 over 15 seeds in a separate calibration), power 0.88. The test allows FDR ≤ 0.08.
 - apeglm: shrunken fold changes of strongly expressed DE genes lie within 0.2 log2 units of the truth (median); noisy null estimates shrink by more than half; Wald p-values are unchanged.
-- Reversed contrasts negate fold changes exactly; the re-levelled apeglm path mirrors the forward contrast (r > 0.999).
+- Reversed contrasts negate fold changes exactly; the re-leveled apeglm path mirrors the forward contrast (r > 0.999).
 - tximport offsets: with simulated isoform switching (same abundance, doubled length), ≤ 10% of switching genes are called DE with offsets, versus ≥ 50% without.
 - **LRT limitation:** with 3 replicates per genotype × time cell, DESeq2's LRT p-values were anti-conservative in AgriClaw simulations: among null genes, 2.0% had p < 0.01 and 0.34% had p < 0.001. Empirical FDR was about 0.10 at nominal 0.05 (mean 0.098 over 10 seeds) and about 0.06 at nominal 0.025 (0.058 over 8 seeds). The report warns in this situation. Lund et al. (2012) proposed quasi-likelihood F-tests with shrunken dispersions, which compared favourably for FDR estimation in their simulations (edgeR's glmQLFit/glmQLFTest), but they are not part of this skill.
 - Refusals are tested: TPM, FPKM, log values, NA counts, unreplicated groups, confounded and nested designs, and a missing reference level.
@@ -106,7 +106,7 @@ Rscript "${CLAUDE_SKILL_DIR}/scripts/de_analysis.R" --counts counts.csv --sample
 - Read the Warnings section of `report.md` first and pass every warning on.
 - **p-value histogram** of tested genes: expect a flat histogram with a peak near 0. A U shape, a hump in the middle or a peak near 1 suggests a missing batch term, outlier samples or a wrong model. Stop and tell the user.
 - **Dispersion plot:** gene estimates should scatter around the fitted trend. A cloud far above it points to outliers or mixed sample types.
-- **PCA:** if samples group by an unmodelled factor (lane, date, block), stop and ask whether to add it to the design.
+- **PCA:** if samples group by an unmodeled factor (lane, date, block), stop and ask whether to add it to the design.
 - More than about 1% of genes flagged as count outliers suggests a bad sample; go back to the claw-rnaseq-import QC.
 - Never change `--alpha`, drop samples or switch the design after seeing results in order to obtain more DE genes. Report zero or few DE genes honestly, with group sizes.
 - Report `padj` from the test. Use shrunken fold changes for ranking and effect sizes, and say which column was used.

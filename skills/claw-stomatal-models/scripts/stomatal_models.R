@@ -14,7 +14,7 @@
 #   Rscript scripts/stomatal_models.R --input licor_tidy.csv --curve-cols genotype,plot
 #   Rscript scripts/stomatal_models.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-stomatal-models"
 VERSION <- "1.0.0"
@@ -205,7 +205,7 @@ check_cs <- function(cs, what) {
 check_vpd <- function(vpd, what) {
   mx <- max(vpd, na.rm = TRUE)
   if (mx > PLAUSIBLE$vpd_max)
-    stop(what, " reaches ", signif(mx, 4), ". Leaf VPD cannot exceed the saturation vapour pressure ",
+    stop(what, " reaches ", signif(mx, 4), ". Leaf VPD cannot exceed the saturation vapor pressure ",
          "(about 9.6 kPa at 45 C), so D is not in kPa: values in the hundreds or thousands are Pa ",
          "(divide by 1000), tens are hPa or mbar (divide by 10).", call. = FALSE)
   if (stats::median(vpd, na.rm = TRUE) < PLAUSIBLE$vpd_min)
@@ -388,7 +388,7 @@ curve_metadata <- function(points, curve_cols) {
   m
 }
 
-analyse_stomatal <- function(df, opt) {
+analyze_stomatal <- function(df, opt) {
   curve_cols <- split_cols(opt$curve_cols)
   models <- tolower(split_cols(opt$models))
   if (!length(models) || !all(models %in% c("ball-berry", "medlyn")))
@@ -500,11 +500,11 @@ write_report <- function(res, opt, input, out_dir, fig) {
              if (length(w)) paste("-", w) else "None.", "",
              "## Results", "",
              sprintf("Input: `%s`. %d curve(s); %d of %d points used.", input, nrow(p), sum(pts$used_in_fit), nrow(pts)), "",
-             "Units: g0 in mol m-2 s-1 (water vapour); Ball-Berry g1 dimensionless (hs as a fraction, Cs in umol/mol); Medlyn g1 in kPa^0.5; iWUE = A / gsw in umol CO2 per mol H2O. Standard errors are in `tables/stomatal_parameters.csv`.", "",
+             "Units: g0 in mol m-2 s-1 (water vapor); Ball-Berry g1 dimensionless (hs as a fraction, Cs in umol/mol); Medlyn g1 in kPa^0.5; iWUE = A / gsw in umol CO2 per mol H2O. Standard errors are in `tables/stomatal_parameters.csv`.", "",
              fmt_table(show), "",
              paste0("![Stomatal model fits](figures/", fig, ")"), "",
              "## Method", "",
-             paste0("Leaf-surface relative humidity (hs), CO2 (Cs) and water vapour were computed from E, gbw, H2O_s, Ca, leaf temperature and pressure with PhotoGEA ", as.character(utils::packageVersion("PhotoGEA")),
+             paste0("Leaf-surface relative humidity (hs), CO2 (Cs) and water vapor were computed from E, gbw, H2O_s, Ca, leaf temperature and pressure with PhotoGEA ", as.character(utils::packageVersion("PhotoGEA")),
                     " `calculate_gas_properties` (LI-6800 manual Appendix C; von Caemmerer & Farquhar 1981). Leaf-surface VPD = SVPleaf x (1 - hs). ",
                     "Ball-Berry: gsw = g0 + g1 A hs / Cs, fitted by linear regression (`fit_ball_berry`). Medlyn: gsw = g0 + 1.6 (1 + g1 / sqrt(D)) A / Cs, fitted by nonlinear least squares (`fit_medlyn`) with D = ",
                     if (opt$vpd_source == "licor") "the LI-6800 VPDleaf (leaf to chamber air)." else "leaf-surface VPD."), "",
@@ -539,7 +539,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   if (!nzchar(opt$input)) stop("Provide --input FILE.csv (claw-licor-6800 output), or --demo. See --help.", call. = FALSE)
   if (!nzchar(opt$out)) opt$out <- file.path("agriclaw_output", SKILL)
   dir.create(opt$out, recursive = TRUE, showWarnings = FALSE)
-  res <- analyse_stomatal(read_tidy(opt$input), opt)
+  res <- analyze_stomatal(read_tidy(opt$input), opt)
   save_table(res$params, opt$out, "stomatal_parameters.csv")
   save_table(res$points, opt$out, "stomatal_points.csv")
   fig <- plot_fits(res, opt$out)

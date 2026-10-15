@@ -13,7 +13,7 @@
 #   Rscript scripts/fieldbook.R --mode import --design field_book.csv --data export.csv --limits limits.csv
 #   Rscript scripts/fieldbook.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-fieldbook"
 VERSION <- "1.0.0"
@@ -586,7 +586,7 @@ REFERENCES <- c(
   "- Rife TW, Poland JA (2014). Field Book: An open-source application for field data collection on Android. Crop Science 54(4):1624-1627. https://doi.org/10.2135/cropsci2013.08.0579",
   "- Field Book documentation (PhenoApps): field import and export formats. https://field-book.readthedocs.io/",
   "- Leys C, Ley C, Klein O, Bernard P, Licata L (2013). Detecting outliers: Do not use standard deviation around the mean, use absolute deviation around the median. Journal of Experimental Social Psychology 49(4):764-766. https://doi.org/10.1016/j.jesp.2013.03.013",
-  "- Iglewicz B, Hoaglin DC (1993). How to Detect and Handle Outliers. ASQC Basic References in Quality Control: Statistical Techniques, vol. 16. Modified z-score cut-off 3.5 as summarised in the NIST/SEMATECH e-Handbook of Statistical Methods, section 1.3.5.17: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm")
+  "- Iglewicz B, Hoaglin DC (1993). How to Detect and Handle Outliers. ASQC Basic References in Quality Control: Statistical Techniques, vol. 16. Modified z-score cut-off 3.5 as summarized in the NIST/SEMATECH e-Handbook of Statistical Methods, section 1.3.5.17: https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm")
 
 import_warnings <- function(res, opt) {
   fl <- res$flags

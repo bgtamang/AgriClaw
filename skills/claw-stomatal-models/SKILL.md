@@ -16,7 +16,7 @@ metadata:
 
 ## What it does
 
-Computes leaf-surface relative humidity (hs), CO2 (Cs) and vapour pressure deficit (D) from LI-6800 gas exchange with PhotoGEA `calculate_gas_properties`, fits the Ball-Berry model by linear regression (`fit_ball_berry`) and the Medlyn model by nonlinear least squares (`fit_medlyn`) for each curve, and reports g0 and g1 with standard errors, fit statistics and intrinsic water-use efficiency.
+Computes leaf-surface relative humidity (hs), CO2 (Cs) and vapor pressure deficit (D) from LI-6800 gas exchange with PhotoGEA `calculate_gas_properties`, fits the Ball-Berry model by linear regression (`fit_ball_berry`) and the Medlyn model by nonlinear least squares (`fit_medlyn`) for each curve, and reports g0 and g1 with standard errors, fit statistics and intrinsic water-use efficiency.
 
 ## When to use / when not to use
 
@@ -32,7 +32,7 @@ The tidy CSV from `claw-licor-6800`, or any CSV with:
 
 | Column | Units | Needed for |
 |---|---|---|
-| `a_umol_m2_s`, `gsw_mol_m2_s` | umol m-2 s-1, mol m-2 s-1 (water vapour) | required |
+| `a_umol_m2_s`, `gsw_mol_m2_s` | umol m-2 s-1, mol m-2 s-1 (water vapor) | required |
 | curve columns | | required, named with `--curve-cols` |
 | `e_mol_m2_s`, `gbw_mol_m2_s`, `h2o_s_mmol_mol`, `ca_umol_mol`, `tleaf_c`, `pa_kpa`, `delta_pcham_kpa` | mol m-2 s-1, mmol/mol, umol/mol, C, kPa | to compute hs, Cs and D (LI-6800 data) |
 | or `rh_leaf_pct`, `cs_umol_mol`, `vpd_leaf_surface_kpa` | %, umol/mol, kPa | precomputed leaf-surface values (other instruments) |
@@ -65,13 +65,13 @@ The demo fits four synthetic light series generated with the Medlyn model and kn
   - Medlyn: `medlyn_g0_mol_m2_s`, `medlyn_g0_se`, `medlyn_g1_kpa05` (kPa^0.5), `medlyn_g1_se`, `medlyn_r2`, `medlyn_rmse_mol_m2_s`;
   - `iwue_mean_umol_mol`, `iwue_sd_umol_mol`, `a_mean_umol_m2_s`, `gsw_mean_mol_m2_s`, `vpd_mean_kpa`, `vpd_source`, `qc_flags`, `fit_error`.
 - `tables/stomatal_points.csv`: per point hs, Cs, D, Ball-Berry and Medlyn indices, fitted gsw from each model, iWUE, and whether the point was used.
-- `figures/stomatal_fits.png`: gsw against each model's index, one colour per curve (open circles excluded).
+- `figures/stomatal_fits.png`: gsw against each model's index, one color per curve (open circles excluded).
 - `report.md`: warnings first, results, method, limitations.
 
 ## Expert decisions
 
-- **Models.** Ball-Berry with an intercept: gsw = g0 + g1 A hs / Cs (Ball, Woodrow & Berry 1987; intercept form as in Collatz et al. 1991), g1 dimensionless with hs as a fraction. Medlyn: gsw = g0 + 1.6 (1 + g1 / sqrt(D)) A / Cs (Medlyn et al. 2011, with the 2012 corrigendum), gsw for water vapour, D in kPa, g1 in kPa^0.5. Both fitted by PhotoGEA (`lm`; `nls` started at g1 = 4, g0 = 0.005).
-- **Leaf-surface values.** hs, Cs and the leaf-surface water vapour come from PhotoGEA `calculate_gas_properties` (LI-6800 manual Appendix C; von Caemmerer & Farquhar 1981), using gbw as logged. D defaults to the leaf-surface VPD, SVP(Tleaf) x (1 - hs), consistent with hs and Cs. The LI-6800 `VPDleaf` is leaf to chamber air and was 0.03-0.29 kPa higher in PhotoGEA's example data; `--vpd-source licor` uses it, and the report gives the mean difference. g1 values computed with different D definitions are not comparable.
+- **Models.** Ball-Berry with an intercept: gsw = g0 + g1 A hs / Cs (Ball, Woodrow & Berry 1987; intercept form as in Collatz et al. 1991), g1 dimensionless with hs as a fraction. Medlyn: gsw = g0 + 1.6 (1 + g1 / sqrt(D)) A / Cs (Medlyn et al. 2011, with the 2012 corrigendum), gsw for water vapor, D in kPa, g1 in kPa^0.5. Both fitted by PhotoGEA (`lm`; `nls` started at g1 = 4, g0 = 0.005).
+- **Leaf-surface values.** hs, Cs and the leaf-surface water vapor come from PhotoGEA `calculate_gas_properties` (LI-6800 manual Appendix C; von Caemmerer & Farquhar 1981), using gbw as logged. D defaults to the leaf-surface VPD, SVP(Tleaf) x (1 - hs), consistent with hs and Cs. The LI-6800 `VPDleaf` is leaf to chamber air and was 0.03-0.29 kPa higher in PhotoGEA's example data; `--vpd-source licor` uses it, and the report gives the mean difference. g1 values computed with different D definitions are not comparable.
 - **Steady state.** Points logged before the stability criteria were met are excluded by default (PhotoGEA's Ball-Berry article does the same); `--keep-unstable` keeps them.
 - **iWUE** = A / gsw (umol CO2 per mol H2O; Leakey et al. 2019), per point and as the curve mean of used points. It is meaningful only at stomatal steady state; within an A-Ci or light curve usually only the first point qualifies.
 - **Unit checks (stop before fitting).** gsw above 3 mol m-2 s-1 (rule of thumb: mmol units); D above 10 kPa (physically impossible for leaves: SVP is about 9.6 kPa at 45 C, so D is in Pa or hPa); median D below 0.02 kPa; hs at most 1 (a fraction, not %); median Cs below 50 umol/mol (Pa); computed hs outside 0-100% (E in mmol, or wrong gbw or H2O units).
@@ -83,7 +83,7 @@ The demo fits four synthetic light series generated with the Medlyn model and kn
 - Simulated LI-6800 states (gsw solved so the model holds at the leaf surface): hs, Cs and D recovered from E, gbw, H2O_s, Ca, leaf temperature and pressure to 1e-9; near-noise-free curves give g0 and g1 to 1e-4.
 - 10 curves per model (8 points, gsw scatter sd 0.01 mol m-2 s-1): Ball-Berry g1 within 6.6% and Medlyn g1 within 11% of the truth, every error within 3.5 standard errors; g0 within 0.02 mol m-2 s-1.
 - Unit mistakes caught: D in Pa and hPa, gsw in mmol, hs as a fraction, Cs in Pa, E in mmol, LI-6800 VPD in Pa.
-- Not validated: Medlyn fits with g0 fixed at 0 (not offered), other stomatal models (Leuning, optimisation-based), and data from instruments other than the LI-6800 beyond the column contract.
+- Not validated: Medlyn fits with g0 fixed at 0 (not offered), other stomatal models (Leuning, optimization-based), and data from instruments other than the LI-6800 beyond the column contract.
 
 ## Checks before reporting
 

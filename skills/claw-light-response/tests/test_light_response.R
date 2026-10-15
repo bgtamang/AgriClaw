@@ -59,7 +59,7 @@ check(isTRUE(all.equal(nrh_gross(500, 0.05, 0, 30), 0.05 * 500 * 30 / (0.05 * 50
       "theta = 0 gives the rectangular hyperbola")
 
 # 2. Exact recovery from a noise-free curve ----------------------------------------
-r0 <- analyse_light(mk("nf", 0.055, 0.75, 30, 1.4), opt)$params
+r0 <- analyze_light(mk("nf", 0.055, 0.75, 30, 1.4), opt)$params
 check(abs(rel(r0$phi_incident_mol_mol, 0.055)) < 1e-4 && abs(r0$theta - 0.75) < 1e-4 &&
       abs(rel(r0$asat_umol_m2_s, 28.6)) < 1e-4 && abs(r0$rd_umol_m2_s - 1.4) < 1e-4,
       "noise-free curve: phi, theta, Asat, Rd recovered to 1e-4")
@@ -72,7 +72,7 @@ n <- 20L
 tr <- data.frame(curve = sprintf("n%02d", seq_len(n)), phi = stats::runif(n, 0.04, 0.075),
                  theta = stats::runif(n, 0.55, 0.9), pmax = stats::runif(n, 20, 45), rd = stats::runif(n, 0.8, 2.5))
 sim <- do.call(rbind, lapply(seq_len(n), function(i) with(tr[i, ], mk(curve, phi, theta, pmax, rd, noise = 0.3))))
-rs <- analyse_light(sim, opt)$params
+rs <- analyze_light(sim, opt)$params
 rs <- rs[match(tr$curve, rs$curve_id), ]
 e_phi <- rel(rs$phi_incident_mol_mol, tr$phi)
 e_as <- rel(rs$asat_umol_m2_s, tr$pmax - tr$rd)
@@ -99,21 +99,21 @@ check(cov >= 0.75, sprintf("true phi inside the 95%% Wald interval for >= 75%% o
 # 4. Absorbed-light basis -------------------------------------------------------------
 oa <- opt
 oa$absorptance <- 0.85
-ra <- analyse_light(mk("nf", 0.055, 0.75, 30, 1.4), oa)$params
+ra <- analyze_light(mk("nf", 0.055, 0.75, 30, 1.4), oa)$params
 check(isTRUE(all.equal(ra$phi_absorbed_mol_mol, ra$phi_incident_mol_mol / 0.85)), "phi(absorbed) = phi(incident) / absorptance")
 
 # 5. QC flags --------------------------------------------------------------------------
 pi_curve <- mk("pi", 0.055, 0.75, 30, 1.4)
 pi_curve$a_umol_m2_s <- pi_curve$a_umol_m2_s - 0.006 * pmax(pi_curve$qin_umol_m2_s - 1000, 0)
-check(grepl("photoinhibition", analyse_light(pi_curve, opt)$params$qc_flags), "decline at high light flagged as photoinhibition")
+check(grepl("photoinhibition", analyze_light(pi_curve, opt)$params$qc_flags), "decline at high light flagged as photoinhibition")
 sparse <- mk("sp", 0.055, 0.75, 30, 1.4, q = c(2000, 1500, 1200, 1000, 800, 600, 400, 300, 200, 100, 0))
-check(grepl("few_low_light_points", analyse_light(sparse, opt)$params$qc_flags),
+check(grepl("few_low_light_points", analyze_light(sparse, opt)$params$qc_flags),
       "only one point between 0 and 150 flags the quantum yield")
 nodark <- mk("nd", 0.055, 0.75, 30, 1.4, q = c(2000, 1500, 1200, 1000, 800, 600, 400, 300, 200, 150, 120, 100, 75))
-check(grepl("no_dark_point", analyse_light(nodark, opt)$params$qc_flags), "no point below 50 flags extrapolated Rd")
+check(grepl("no_dark_point", analyze_light(nodark, opt)$params$qc_flags), "no point below 50 flags extrapolated Rd")
 of <- opt
 of$theta <- 0.7
-rf <- analyse_light(mk("fx", 0.055, 0.75, 30, 1.4), of)$params
+rf <- analyze_light(mk("fx", 0.055, 0.75, 30, 1.4), of)$params
 check(rf$theta == 0.7 && !rf$theta_fitted, "--theta fixes the curvature")
 
 # 6. Input validation ------------------------------------------------------------------------

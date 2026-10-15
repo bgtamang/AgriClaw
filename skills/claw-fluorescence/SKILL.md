@@ -16,7 +16,7 @@ metadata:
 
 ## What it does
 
-Computes the standard saturating-pulse fluorescence parameters row by row from the four basic signals (dark-adapted Fo and Fm; light-adapted Fs and Fm', plus Fo' if measured), summarises them by group, and flags rows that break the definitions or look implausible. LI-6800 files are read with PhotoGEA, and the results are checked against the instrument's own values.
+Computes the standard saturating-pulse fluorescence parameters row by row from the four basic signals (dark-adapted Fo and Fm; light-adapted Fs and Fm', plus Fo' if measured), summarizes them by group, and flags rows that break the definitions or look implausible. LI-6800 files are read with PhotoGEA, and the results are checked against the instrument's own values.
 
 ## When to use / when not to use
 
@@ -44,7 +44,7 @@ Computes the standard saturating-pulse fluorescence parameters row by row from t
 1. Were Fo and Fm measured on dark-adapted leaves, for how long, and on the same leaf as the light-adapted flashes? Pass `--dark-adapted yes` or `no`; without it the report warns that Fv/Fm and NPQ are unconfirmed. Overnight or >= 20-30 min dark adaptation is common practice (rule of thumb; species and prior light history matter).
 2. Was Fo' measured (far-red dark pulse) or should it be estimated?
 3. Leaf absorptance: measured (per row or one value) or the default 0.84? Is the PSII share 0.5 reasonable (it can differ in C4 leaves and under far-red-rich light)?
-4. Which columns identify genotype, treatment or plant for the summary, and should PPFD levels be summarised separately (`--by-ppfd`)?
+4. Which columns identify genotype, treatment or plant for the summary, and should PPFD levels be summarized separately (`--by-ppfd`)?
 
 ## How to run
 
@@ -71,12 +71,12 @@ Options: `--absorptance`, `--f-psii` (override the defaults or the LI-6800's own
 ## Expert decisions
 
 - **Formulas**: Fv/Fm = (Fm - Fo)/Fm (Kitajima & Butler 1975); PhiPSII = (Fm' - Fs)/Fm' (Genty et al. 1989); Fv'/Fm' = (Fm' - Fo')/Fm'; qP = (Fm' - Fs)/(Fm' - Fo'); qL = qP x Fo'/Fs (Kramer et al. 2004); NPQ = (Fm - Fm')/Fm' (Bilger & Bjorkman 1990). Reviews: Maxwell & Johnson (2000), Baker (2008), Murchie & Lawson (2013). These are exactly the LI-6800's definitions (test 3).
-- **qL rather than qP** as the fraction of open PSII centres for land plants: qP assumes isolated antennae, qL connected ones (Kramer et al. 2004). Both are reported.
+- **qL rather than qP** as the fraction of open PSII centers for land plants: qP assumes isolated antennae, qL connected ones (Kramer et al. 2004). Both are reported.
 - **qN is not reported**: published definitions differ (the LI-6800's qN is (Fm - Fm')/(Fm - Fo')); use NPQ.
 - **Fo'**: a measured value is used when present (> 0); otherwise Fo' = Fo / (Fv/Fm + Fo/Fm') (Oxborough & Baker 1997), which needs dark-adapted Fo and Fm from the same leaf. The source is recorded per row.
-- **ETR** = PhiPSII x absorbed PPFD x f_PSII. Defaults: absorptance 0.84, a conventional standard value (Stemke & Santiago 2011, who measured 0.55-0.92 across 58 species), and f_PSII = 0.5, the usual equal-partitioning assumption (also the LI-6800 default `PS2/1`). Both are adjustable. For LI-6800 files the instrument's absorbed PPFD (`Qabs_fs`, from its own absorptance for each LED colour) and `PS2/1` are used unless `--absorptance` or `--f-psii` is given.
+- **ETR** = PhiPSII x absorbed PPFD x f_PSII. Defaults: absorptance 0.84, a conventional standard value (Stemke & Santiago 2011, who measured 0.55-0.92 across 58 species), and f_PSII = 0.5, the usual equal-partitioning assumption (also the LI-6800 default `PS2/1`). Both are adjustable. For LI-6800 files the instrument's absorbed PPFD (`Qabs_fs`, from its own absorptance for each LED color) and `PS2/1` are used unless `--absorptance` or `--f-psii` is given.
 - **QC thresholds** (rules of thumb, adjustable): Fv/Fm > 0.86 is flagged as implausibly high (unstressed C3 leaves average about 0.83: 0.832 +/- 0.004 over 37 species in Bjorkman & Demmig 1987, measured at 77 K); Fv/Fm < 0.75 is flagged (photoinhibition, stress, or incomplete dark adaptation). Fm' > Fm (negative NPQ) and Fs < Fo' (qP > 1) are flagged. Fo >= Fm, Fs >= Fm', Fo' >= Fm' and non-positive signals are invalid and excluded from summaries.
-- **Stale dark-adapted values** (LI-6800): the instrument keeps the last Fo/Fm and writes them on every later row. A `DarkAdaptedID` timestamp more than 12 h from the `LightAdaptedID` timestamp (rule of thumb) is flagged: Fv/Fm, NPQ and the estimated Fo' of that row describe another leaf or session. The PhotoGEA example files show this (dark-adapted values from 24 July reused on 4 and 23 August, with Fv/Fm 0.925).
+- **Stale dark-adapted values** (LI-6800): the instrument keeps the last Fo/Fm and writes them on every later row. A `DarkAdaptedID` timestamp more than 12 h from the `LightAdaptedID` timestamp (rule of thumb) is flagged: Fv/Fm, NPQ and the estimated Fo' of that row describe another leaf or session. The PhotoGEA example files show this (dark-adapted values from July 24 reused on 4 and August 23, with Fv/Fm 0.925).
 - **Fm' on the LI-6800** comes from a multiphase flash that extrapolates to infinite intensity (Loriaux et al. 2013); dark-adapted Fm measured with a different flash type can then exceed or fall short of Fm' for instrumental reasons. Ask whether both used the same flash settings when Fm' > Fm.
 - Summaries include flagged rows unless `--exclude-flagged`; they always exclude invalid rows.
 

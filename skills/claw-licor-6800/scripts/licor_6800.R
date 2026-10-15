@@ -10,7 +10,7 @@
 #   Rscript scripts/licor_6800.R --input "day1.xlsx,day2" --curve-cols genotype,plot --design-cols genotype
 #   Rscript scripts/licor_6800.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-licor-6800"
 VERSION <- "1.0.0"
@@ -151,7 +151,7 @@ write_repro_bundle <- function(out_dir, argv, inputs = character()) {
 
 # Tidy column contract shared with claw-aci-fit, claw-light-response and
 # claw-stomatal-models. `licor` is the LI-6800 column name as read (and
-# standardised) by PhotoGEA; `units` is what PhotoGEA must report for it.
+# standardized) by PhotoGEA; `units` is what PhotoGEA must report for it.
 TIDY_MAP <- data.frame(
   tidy = c("obs", "time_unix_s", "elapsed_s", "date_local", "hhmmss",
            "a_umol_m2_s", "ci_umol_mol", "ca_umol_mol", "gsw_mol_m2_s",

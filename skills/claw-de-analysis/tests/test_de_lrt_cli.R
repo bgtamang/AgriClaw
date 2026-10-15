@@ -173,6 +173,6 @@ check(bad2$status != 0L && any(grepl("completely confounded", bad2$output)), "CL
 bad3 <- run_cli(c("--counts", shQuote(file.path(SKILL_TEST_DIR, "demo", "counts.csv")), "--samples", shQuote(demo_samples),
                   "--design", shQuote("~ batch + condition"), "--out", shQuote(file.path(tmp, "bad3"))))
 check(bad3$status != 0L && any(grepl("reference", bad3$output)), "CLI asks for an explicit reference level")
-check(run_cli(c("--demo", "--colour", "red"))$status != 0L, "unknown option exits with an error")
+check(run_cli(c("--demo", "--color", "red"))$status != 0L, "unknown option exits with an error")
 
 cat(sprintf("PASS: %d checks (%s, part 2)\n", n_checks, SKILL))

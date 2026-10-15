@@ -48,7 +48,7 @@ make_demo <- function(dir, seed = 2026L) {
     sf::st_sfc(lapply(1:4, function(i) sf::st_point(corners[i, ])), crs = utm), 4326))
   cdf <- data.frame(corner = 1:4, lon = round(ll[, 1], 9), lat = round(ll[, 2], 9))
 
-  # RCBD: 12 entries randomised within each rep; rep r occupies passes 2r-1 and 2r.
+  # RCBD: 12 entries randomized within each rep; rep r occupies passes 2r-1 and 2r.
   plot <- seq_len(n_ranges * n_cols)
   pass <- (plot - 1L) %/% n_ranges + 1L
   pos <- (plot - 1L) %% n_ranges + 1L

@@ -80,7 +80,7 @@ def test_p_adjustment_for_etc():
     assert wb.p_adjusted(0.70, 0.0) == 0.8           # upper limit
 
 
-# --- Water balance behaviour ----------------------------------------------------------------
+# --- Water balance behavior ----------------------------------------------------------------
 
 def test_mass_balance_closes_exactly():
     rng = random.Random(2025)

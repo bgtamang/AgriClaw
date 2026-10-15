@@ -11,7 +11,7 @@
 #   Rscript scripts/selection_index.R --scenarios scenarios.csv
 #   Rscript scripts/selection_index.R --help
 #
-# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
+# Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT license.
 
 SKILL   <- "claw-selection-index"
 VERSION <- "1.0.0"
@@ -167,7 +167,7 @@ write_repro_bundle <- function(out_dir, argv, inputs = character()) {
 # ---------------------------------------------------------------------------
 
 # Truncation selection on a normal variable in an infinite population:
-# i = phi(z) / p, with z the standardised truncation point (Falconer &
+# i = phi(z) / p, with z the standardized truncation point (Falconer &
 # Mackay 1996, ch. 11).
 intensity_infinite <- function(p) {
   if (any(!is.finite(p) | p <= 0 | p >= 1))
@@ -315,7 +315,7 @@ read_matrix <- function(path, what) {
   M[cn, cn, drop = FALSE]
 }
 
-symmetrise <- function(M, what) {
+symmetrize <- function(M, what) {
   asym <- max(abs(M - t(M)))
   if (asym > 1e-6 * max(abs(M)))
     stop(what, " is not symmetric (largest |M - t(M)| = ", signif(asym, 3),
@@ -352,8 +352,8 @@ check_matrices <- function(P, G, bend = FALSE, bend_eps = 1e-4) {
            paste(rownames(G), collapse = ", "), call. = FALSE)
     G <- G[rownames(P), rownames(P), drop = FALSE]
   }
-  P <- symmetrise(P, "P")
-  G <- symmetrise(G, "G")
+  P <- symmetrize(P, "P")
+  G <- symmetrize(G, "G")
   notes <- character()
   if (any(diag(P) <= 0)) stop("P has non-positive variances on its diagonal.", call. = FALSE)
   ev_p <- eigen(P, symmetric = TRUE, only.values = TRUE)$values
@@ -619,7 +619,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
       if (length(bad)) stop("--restrict names trait(s) not in P and G: ",
                             paste(bad, collapse = ", "), call. = FALSE)
       if (is.null(w)) stop("--restrict needs --weights (the restricted index ",
-                           "maximises the economic merit of the other traits).", call. = FALSE)
+                           "maximizes the economic merit of the other traits).", call. = FALSE)
       if (length(restrict) >= length(traits))
         stop("Cannot restrict every trait.", call. = FALSE)
     }
@@ -703,7 +703,7 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
       body <- c(body, sprintf(paste0(
         "Desired-gains index: expected gains are proportional to the desired gains d. ",
         "One cycle at this intensity gives %.3g x d, so reaching d takes about %.2g ",
-        "cycle(s). This index ignores economic weights and does not maximise r_IH; ",
+        "cycle(s). This index ignores economic weights and does not maximize r_IH; ",
         "its r_IH and response_H above use the --weights merit, for comparison only."),
         1 / res$desired_cycles, res$desired_cycles), "")
     wd <- data.frame(trait = traits,
@@ -715,9 +715,9 @@ main <- function(argv = commandArgs(trailingOnly = TRUE)) {
   }
 
   limits <- c("## Limitations", "",
-              "- Expected responses assume P and G are known without error, multivariate normality, truncation selection on the index, and one generation of selection; realised responses are usually smaller because P and G are estimates.",
+              "- Expected responses assume P and G are known without error, multivariate normality, truncation selection on the index, and one generation of selection; realized responses are usually smaller because P and G are estimates.",
               "- Index results are only as good as P and G: both must describe the same population and the same unit of selection (for example, entry means over the same number of environments).",
-              "- The desired-gains index fixes the direction of response, not its size, and does not maximise the correlation with economic merit.",
+              "- The desired-gains index fixes the direction of response, not its size, and does not maximize the correlation with economic merit.",
               "")
   refs <- c("## References", "",
             "- Falconer DS, Mackay TFC (1996) Introduction to Quantitative Genetics, 4th edn. Longman, Harlow. ISBN 978-0-582-24302-6.",

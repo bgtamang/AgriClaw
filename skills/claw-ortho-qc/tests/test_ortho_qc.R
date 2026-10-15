@@ -84,7 +84,7 @@ check(status_of(qc_run(nocrs), "crs") == "fail", "missing CRS fails")
 geo <- mk(refl, "geo", res = 5e-7, crs = "EPSG:4326", x0 = -93.5, y0 = 41.3)
 rg <- qc_run(geo)
 check(status_of(rg, "crs") == "warn", "lon/lat CRS warns")
-check(abs(rg$gsd[2] - 5e-7 * 110574) < 1e-6, "pixel size of a lon/lat raster converted to metres")
+check(abs(rg$gsd[2] - 5e-7 * 110574) < 1e-6, "pixel size of a lon/lat raster converted to meters")
 aniso <- mk(refl, "aniso", res = 0.05, yres = 0.08)
 check(status_of(qc_run(aniso), "pixel_shape") == "warn", "non-square pixels warn")
 b <- terra::rast(nrows = 10, ncols = 10, xmin = 0, xmax = 10, ymin = 0, ymax = 10, crs = CRS, vals = 1:100)
@@ -186,7 +186,7 @@ expect_error(qc_run(clean, dtm = dtm), "--dtm needs --dsm", "a DTM without a DSM
 # 7. Command line: --strict, demo end to end
 expect_error(main(c("--input", dn, "--expect", "reflectance", "--strict", "--out", file.path(tmp, "strict"))),
              "QC failed", "--strict stops on a failed check")
-expect_error(main(c("--demo", "--colour", "red")), "Unknown option", "unknown option is rejected")
+expect_error(main(c("--demo", "--color", "red")), "Unknown option", "unknown option is rejected")
 out <- file.path(tempdir(), "claw-ortho-qc-demo-test")
 unlink(out, recursive = TRUE)
 cli <- run_cli(c("--demo", "--out", shQuote(out)))
