@@ -15,7 +15,7 @@ cran <- c(
   # trials
   "agricolae", "FielDHub", "SpATS", "statgenSTA", "statgenGxE", "lme4", "lmerTest", "nlme", "emmeans", "desplot",
   # genomics
-  "statgenGWAS", "qtl2", "rrBLUP", "BGLR", "vcfR",
+  "statgenGWAS", "qtl2", "rrBLUP", "BGLR", "coda", "vcfR",
   # remote sensing
   "terra", "sf", "exactextractr", "ranger", "glmnet", "signal", "phenofit",
   # physiology

@@ -46,9 +46,9 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-gwas-crop | genomics | R | done | statgenGWAS mixed model with kinship, LOCO and PCs; 35/36 simulated QTNs found, null lambda 0.94-1.08; BH FDR (statgenGWAS fdr option is faulty); 50 checks |
 | claw-ld-decay | genomics | R | done | r2 decay, Hill-Weir fit and critical distance; refuses spurious windows in low-LD panels; 50 checks |
 | claw-gene-lookup | genomics | R | done | genes in intervals from Ensembl Plants REST or a local GFF3; assembly and gene-ID checks; 50 offline checks + 1 live |
-| claw-qtl-mapping | genomics | R | building | biparental QTL mapping with permutation thresholds (qtl2) |
-| claw-genomic-prediction | genomics | R | building | GBLUP / Bayesian prediction with leakage-safe cross-validation |
-| claw-selection-index | genomics | R | building | breeder's equation, Smith-Hazel and desired-gains indices |
+| claw-qtl-mapping | genomics | R | done | qtl2 scans with permutation thresholds and LOD/Bayes intervals; reproduces the qtl2 user guide (iron data); true QTL inside the 1.5-LOD interval in 20/20 simulations; 59 checks |
+| claw-genomic-prediction | genomics | R | done | GBLUP/RR-BLUP and BGLR Bayesian models with family- or environment-grouped CV; accuracy tracks Daetwyler's expectations; random vs leave-family-out inflation shown (0.71 vs 0.40); 53 checks |
+| claw-selection-index | genomics | R | done | selection intensities, Smith-Hazel, restricted and desired-gains indices; reproduces the Ceron-Rojas & Crossa (2018) worked examples; 65 checks |
 | claw-rnaseq-import | transcriptomics | R | done | Salmon, kallisto or featureCounts import; tx2gene from GFF3/GTF; transcript-version and mapping-rate QC; 54 checks |
 | claw-de-analysis | transcriptomics | R | done | DESeq2 Wald and LRT with apeglm shrinkage; empirical FDR 0.06 at nominal 0.05; refuses TPM, unreplicated or confounded designs; LRT anti-conservatism measured and reported; 56 checks |
 | claw-enrichment | transcriptomics | R | done | over-representation with the tested genes as the universe; GO propagation via is_a/part_of; planted terms found, 0 of 47 null terms called; 44 checks |

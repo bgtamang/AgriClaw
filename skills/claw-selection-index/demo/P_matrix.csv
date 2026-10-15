@@ -1,0 +1,5 @@
+"trait","yield_kg_ha","protein_pct","oil_pct","height_cm"
+"yield_kg_ha",90000,-90,36,600
+"protein_pct",-90,1.44,-0.432,-0.48
+"oil_pct",36,-0.432,0.64,0
+"height_cm",600,-0.48,0,64

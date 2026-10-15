@@ -1,0 +1,4 @@
+trait,chr,pos_cM,additive_effect
+days_to_flowering,1,45.3,2
+days_to_flowering,3,70.8,-1.4
+plant_height_cm,2,21.6,3
