@@ -1,0 +1,4 @@
+# Needed to run the test suite and the skill validator.
+-r requirements.txt
+pytest>=7
+pyyaml>=6

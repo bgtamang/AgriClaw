@@ -1,0 +1,10 @@
+{
+  "name": "agriclaw",
+  "version": "1.0.0",
+  "description": "Tested AI-agent skills for crop research: field trials, genomics, transcriptomics, remote sensing and plant physiology. Each skill wraps established R or Python tools and checks its results against known answers.",
+  "author": { "name": "Bishal Gole Tamang" },
+  "homepage": "https://github.com/bgtamang/AgriClaw",
+  "repository": "https://github.com/bgtamang/AgriClaw",
+  "license": "MIT",
+  "keywords": ["agriculture", "plant-breeding", "field-trials", "gwas", "qtl", "rna-seq", "remote-sensing", "photosynthesis", "agent-skills"]
+}

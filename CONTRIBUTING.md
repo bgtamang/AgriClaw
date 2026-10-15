@@ -1,86 +1,42 @@
 # Contributing to AgriClaw
 
-Thanks for your interest in contributing! AgriClaw is community-driven — every skill comes from a researcher who solved a real problem and wants others to benefit.
+Thanks for helping. AgriClaw is only as good as the expertise in its skills, so contributions from people who run these analyses for real are especially welcome.
 
-## What Makes a Good Skill?
+## What makes a good skill
 
-A skill is **not** a thin wrapper around an existing tool. A good skill encodes **expert decisions** — the things you learned the hard way:
+A skill isn't a thin wrapper around a function. It captures the decisions an experienced researcher makes and a newcomer, or an AI agent, gets wrong:
 
-- The QC thresholds that actually matter
-- The model choice that avoids common pitfalls
-- The parameter defaults that work for real agricultural data
-- The sanity checks that catch silent failures
+- which design or model to use, and when not to use it;
+- the thresholds and defaults that matter, with their sources;
+- the questions to ask before analysing (units, design, assembly, …);
+- the diagnostics to check before believing a result.
 
-**Ask yourself**: "What do I know that a first-year grad student gets wrong?" That's your skill.
+Ask yourself: "What do I know about this analysis that a first-year graduate student would get wrong?"
 
-## How to Contribute a Skill
+## Adding a skill
 
-### 1. Pick a domain folder
+1. Read [CONVENTIONS.md](CONVENTIONS.md). It covers the frontmatter, layout, outputs, tests and citation rules.
+2. Copy `templates/r-skill` or `templates/python-skill` to `skills/claw-<your-skill>` and rename it.
+3. Write the script so it wraps established packages, validates its inputs and fails loudly.
+4. Add small demo data and a `--demo` option.
+5. Write tests that check results against known answers (simulation with known truth, a published worked example, or property checks), plus one end-to-end `--demo` run.
+6. Run the checks:
+   ```bash
+   python tools/validate_skills.py claw-<your-skill>
+   python -m pytest skills/claw-<your-skill>            # Python skills
+   Rscript tests/run_r_tests.R claw-<your-skill>        # R skills
+   python tools/build_catalog.py                        # refresh catalog.json and the README table
+   python tools/check_dois.py claw-<your-skill>         # look up every cited DOI (needs internet)
+   ```
+7. Open a pull request saying what expert knowledge the skill encodes and how the tests validate it.
 
-```
-skills/
-├── field/              # Trial design, GDD, soil, weather, spatial analysis
-├── genomics/           # GWAS, QTL, WGS, genomic selection, marker analysis
-├── transcriptomics/    # RNA-seq, differential expression, pathway enrichment
-├── remote-sensing/     # Orthomosaics, vegetation indices, canopy, UAV/satellite
-└── orchestrator/       # Routing and integration
-```
+## Fixing a skill
 
-### 2. Create your skill directory
+If a skill gives a wrong answer, please open an issue with a minimal input that shows it. Better still, send a fix with a test that would have caught it.
 
-```bash
-mkdir skills/your-domain/claw-your-skill
-```
+## Ground rules
 
-### 3. Write your SKILL.md
-
-Use [templates/SKILL-TEMPLATE.md](templates/SKILL-TEMPLATE.md) as a starting point. The `SKILL.md` file is the most important part — it tells the AI agent exactly how to run your pipeline.
-
-### 4. Include demo data
-
-Every skill **must** include demo data and a `--demo` flag. If someone can't try your skill in 30 seconds without their own data, they won't try it at all.
-
-```
-skills/your-domain/claw-your-skill/
-├── SKILL.md
-├── your_script.py
-└── demo_data/
-    └── example_input.csv
-```
-
-### 5. Add a reproducibility bundle
-
-Your skill's output should include:
-- `commands.sh` — exact commands to reproduce
-- `environment.yml` — dependencies
-- `checksums.sha256` — SHA-256 of all inputs and outputs
-
-### 6. Submit a PR
-
-- Fork the repo
-- Create a branch: `git checkout -b add-claw-your-skill`
-- Add your skill
-- Test: `python your_script.py --demo` should work cleanly
-- Submit a PR with a description of what expert knowledge your skill encodes
-
-## Code Standards
-
-- Python 3.9+ compatible
-- Minimal dependencies (prefer stdlib where possible)
-- No hardcoded paths
-- No cloud uploads without explicit user consent
-- Include type hints for public functions
-- Include a brief docstring for the main script
-
-## Naming Convention
-
-Skills follow the pattern `claw-{name}`:
-- `claw-gdd` (growing degree days)
-- `claw-gwas-crop` (crop GWAS)
-- `claw-trial-design` (field trial design)
-
-Keep names short, descriptive, and lowercase with hyphens.
-
-## Questions?
-
-Open an [issue](https://github.com/bgtamang/AgriClaw/issues) or start a [discussion](https://github.com/bgtamang/AgriClaw/discussions).
+- Every reference must be real and verified (check the DOI). No citation is better than an invented one.
+- Don't claim validation you didn't do. Use `status: experimental` and say what's untested.
+- Keep demo data small and freely redistributable.
+- Never commit outputs; `agriclaw_output/` is git-ignored.

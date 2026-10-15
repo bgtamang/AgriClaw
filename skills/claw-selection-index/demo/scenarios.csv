@@ -1,0 +1,5 @@
+"scenario","proportion_selected","n_candidates","h2","sigma_p","var_g","var_ge","var_e","n_env","n_rep","accuracy","sigma_a","cycle_years"
+"phenotypic_4yr",0.1,,0.45,300,,,,,,,,4
+"phenotypic_4yr_small",0.1,30,0.45,300,,,,,,,,4
+"phenotypic_4yr_varcomp",0.1,,,,40000,30000,160000,4,2,,,4
+"genomic_2yr",0.05,,,,,,,,,0.5,201.2,2

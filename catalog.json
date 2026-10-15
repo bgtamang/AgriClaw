@@ -1,0 +1,344 @@
+{
+  "skills": [
+    {
+      "name": "agriclaw",
+      "description": "Catalog and router for the AgriClaw crop-research skills. Use when a user asks a broad agriculture, plant breeding, field trial, phenotyping, genotyping, GWAS/QTL, RNA-seq, drone or satellite imagery, or plant physiology question and you need to pick which AgriClaw skill(s) to run and in what order, for example trial design, then field book, then trial analysis, then GWAS, then gene lookup.",
+      "summary": "Which AgriClaw skill to use for a request, and how the skills chain together",
+      "domain": "meta",
+      "language": "none",
+      "status": "guide",
+      "version": "1.0.0",
+      "path": "skills/agriclaw"
+    },
+    {
+      "name": "claw-gdd",
+      "description": "Compute growing degree days (GDD, heat units, GDUs, thermal time) from planting with the average or modified (86/50 °F) method, in both °C-days and °F-days, from Open-Meteo weather or a station CSV. Estimates corn (maize) growth stage dates (V6, VT/V16, silking R1, dent, black layer R6) from the cited NCH-40 table in °F-days, optionally scaled to the hybrid's GDD-to-black-layer rating. Reports daylength for soybean instead of guessing R stages, and last spring / first fall freeze and hard-freeze dates. Use when the user asks how many GDD have accumulated since planting, when corn will silk or reach black layer, whether an in-season crop is ahead or behind, or for frost dates at a field site.",
+      "summary": "Growing degree days, corn growth stages (NCH-40) and freeze dates from planting",
+      "domain": "field",
+      "language": "Python",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-gdd"
+    },
+    {
+      "name": "claw-soil",
+      "description": "Look up mapped soil properties for a US field location (latitude/longitude or map unit key) from the USDA-NRCS SSURGO soil survey through the Soil Data Access API - soil series/components, texture class by horizon, sand/silt/clay, organic matter, pH, bulk density, CEC, available water capacity and available water storage (AWS) to 25/50/100/150 cm, drainage class, water table depth, hydrologic group - with component-weighted map-unit values. Also classifies lab sand/silt/clay results into USDA texture classes. Use when the user asks what soil is at a field or trial site, its texture, drainage, pH or water-holding capacity, needs total available water for a water balance, or wants the USDA texture class of particle-size data.",
+      "summary": "USDA SSURGO soil at a field: texture, drainage, pH, organic matter, water storage",
+      "domain": "field",
+      "language": "Python",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-soil"
+    },
+    {
+      "name": "claw-water-balance",
+      "description": "Daily crop soil-water balance with the FAO-56 single crop coefficient method - Kc curve, crop evapotranspiration (ETc), total and readily available water (TAW, RAW), water-stress coefficient Ks, actual ET, root-zone depletion, deep percolation, water-stress days, and optional irrigation scheduling at a management-allowed depletion (MAD). Takes daily rain and reference ET0 (from claw-weather or a CSV) and soil water holding capacity (from claw-soil SSURGO data, field capacity and wilting point, or TAW). Use when the user asks how much water a crop used, when or whether a field was drought stressed, how many stress days occurred in a growth stage, how to schedule irrigation, or wants crop water use rather than just rainfall minus ET0.",
+      "summary": "FAO-56 daily soil-water balance: crop water use, water stress, irrigation timing",
+      "domain": "field",
+      "language": "Python",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-water-balance"
+    },
+    {
+      "name": "claw-weather",
+      "description": "Summarise growing-season weather for a field location or station - daily and monthly temperature, rainfall/precipitation, reference evapotranspiration (ET0), a simple climatic water balance (P - ET0), frost and hard-freeze days, heat days, heavy rain, and dry spells - from free Open-Meteo historical data (ERA5 reanalysis grid) or the user's weather-station CSV. Missing days are counted and reported, never treated as zero, and in-season requests stop at the last complete day. Use when the user asks what the weather was like at a trial site, how much it rained, how many hot or frost days there were, how long the longest dry spell was, or wants weather context for a field season or a site comparison.",
+      "summary": "Growing-season weather: temperature, rain, reference ET, heat and dry spells",
+      "domain": "field",
+      "language": "Python",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-weather"
+    },
+    {
+      "name": "claw-yield-units",
+      "description": "Convert crop grain yields between bushels per acre (bu/ac), lb/ac, kg/ha, t/ha (Mg/ha) and g/m2 using USDA standard bushel weights (corn 56 lb, soybean 60 lb, wheat 60 lb, barley 48 lb, oats 32 lb, ...), adjust yields to a standard moisture content (corn 15.5%, soybean 13%, wheat 13.5%) with the dry-matter formula, and scale plot harvest weights to per-area yield from harvested rows, row spacing and length (ft, in, m), for one value or a CSV of plots. Use when the user asks to convert yield units, convert bushels to kilograms per hectare, adjust yield for grain moisture or shrink, calculate yield from plot weights, or compare yields reported in different units or moisture bases.",
+      "summary": "Yield conversions (bu/ac, kg/ha, t/ha), moisture adjustment, plot-to-area scaling",
+      "domain": "field",
+      "language": "Python",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-yield-units"
+    },
+    {
+      "name": "claw-fieldbook",
+      "description": "Move field-trial data between the design and the analysis. Exports a trial field book to a Field Book app (PhenoApps) field import CSV, and imports collected data (Field Book database or table exports, or any spreadsheet, from one or several tablets) back onto the design with QC - unknown or duplicated plot IDs, plots or traits with missing data, out-of-range values, robust (MAD) outliers, decimal commas and date problems - then writes a clean, analysis-ready table. Use when the user wants to load a trial into Field Book, merge phenotype data from tablets, check or clean field data before analysis, or find data-entry errors.",
+      "summary": "Field Book app export and import, merging tablets, plot-level data QC",
+      "domain": "trials",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-fieldbook"
+    },
+    {
+      "name": "claw-met-gxe",
+      "description": "Analyse multi-environment trials (MET) from per-environment genotype BLUEs with statgenGxE - genotype-by-environment (GxE) variance components and heritability across environments, MET genotype BLUPs (weighted by stage-1 standard errors when given), AMMI and GGE biplots (which-won-where), Finlay-Wilkinson regression, stability (Shukla stability variance, Wricke ecovalence, Lin-Binns superiority, static stability) and mega-environments. Use when the user has the same genotypes in several trials, locations or years and asks about GxE, adaptation, yield stability, the best genotype across or within environments, AMMI or GGE biplots, mega-environments, or heritability over environments.",
+      "summary": "Multi-environment trials: GxE variance, heritability, stability, Finlay-Wilkinson, AMMI/GGE",
+      "domain": "trials",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-met-gxe"
+    },
+    {
+      "name": "claw-trial-analysis",
+      "description": "Analyse a single field trial with mixed models in statgenSTA - spatial P-spline models (SpATS) and design-based models (lme4) for RCBD, alpha-lattice / incomplete-block, row-column, augmented, p-rep and unreplicated designs. Gives genotype BLUEs and BLUPs, generalised heritability (Cullis or Oakey H2), CV, variance components, outliers, spatial-trend maps and a spatial vs non-spatial model comparison, and writes BLUEs with weights for multi-environment analysis or GWAS. Use when the user asks to analyse a yield trial, compute genotype means, BLUEs or BLUPs, heritability or repeatability, correct for field spatial trends, or prepare stage-1 means for a MET or GWAS.",
+      "summary": "Single-trial mixed models (SpATS spatial or lme4): BLUEs, BLUPs, heritability, outliers",
+      "domain": "trials",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-trial-analysis"
+    },
+    {
+      "name": "claw-trial-design",
+      "description": "Randomise and lay out field trials with agricolae and FielDHub - RCBD, alpha-lattice (incomplete blocks), row-column, Latin square, CRD, augmented RCBD with checks, partially replicated (p-rep), diagonal-check, split-plot, strip-plot and factorial designs. Writes a field book CSV (plot, row, column, rep, block, entry, check flag, factor levels), a field map PNG and a design summary with efficiency and seed. Use when the user asks to design or randomise a trial, make a field layout, plot plan, planting map or field book, choose between RCBD and alpha-lattice, place checks in an early-generation yield trial, or set up a split-plot or strip-plot experiment.",
+      "summary": "Randomise and lay out trials: RCBD, alpha-lattice, row-column, augmented, p-rep, split, strip",
+      "domain": "trials",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-trial-design"
+    },
+    {
+      "name": "claw-gene-lookup",
+      "description": "Find the genes inside GWAS or QTL intervals and list their IDs, coordinates, strands, descriptions and distance to the peak SNP. Genes come from the Ensembl REST API, which serves Ensembl Plants genomes (soybean glycine_max, maize zea_mays, wheat triticum_aestivum, rice oryza_sativa, sorghum sorghum_bicolor, Arabidopsis arabidopsis_thaliana and others), or from a local GFF3 annotation for any assembly. The skill checks that the coordinates and the annotation use the same genome assembly, matches chromosome names (Gm01/Chr01/1), and converts 0-based BED coordinates. Use when the user asks which genes are near a significant SNP or in a QTL region, for candidate genes, gene annotation of GWAS hits, genes within an LD window, or to annotate qtl_regions.csv from claw-gwas-crop.",
+      "summary": "Genes inside GWAS or QTL intervals from Ensembl Plants or a local GFF3, with assembly checks",
+      "domain": "genomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-gene-lookup"
+    },
+    {
+      "name": "claw-genomic-prediction",
+      "description": "Genomic prediction (genomic selection) of breeding values from SNP markers with GBLUP and RR-BLUP (rrBLUP) and optional Bayesian models BayesB, BayesC and Bayesian ridge regression (BGLR), evaluated by leakage-aware cross-validation - repeated k-fold, family-stratified folds, leave-one-family-out, and CV1/CV2 for multi-environment trials. Reports predictive ability r(y, y_hat) per fold (mean and SD), accuracy r/sqrt(h2), prediction bias (slope of observed on predicted), relatedness between test and training lines, and GEBVs for unphenotyped selection candidates. Use when the user asks for genomic prediction, genomic selection, GEBVs or GEBV ranking, GBLUP, rrBLUP, ridge regression BLUP, BayesB, BayesC, Bayesian alphabet, prediction accuracy, cross-validation of genomic prediction, training population design, predicting new families or untested lines, or sparse testing across environments.",
+      "summary": "Genomic prediction (GBLUP, RR-BLUP, Bayesian) with leakage-safe cross-validation",
+      "domain": "genomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-genomic-prediction"
+    },
+    {
+      "name": "claw-gwas-crop",
+      "description": "Genome-wide association study (GWAS) for crop diversity panels and breeding lines with a mixed linear model (statgenGWAS). Uses a marker kinship matrix (Astle-Balding, VanRaden or IBS), optional leave-one-chromosome-out (LOCO) kinship, principal components (Q+K model) and covariates, and a MAF filter. Applies Bonferroni or Benjamini-Hochberg FDR thresholds and reports the genomic-control inflation factor lambda, with QQ and Manhattan plots. Groups significant SNPs into QTL regions using an LD distance. Use when the user has SNP genotypes (0/1/2 table or VCF) and one phenotype value (BLUE) per line, and asks for GWAS, association mapping, marker-trait associations, MLM, EMMA, Q+K or kinship models, significant SNPs, QTL regions or candidate windows, Manhattan or QQ plots, or why GWAS p-values look inflated.",
+      "summary": "Mixed-model GWAS with kinship, LOCO and principal components (statgenGWAS)",
+      "domain": "genomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-gwas-crop"
+    },
+    {
+      "name": "claw-ld-decay",
+      "description": "Linkage disequilibrium (LD) decay analysis for crop SNP data. Computes r2 between marker pairs within chromosomes and fits the Hill and Weir (1988) decay curve by nonlinear least squares, as in Remington et al. (2001), alongside a model-free binned curve. Reports the distance at which r2 falls to 0.2 and to half its maximum, per chromosome and genome-wide, plus the background r2 of unlinked markers. Writes an LD window table that sets GWAS QTL-region and candidate-gene search windows. Use when the user asks how fast LD decays, for the LD decay or half-decay distance, the extent of LD in a panel or population, r2-versus-distance plots, how wide a GWAS candidate window should be, or what marker density association mapping needs.",
+      "summary": "LD decay curves and the critical distance for candidate-gene windows",
+      "domain": "genomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-ld-decay"
+    },
+    {
+      "name": "claw-marker-qc",
+      "description": "Quality control and format conversion for crop SNP genotype data from VCF, HapMap (TASSEL) or a 0/1/2 marker matrix. Reports marker call rate, minor allele frequency (MAF), heterozygosity and monomorphic markers; sample call rate, heterozygosity outliers (DNA contamination, seed mix or outcrossing in inbred lines) and duplicate or near-identical samples by identity-by-state (IBS); segregation distortion (chi-square; RIL/DH 1:1, F2 1:2:1, backcross 1:1) and parent consistency for biparental mapping populations. Writes a filtered 0/1/2 ALT-allele-count matrix (optionally VCF) ready for GWAS, LD decay, QTL mapping or genomic prediction. Use when the user has SNP-chip, GBS or sequencing genotypes and asks to clean, filter or QC markers, check missing data, find duplicated or mislabelled lines, check heterozygosity or off-types, test segregation ratios, or convert VCF/HapMap to a 0/1/2 matrix.",
+      "summary": "Genotype QC: call rate, MAF, heterozygosity, duplicates, distortion; VCF and HapMap",
+      "domain": "genomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-marker-qc"
+    },
+    {
+      "name": "claw-qtl-mapping",
+      "description": "Map quantitative trait loci (QTL) in biparental and multiparent crop populations with R/qtl2 - recombinant inbred lines (RIL), F2, backcross, doubled haploids, and MAGIC or multi-parent RILs from a qtl2 control file. Computes genotype probabilities with a genotyping-error hidden Markov model, runs Haley-Knott regression or a LOCO linear mixed model genome scan, sets genome-wide LOD thresholds by permutation (5% and 10%, separate X thresholds), finds peaks with 1.5-LOD support or Bayes credible intervals (also in Mb when a physical map is given), estimates additive and dominance or founder allele effects with standard errors and percent variance explained, and reports marker QC (missing data, segregation distortion, duplicate lines). Use when the user asks for QTL mapping, interval mapping, a LOD scan or LOD profile, QTL support intervals, permutation thresholds, linkage mapping in a RIL, DH or F2 population, MAGIC or multiparent QTL analysis, or finding loci for a trait in a biparental cross.",
+      "summary": "QTL mapping in biparental and multiparent populations with permutation thresholds (qtl2)",
+      "domain": "genomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-qtl-mapping"
+    },
+    {
+      "name": "claw-selection-index",
+      "description": "Predict response to selection and build multi-trait selection indices for plant breeding. Computes selection intensity from the proportion selected (with an exact small-population correction), the breeder's equation R = i h2 sigma_P and genetic gain per year i r sigma_A / L, the Smith-Hazel optimum index from phenotypic (P) and genetic (G) covariance matrices and economic weights, the Pesek-Baker desired-gains index, and the Kempthorne-Nordskog restricted index, with expected gain per trait and index accuracy r_IH. Checks that G is positive semi-definite and offers bending. Use when the user asks about selection intensity, expected genetic gain, response to selection, genetic gain per year or cycle, the breeder's equation, a selection index, economic weights, index coefficients, desired gains, restricting a trait (for example holding plant height or maturity constant), or comparing breeding strategies.",
+      "summary": "Response to selection, selection intensity, Smith-Hazel and desired-gains indices",
+      "domain": "genomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-selection-index"
+    },
+    {
+      "name": "claw-coexpression",
+      "description": "Weighted gene co-expression network analysis (WGCNA) for crop RNA-seq - filters low-expression and low-variance genes, flags outlier samples, optional ComBat batch removal, picks the soft-thresholding power for a signed network, finds co-expression modules (blockwiseModules), module eigengenes, module-trait correlations with Benjamini-Hochberg correction, hub genes by module membership (kME), and a Cytoscape edge list. Use when the user asks for WGCNA, co-expression modules, gene co-expression networks, hub genes, module-trait relationships, eigengenes, or which gene modules relate to traits such as yield, drought tolerance, stomatal conductance or nutrient content across many samples (at least 15, preferably 20 or more) of soybean, maize, wheat, rice or other plants.",
+      "summary": "WGCNA co-expression modules and module-trait relationships",
+      "domain": "transcriptomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-coexpression"
+    },
+    {
+      "name": "claw-de-analysis",
+      "description": "Differential expression analysis of RNA-seq counts with DESeq2 - design formula with batch or block, explicit control/reference levels, pairwise contrasts (Wald test) or likelihood-ratio tests for time courses and multi-level factors, independent filtering, Benjamini-Hochberg FDR, apeglm log2 fold-change shrinkage for ranking, MA plot, volcano plot and PCA. Refuses TPM/FPKM input, unreplicated groups and batch confounded with treatment. Works for any crop (soybean, maize, wheat, rice) from tximport (Salmon/kallisto) or featureCounts counts. Use when the user asks for DEGs, differentially expressed genes, DESeq2, fold changes, up- and down-regulated genes between treatments or genotypes, drought, heat or stress versus control comparisons, time-course RNA-seq, or volcano and MA plots.",
+      "summary": "Differential expression with DESeq2: contrasts, likelihood-ratio tests, shrunken fold changes",
+      "domain": "transcriptomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-de-analysis"
+    },
+    {
+      "name": "claw-enrichment",
+      "description": "Gene set over-representation analysis (ORA) for crop RNA-seq results with clusterProfiler - GO (BP, MF, CC), KEGG, MapMan, PANTHER or any gene-to-term table from crop annotation files (Phytozome annotation_info, Ensembl Plants BioMart, GAF), no OrgDb package needed. Uses the tested (expressed) genes as the background universe, optional GO propagation to parent terms with GO.db, gene-set size limits, Benjamini-Hochberg correction, and an ID check that catches mismatched gene IDs (e.g. soybean Glyma.01G000100 vs Glyma01g00010, or transcript vs gene IDs). Use when the user asks for GO enrichment, KEGG pathway enrichment, functional enrichment, over-represented terms or pathways among DE genes, up- or down-regulated genes, or the genes of a co-expression module, in soybean, maize, wheat, rice or other plants.",
+      "summary": "GO, KEGG, MapMan or custom term enrichment against the correct background",
+      "domain": "transcriptomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-enrichment"
+    },
+    {
+      "name": "claw-rnaseq-import",
+      "description": "Import Salmon (quant.sf), kallisto (abundance.tsv) or featureCounts RNA-seq quantifications into gene-level counts with tximport, build the transcript-to-gene table (tx2gene) from a GFF3/GTF or a table, catch transcript ID mismatches (version suffixes, Phytozome vs Ensembl ID styles, wrong annotation release), and run sample QC - mapping rate, library size, detected genes, sample correlations, PCA on VST and outlier flags. Built for crops and non-model plants (soybean, maize, wheat, rice) whose annotation comes from GFF3 files rather than OrgDb packages. Use when the user has Salmon or kallisto output folders, quant.sf files or a featureCounts matrix and asks to import them, summarise transcripts to genes, make a gene count matrix, check RNA-seq sample quality, or find outlier samples before differential expression.",
+      "summary": "Import Salmon, kallisto or featureCounts output to gene counts, with sample QC",
+      "domain": "transcriptomics",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-rnaseq-import"
+    },
+    {
+      "name": "claw-canopy-cover",
+      "description": "Estimate per-plot green canopy cover (fractional vegetation cover, percent ground cover) from RGB drone/UAV orthomosaics with the excess-green index (ExG) and one Otsu threshold per flight, or ExG minus ExR with a zero threshold. Counts and excludes saturated (glare), dark (shadow) and no-data pixels, cross-checks the two methods, and writes a vegetation mask plus QC images. Use when the user asks for canopy cover, ground cover, green cover percentage, vegetation fraction, canopy closure or early vigour per plot from RGB or drone images.",
+      "summary": "Per-plot green canopy cover from RGB drone orthomosaics",
+      "domain": "remote-sensing",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-canopy-cover"
+    },
+    {
+      "name": "claw-ortho-qc",
+      "description": "Quality-check a drone/UAV orthomosaic (and optional DSM/DTM) before per-plot extraction - CRS and projection, ground sampling distance (pixel size) against plot size, rotation, extent versus the plot grid, band count and data type, reflectance versus digital numbers, declared NoData and zero collars, NoData holes and plot coverage, saturation, DSM elevation sanity, spikes and canopy height - each check pass, warn or fail against stated thresholds. Includes an OpenDroneMap processing guide (radiometric calibration with reflectance panels, ground control points, overlap and GSD trade-offs). Use when the user asks to check, validate or QC an orthomosaic, orthophoto, DSM or drone image, asks why plot values look wrong, or asks how to process drone imagery for plot trials.",
+      "summary": "Check a drone orthomosaic and DSM before plot extraction; processing guide",
+      "domain": "remote-sensing",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-ortho-qc"
+    },
+    {
+      "name": "claw-plot-grid",
+      "description": "Build plot polygons (GeoPackage) for a field trial from the four field corners, or one corner plus a bearing, and the layout - ranges x columns (rows), plot length, plot width (rows x row spacing), alleys - with serpentine or row-wise plot numbering from any start corner. Converts lon/lat to the local UTM zone so plots, buffers and areas are in metres, trims plot ends and sides, joins a claw-trial-design field book, and draws a numbered plot map. Use when the user asks for a plot grid, plot boundaries, plot shapefile or polygons, a field map, or needs plots to extract drone/UAV or satellite data per plot or to match plot numbers to an orthomosaic.",
+      "summary": "Plot polygons from field corners and layout, joined to the field book",
+      "domain": "remote-sensing",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-plot-grid"
+    },
+    {
+      "name": "claw-vi-extract",
+      "description": "Extract per-plot vegetation indices (NDVI, NDRE, GNDVI, OSAVI, EVI2, MCARI2, CIred-edge) from multispectral drone/UAV orthomosaics (MicaSense RedEdge-MX or Altum, DJI P4 Multispectral) or satellite images (Sentinel-2 L2A, PlanetScope) with plot polygons. Gives coverage-weighted plot mean, median, p10, p90, SD and pixel counts (exactextractr), handles reflectance scale and offset (including the Sentinel-2 -1000 offset), refuses uncalibrated digital numbers, offers a soil/shadow mask (NDVI threshold or Otsu) and inward buffers, and warns about mixed pixels. Use when the user asks for NDVI or other vegetation indices per plot, plot-level reflectance, or zonal statistics of drone or satellite imagery over field-trial plots.",
+      "summary": "Per-plot vegetation indices (NDVI, NDRE, GNDVI, OSAVI, EVI2, MCARI2) from multispectral imagery",
+      "domain": "remote-sensing",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-vi-extract"
+    },
+    {
+      "name": "claw-vi-timeseries",
+      "description": "Smooth per-plot vegetation-index time series (NDVI, NDRE, EVI, GNDVI) from drone/UAV flights or satellites (Sentinel-2, Landsat, PlanetScope) and extract crop phenology metrics - peak NDVI and peak date, green-up, onset of senescence, senescence rate, stay-green, area under the curve (AUC) and season length - on a days-after-planting or growing-degree-day axis. Fits a double logistic (Beck or Elmore), LOESS or Savitzky-Golay curve, down-weights cloud and shadow drops with upper-envelope weighting, refuses curves for sparse series, and never extrapolates past the last flight. Use when the user has a long table of plot x date x VI (e.g. from claw-vi-extract) and asks for VI curves, phenology dates, senescence timing, canopy duration, NDVI AUC, or time-series features for yield prediction.",
+      "summary": "Smooth vegetation-index time series and extract phenology: green-up, peak, senescence, AUC",
+      "domain": "remote-sensing",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-vi-timeseries"
+    },
+    {
+      "name": "claw-yield-prediction",
+      "description": "Predict crop yield from remote-sensing features - NDVI/VI time-series metrics (from claw-vi-timeseries), per-date vegetation indices, canopy cover, weather summaries - with elastic net (glmnet) and random forest (ranger), and measure prediction accuracy with nested, leakage-safe cross-validation. Schemes are leave-one-environment-out, leave-genotype-out, leave-year-out and new genotypes in a new environment; random k-fold is shown only for comparison. Reports r, RMSE, relative RMSE, bias, both R2 definitions (squared correlation and 1 - SSE/SST), within-environment accuracy and permutation importance. Flags inflated accuracy, temporal leakage (late-season features in an early forecast) and models worse than the mean. Use when the user asks to predict or forecast yield from drone, UAV or satellite data, build a phenomic or machine-learning yield model, cross-validate one, or check whether a reported prediction accuracy is inflated by leakage.",
+      "summary": "Predict yield from imagery features with grouped (leakage-safe) cross-validation",
+      "domain": "remote-sensing",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-yield-prediction"
+    },
+    {
+      "name": "claw-aci-fit",
+      "description": "Fit C3 and C4 CO2-response (A-Ci) curves from LI-COR LI-6800 gas exchange with PhotoGEA to estimate Vcmax, J, Jmax, TPU and RL (respiration in the light) at 25 C and at leaf temperature with confidence intervals, and Vcmax, Vpmax and RL for C4 crops such as maize and sorghum (von Caemmerer model). Flags curves with too few low- or high-Ci points, limitations supported by too few points, a drop in A when CO2 returns to the reference level (incomplete induction or non-steady state, which can masquerade as down-regulation), stomatal closure at high CO2, negative respiration and poor fits. Use when the user has A-Ci or CO2-response curves and asks for Vcmax, Jmax, photosynthetic capacity, Farquhar / FvCB parameters, biochemical limitation or acclimation to elevated CO2.",
+      "summary": "Fit C3 and C4 A-Ci curves: Vcmax, J, TPU, Vpmax (PhotoGEA)",
+      "domain": "physiology",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-aci-fit"
+    },
+    {
+      "name": "claw-fluorescence",
+      "description": "PAM chlorophyll-fluorescence parameters from a CSV or LI-COR LI-6800 fluorometer files - Fv/Fm (maximum quantum efficiency of PSII), PhiPSII (PhiPS2, Y(II), operating efficiency), Fv'/Fm', qP, qL, NPQ, estimated Fo' (Oxborough-Baker) and electron transport rate (ETR) - with quality-control flags for dark adaptation, implausible Fv/Fm, Fm' greater than Fm, impossible signal orders and stale dark-adapted values reused by the instrument. Use when the user has Fo, Fm, Fs and Fm' (or an LI-6800 file with fluorometer data) and asks for Fv/Fm, photoinhibition or stress screening, PSII efficiency, NPQ, qL, qP, ETR, photoprotection, or wants to check fluorescence data quality.",
+      "summary": "PAM chlorophyll fluorescence: Fv/Fm, PhiPSII, qP, qL, NPQ, ETR",
+      "domain": "physiology",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-fluorescence"
+    },
+    {
+      "name": "claw-growth-analysis",
+      "description": "Classical and functional plant growth analysis from sequential destructive harvests. Computes relative growth rate (RGR) from the mean of ln dry mass with standard errors and confidence intervals (avoiding the ln-of-means bias), net assimilation rate (NAR, unit leaf rate), leaf area ratio (LAR), specific leaf area (SLA) and leaf mass fraction (LMF), plus a spline-based RGR(t) curve with confidence bands and RGR versus plant size. Use when the user has dry mass, leaf area and leaf mass from repeated harvests of plants (genotypes or treatments in pots, growth chambers or the field) and asks for growth rates, RGR, NAR, ULR, LAR, SLA, LMF/LWR, growth curves, Hunt or Poorter style growth analysis, or comparing growth between genotypes or treatments.",
+      "summary": "Growth analysis from sequential harvests: RGR, NAR, LAR, SLA, LMF",
+      "domain": "physiology",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-growth-analysis"
+    },
+    {
+      "name": "claw-licor-6800",
+      "description": "Read, combine and quality-check LI-COR LI-6800 photosynthesis (gas exchange) log files, plaintext or Excel .xlsx, with PhotoGEA, and write one tidy CSV for A-Ci, light-response and stomatal-model fitting. Stops on Excel logs whose formulas were never calculated (A, gsw, Ci read as 0 or blank), records file and instrument serial numbers, flags Ci < 0, Ci > Ca, negative gsw, implausible leaf temperature, unstable points and tiny CO2 differentials, and warns when genotypes or treatments were measured on different instruments (machine confounding). Use when the user has Licor 6800 / LI6800 files or gas-exchange data from several machines and wants to load, merge, clean or QC them, or before fitting Vcmax, light curves or Ball-Berry/Medlyn models.",
+      "summary": "Read and QC LI-COR LI-6800 log files (Excel and plain text)",
+      "domain": "physiology",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-licor-6800"
+    },
+    {
+      "name": "claw-light-response",
+      "description": "Fit photosynthetic light-response curves (A-Q, A vs PPFD or PAR) from LI-COR LI-6800 gas exchange with the non-rectangular hyperbola (minpack.lm) to estimate light-saturated net photosynthesis (Asat), apparent quantum yield, curvature (theta), dark respiration (Rd), light compensation point and a light saturation point defined as the PPFD where A reaches 90% of Asat. Flags too few low-light points for the quantum yield, photoinhibition at high light, curvature at its bounds and extrapolated saturation points; reports the quantum yield on an incident-light basis unless leaf absorptance was measured. Use when the user has light curves and asks for Amax, Asat, quantum efficiency, light compensation or saturation point, or compares light responses between genotypes or treatments.",
+      "summary": "Light-response curves: Asat, quantum yield, compensation and saturation points",
+      "domain": "physiology",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-light-response"
+    },
+    {
+      "name": "claw-stomatal-models",
+      "description": "Fit the Ball-Berry (gsw = g0 + g1 A hs / Cs) and Medlyn USO (gsw = g0 + 1.6 (1 + g1 / sqrt(D)) A / Cs) stomatal conductance models per leaf or curve from LI-COR LI-6800 gas exchange with PhotoGEA, computing leaf-surface humidity, CO2 and VPD from the logged data, and report intrinsic water-use efficiency (iWUE = A / gsw). Stops on unit mistakes (VPD in Pa or hPa, gsw in mmol, relative humidity as a fraction, CO2 in Pa) and flags implausible g1, negative g0 and narrow data ranges. Use when the user asks for stomatal slope g1, g0, Ball-Berry or Medlyn parameters, stomatal sensitivity, iWUE or water-use efficiency from gas-exchange curves, for crop models or genotype comparisons.",
+      "summary": "Ball-Berry and Medlyn stomatal model fits and intrinsic water-use efficiency",
+      "domain": "physiology",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-stomatal-models"
+    },
+    {
+      "name": "claw-vpd-transpiration",
+      "description": "Transpiration response to vapour pressure deficit (VPD) from gravimetric phenotyping (pot weights on balances or load cells). Computes VPD from air temperature and relative humidity, whole-plant transpiration rate (TR) from pot-weight loss with irrigation, spike and gap screening, and fits linear versus two-segment (breakpoint) TR-VPD regressions chosen by AICc and the Davies test. Reports the VPD breakpoint (threshold) with its 95% CI, the slopes before and after, the % slope reduction, and night-time TR. Use when the user has pot weights or TR and VPD data from growth chambers or greenhouses and asks about limited transpiration (the LT trait), water-saving or slow-wilting traits, TR response to evaporative demand, a VPD breakpoint or threshold, nocturnal transpiration, or segmented regression of transpiration on VPD.",
+      "summary": "Transpiration response to VPD from pot weights, with breakpoint models",
+      "domain": "physiology",
+      "language": "R",
+      "status": "tested",
+      "version": "1.0.0",
+      "path": "skills/claw-vpd-transpiration"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+"trait","region_id","chr","start_bp","end_bp","lead_snp","lead_pos_bp","lead_p","n_significant_snps","ld_distance_bp"
+"height_cm","R01","1",2e+06,2600000,"S1_2310440",2310440,3.1e-09,4,3e+05
+"height_cm","R02","3",6500000,7300000,"S3_6912003",6912003,8.4e-07,2,3e+05
+"protein_pct","R01","2",1,450000,"S2_150020",150020,2.2e-06,1,3e+05
