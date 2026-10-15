@@ -1,132 +1,107 @@
 ---
 name: claw-soil
-description: Look up soil properties for any US location using the USDA SSURGO database via the Soil Data Access (SDA) REST API -- texture, pH, organic matter, drainage, taxonomy, AWC, and Ksat by horizon.
-version: 0.1.0
+description: Look up mapped soil properties for a US field location (latitude/longitude or map unit key) from the USDA-NRCS SSURGO soil survey through the Soil Data Access API - soil series/components, texture class by horizon, sand/silt/clay, organic matter, pH, bulk density, CEC, available water capacity and available water storage (AWS) to 25/50/100/150 cm, drainage class, water table depth, hydrologic group - with component-weighted map-unit values. Also classifies lab sand/silt/clay results into USDA texture classes. Use when the user asks what soil is at a field or trial site, its texture, drainage, pH or water-holding capacity, needs total available water for a water balance, or wants the USDA texture class of particle-size data.
+license: MIT
+compatibility: Python >= 3.9 with matplotlib; standard library otherwise. Internet access to sdmdataaccess.sc.egov.usda.gov for --lat/--lon and --mukey; --demo and --texture-input run offline. SSURGO covers the USA and some territories only.
 metadata:
-  openclaw:
-    requires:
-      bins:
-        - python3
-      env: []
-      config: []
-    always: false
-    emoji: "🌱"
-    homepage: https://github.com/bgtamang/AgriClaw
-    os: [macos, linux, windows]
-    install:
-      - kind: uv
-        package: matplotlib
-        bins: []
+  version: "1.0.0"
+  domain: field
+  language: Python
+  status: tested
+  repository: https://github.com/bgtamang/AgriClaw
 ---
 
-# Soil Properties
+# Soil properties from SSURGO
 
-You are **Soil Properties**, a specialised AgriClaw agent for soil characterisation. Your role is to look up mapped soil survey data (SSURGO) for any US location and present it in an agronomically useful format.
+## What it does
 
-## Core Capabilities
+Finds the SSURGO map unit at a point and reports what the soil survey records for it. That covers its components (soil series and their share of the map unit), each horizon's texture (SSURGO's own class), sand/silt/clay, organic matter, pH, water retention and AWC. It also reports component-weighted map-unit averages for 0–30 and 0–100 cm, available water storage by depth, drainage class and water-table depth. A separate mode classifies the user's sand/silt/clay data with the USDA texture triangle.
 
-1. **Soil Texture**: Sand, silt, and clay percentages by horizon with USDA texture triangle classification
-2. **Chemical Properties**: pH (1:1 water), organic matter percentage, CEC
-3. **Physical Properties**: Available water capacity (AWC), saturated hydraulic conductivity (Ksat), bulk density
-4. **Taxonomy**: Taxonomic classification (order, suborder, great group, subgroup, family)
-5. **Drainage**: NRCS drainage class with agronomic interpretation
-6. **Profile Visualization**: Soil profile diagram with horizons, texture bars, and pH/OM depth trends
+## When to use / when not to use
 
-## Expert Decisions Encoded
+- Use for site characterisation of US fields and trials, total available water (TAW) for **claw-water-balance**, and USDA texture classes of lab particle-size results (`--texture-input`).
+- Don't use SSURGO values as a field soil test. They are mapped estimates. Fertiliser and lime decisions need a current soil test.
+- Outside the USA, SSURGO has no data. Ask for local survey data or measured θFC/θWP instead (for claw-water-balance).
+- For weather or thermal time, use **claw-weather** or **claw-gdd**.
 
-- **Two-step API approach**: First resolves point to mukey, then queries properties -- more reliable than a single complex spatial join
-- **Major components only**: Filters to majcompflag = 'Yes' to show the dominant soil, not minor inclusions
-- **USDA texture triangle**: Full classification (12 texture classes) from sand/silt/clay percentages, not simplified
-- **Agronomic interpretation**: pH, OM, AWC, and drainage class each get plain-language crop management guidance
-- **Surface horizon priority**: Interpretations focus on the surface horizon (most relevant for planting decisions)
+## Inputs
 
-## Data Source
+| Input | Flag | Notes |
+|---|---|---|
+| Location | `--lat`, `--lon` (WGS84 decimal degrees) | Longitude is negative in the western hemisphere. A swapped pair usually lands outside SSURGO. |
+| Map unit | `--mukey 242963` | Use this instead of a point if the user knows the map unit. |
+| Lab texture data | `--texture-input FILE.csv` | Columns `sand_pct`, `silt_pct`, `clay_pct` (% of the < 2 mm fine-earth fraction). Other columns are kept. |
 
-The USDA Soil Data Access (SDA) REST API provides free, keyless access to the SSURGO database:
+Ask the user:
 
-- **API endpoint**: `https://sdmdataaccess.sc.egov.usda.gov/tabular/post.rest`
-- **Database**: Soil Survey Geographic (SSURGO) database
-- **Coverage**: Continental United States (no international coverage)
-- **Resolution**: Varies by survey area; typically 1:12,000 to 1:24,000 scale
-- **Update frequency**: SSURGO data updated periodically by NRCS
+- For the field's coordinates, not a town name. Several fields in one town can sit on very different soils.
+- Whether the field is tile-drained. SSURGO's natural drainage class and water table describe undrained conditions.
+- For lab data, whether the percentages are of the fine-earth fraction (USDA) and which particle-size limits were used. USDA uses sand 2–0.05 mm and silt 0.05–0.002 mm. Data with the international 0.02 mm sand/silt limit can't be classified with the USDA triangle.
 
-## Input Formats
+## How to run
 
-- **Coordinates**: `--lat 40.12 --lon -88.24` (decimal degrees, WGS84)
-- **Demo mode**: `--demo` (Champaign, IL)
-
-## Workflow
-
-When the user asks for soil properties:
-
-1. **Validate**: Check coordinates are provided and within US bounds
-2. **Resolve location**: Query SDA to get the map unit key (mukey) for the point
-3. **Fetch properties**: Query horizon-level soil data for all major components
-4. **Classify texture**: Apply USDA texture triangle to sand/silt/clay percentages
-5. **Interpret**: Provide agronomic guidance for pH, OM, drainage, and AWC
-6. **Visualise**: Generate soil profile diagram with texture and chemistry panels
-7. **Report**: Markdown report + CSV tables + reproducibility bundle
-
-## Example Queries
-
-- "What is the soil type at my field in Champaign, IL?"
-- "Look up soil properties for 40.08N, 88.20W"
-- "What is the drainage class and pH at my trial site?"
-- "Show me the soil profile for coordinates 42.03, -93.47"
-
-## Demo
+Commands use `${CLAUDE_SKILL_DIR}`, this skill's folder: Claude Code fills it in; in other tools, replace it with the folder that contains this SKILL.md.
 
 ```bash
-python soil.py --demo
+python "${CLAUDE_SKILL_DIR}/scripts/soil.py" --demo
+python "${CLAUDE_SKILL_DIR}/scripts/soil.py" --lat 40.08 --lon -88.20 --out results/soil
+python "${CLAUDE_SKILL_DIR}/scripts/soil.py" --mukey 426520
+python "${CLAUDE_SKILL_DIR}/scripts/soil.py" --texture-input lab_particle_size.csv --out results/texture
 ```
 
-Runs for Champaign, IL (40.08N, 88.20W). Returns soil texture, pH, organic matter, drainage class, and a profile diagram.
+The demo is Drummer silty clay loam (mukey 242963) near Champaign, Illinois, from bundled Soil Data Access responses.
 
-## Output Structure
+## Outputs
 
-```
-output/
-  report.md
-  figures/
-    soil_profile.png
-  tables/
-    soil_horizons.csv
-    component_summary.csv
-  reproducibility/
-    commands.sh
-    environment.yml
-    checksums.sha256
-```
+- `report.md`: warnings first, then the map unit, components, the dominant component's horizons, water storage and drainage, general guidance, figures and references.
+- `tables/horizons.csv`: every horizon of every component. Key columns:
+  - `texdesc` (SSURGO's representative texture), `texture_class` (the texture reported), `texture_source`;
+  - `texture_computed` (triangle cross-check) and `texture_agrees`;
+  - sand/silt/clay %, `om_pct`, `ph_h2o` and `ph_class`;
+  - `awc_cm_cm`, `w33kpa_pct_vol`, `w1500kpa_pct_vol`, `ksat_um_s`, `db_g_cm3`, `cec7_meq_100g`.
+- `tables/components.csv`: component name, percent, major flag, drainage class, hydrologic group, taxonomy.
+- `tables/mapunit_weighted_properties.csv`: depth-weighted then component-weighted means for 0–30 and 0–100 cm, with the % of the map unit that has data.
+- `tables/aws_profile.csv`: cumulative available water storage (mm) every 10 cm to 200 cm, component-weighted and for the dominant component. **This is the soil input of claw-water-balance** (`--soil-dir`).
+- `tables/mapunit_summary.csv`: SSURGO muaggatt AWS 0–25/50/100/150 cm (mm), the same values recomputed, drainage class, hydrologic group, minimum water-table depth (cm), bedrock depth, slope, capability class and survey version date.
+- `figures/soil_profile.png`, `raw/sda_responses.json` (online runs) and `reproducibility/`.
+- With `--texture-input`: `tables/texture_classes.csv`, with the class and a note for rows that can't be classified.
 
-## Dependencies
+## Expert decisions
 
-**Required**:
-- `matplotlib` (soil profile plot)
+- **Texture.** SSURGO's own representative texture description (`chtexturegrp.texdesc` where `rvindicator = 'Yes'`, joined on `chkey`) is the reported texture. It includes modifiers (gravelly, mucky), stratified layers and organic materials that sand/silt/clay alone can't express.
+- **Fallback classifier.** The 12 USDA texture classes are coded word for word from the Soil Survey Manual (Soil Science Division Staff 2017, pp. 122–124). Examples: sands, > 85% sand and silt + 1.5 × clay < 15; sandy loams, 7 to < 20% clay with > 52% sand and silt + 2 × clay ≥ 30, or < 7% clay and < 50% silt with silt + 2 × clay ≥ 30.
+  - Tests cover one point in each class, 21 boundary points, and a 0.5% grid (20,301 points) on which exactly one definition holds.
+  - The old classifier's errors are fixed: 10/70/20 is silt loam and 60/35/5 is sandy loam.
+  - Sums within 100 ± 2 points are rescaled to 100 (adjustable rule of thumb, `SUM_TOLERANCE`). Larger mismatches are refused.
+- **Map-unit weighting.** Each property is thickness-weighted over the depth range within each component, then weighted by component percent (`comppct_r`). Components without data are excluded, and the share that has data is reported.
+  - pH is averaged arithmetically, as Web Soil Survey's weighted average does. Treat averaged pH as approximate.
+- **Available water storage.** AWS to depth d = Σ AWC × horizon thickness above d, component-weighted. This is how SSURGO's `muaggatt.aws0100wta` and the other `aws*wta` columns are defined ("weighted average of all components", expressed in cm).
+  - The recomputation reproduces muaggatt to within 0.1 mm at 25, 50, 100 and 150 cm for both test map units. The report flags any map unit where they disagree by more than 5%.
+  - AWC is SSURGO's estimate of θFC − θWP (1/10 or 1/3 bar minus 15 bar), adjusted for rock fragments and salinity, so TAW(Zr) = AWS(Zr) (FAO-56 eq. 82).
+  - Storage stops at the deepest described horizon.
+- **Interpretations** (general guidance, not recommendations):
+  - Reaction classes follow Soil Survey Manual Table 3-15 (e.g. 6.6–7.3 neutral).
+  - Drainage-class text paraphrases the Manual's definitions (pp. 213–215).
+  - Organic-matter words (<1 very low, 1–2 low, 2–4 moderate, 4–6 high, ≥6 very high %) are an adjustable rule of thumb.
+- **Red flags written to the report.**
+  - Water table shallower than 200 cm: FAO-56 assumes capillary rise ≈ 0 only when the water table is more than about 1 m below the root zone.
+  - Bedrock shallower than 150 cm.
+  - Components without data, component percentages not summing to 100, and texture disagreements.
 
-**Optional**:
-- None -- uses only Python standard library (urllib, json, csv) for API calls
+## Checks before reporting
+
+- Read the Warnings section of `report.md` and pass every warning on.
+- Always say that SSURGO is mapped survey data for a map unit, not a sample of the user's field, and give the survey version date.
+- Stop and tell the user if:
+  - the point falls outside SSURGO, or the coordinates look swapped;
+  - the map unit is a complex with several major components of contrasting properties (one value hides real variation);
+  - the water table is shallow or the soil is poorly drained, and the user plans a water balance (ask about tile drainage);
+  - lab particle-size data use non-USDA size limits.
+- For the water balance, pass `tables/aws_profile.csv` (or the folder) to **claw-water-balance** and check that the chosen root depth doesn't exceed the described profile depth.
 
 ## References
 
-- Soil Survey Staff, NRCS, USDA. Soil Survey Geographic (SSURGO) Database. https://sdmdataaccess.sc.egov.usda.gov/
-- Soil Survey Staff, NRCS, USDA. Web Soil Survey. https://websoilsurvey.nrcs.usda.gov/
-- Soil Survey Division Staff (2017). Soil Survey Manual. USDA Handbook 18. https://www.nrcs.usda.gov/resources/guides-and-instructions/soil-survey-manual
-- USDA-NRCS (2023). Soil Data Access (SDA) Query Guide. https://sdmdataaccess.nrcs.usda.gov/QueryHelp.aspx
-- Soil Survey Staff (2022). Keys to Soil Taxonomy, 13th ed. USDA-NRCS.
-
-## Safety
-
-- No API key required -- SDA is a free public service
-- No data upload -- coordinates are sent only to the USDA SDA endpoint
-- SSURGO data is mapped survey data, not site-specific measurements; always recommend supplemental soil testing
-
-## Integration with Agri Orchestrator
-
-This skill is invoked by the Agri Orchestrator when:
-- User mentions "soil", "soil type", "soil texture", "drainage", "soil pH", or "soil properties"
-- User asks about field site characterisation
-- User provides coordinates and asks about land suitability
-
-It can be chained with:
-- [claw-gdd](../claw-gdd/): Combine soil data with thermal time for planting decisions
-- [claw-trial-design](../claw-trial-design/): Use soil variability to inform blocking strategy
+- Soil Science Division Staff (2017). Soil survey manual. C. Ditzler, K. Scheffe & H.C. Monger (eds.). USDA Handbook 18. Government Printing Office, Washington, D.C. Texture classes pp. 122–124; reaction classes Table 3-15; drainage classes pp. 213–215. https://www.nrcs.usda.gov/resources/guides-and-instructions/soil-survey-manual
+- Soil Survey Staff, Natural Resources Conservation Service, USDA. Soil Survey Geographic (SSURGO) Database, accessed through Soil Data Access. https://sdmdataaccess.sc.egov.usda.gov/
+- USDA-NRCS (2025). Soil Data Mart 4.3 Table Column Descriptions (muaggatt, chorizon, chtexturegrp). https://sdmdataaccess.nrcs.usda.gov/documents/TableColumnDescriptionsReport.pdf
+- Allen, R.G., Pereira, L.S., Raes, D. & Smith, M. (1998). Crop evapotranspiration: guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56. FAO, Rome. https://www.fao.org/4/x0490e/x0490e00.htm

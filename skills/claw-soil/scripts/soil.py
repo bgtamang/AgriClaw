@@ -1,796 +1,686 @@
 #!/usr/bin/env python3
-"""
-claw-soil: Soil Property Lookup via USDA Soil Data Access (SDA)
-
-Queries the SSURGO database through the SDA REST API to retrieve soil
-properties for a given location: texture, organic matter, pH, drainage,
-taxonomic classification, available water capacity, and Ksat.
+"""claw-soil: mapped soil properties for a US location from USDA-NRCS SSURGO via the
+Soil Data Access (SDA) REST API: texture (SSURGO's own class), component-weighted
+map-unit properties, available water storage by depth, drainage and water table,
+plus a USDA texture-triangle classifier for sand/silt/clay data.
 
 Usage:
-    python soil.py --demo
-    python soil.py --lat 40.08 --lon -88.20
-    python soil.py --lat 42.03 --lon -93.47 --output my_soil_report
+    python scripts/soil.py --demo
+    python scripts/soil.py --lat 40.08 --lon -88.20
+    python scripts/soil.py --mukey 242963
+    python scripts/soil.py --texture-input lab_samples.csv
+
+Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
 """
+
+from __future__ import annotations
 
 import argparse
 import csv
 import hashlib
+import importlib.metadata
 import json
-import os
+import platform
+import re
+import shlex
 import sys
+import urllib.error
+import urllib.request
 from datetime import datetime
-from urllib.request import urlopen, Request
-from urllib.error import URLError
+from pathlib import Path
+
+SKILL = "claw-soil"
+VERSION = "1.0.0"
+SKILL_DIR = Path(__file__).resolve().parent.parent
 
 # ---------------------------------------------------------------------------
-# USDA Soil Data Access (SDA) API
-# https://sdmdataaccess.sc.egov.usda.gov/
+# Helpers shared by all AgriClaw Python scripts (copy unchanged)
 # ---------------------------------------------------------------------------
 
-SDA_URL = "https://sdmdataaccess.sc.egov.usda.gov/tabular/post.rest"
+
+def write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
-def sda_query(sql):
-    """Execute a SQL query against the USDA Soil Data Access REST API.
-
-    Returns a list of dicts (one per row), or an empty list on failure.
-    The SDA API returns JSON with a 'Table' key containing rows.
-    """
-    payload = json.dumps({"query": sql, "format": "JSON+COLUMNNAME"})
-    req = Request(
-        SDA_URL,
-        data=payload.encode("utf-8"),
-        headers={
-            "Content-Type": "application/json",
-            "User-Agent": "AgriClaw/0.1",
-        },
-    )
-    try:
-        with urlopen(req, timeout=90) as resp:
-            raw = resp.read().decode("utf-8")
-    except (URLError, TimeoutError, OSError) as e:
-        print("Error contacting USDA Soil Data Access: %s" % e, file=sys.stderr)
-        return None
-
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        print("SDA returned non-JSON response. First 500 chars:", file=sys.stderr)
-        print(raw[:500], file=sys.stderr)
-        return None
-
-    if "Table" not in data:
-        # Empty dict {} means no results (not an error); other shapes may be errors
-        if data == {}:
-            return []
-        print("SDA response has no 'Table' key: %s" % json.dumps(data, indent=2)[:500],
-              file=sys.stderr)
-        return None
-
-    rows = data["Table"]
-    if len(rows) < 2:
-        # First row is column names, need at least one data row
-        return []
-
-    columns = rows[0]
-    result = []
-    for row in rows[1:]:
-        result.append(dict(zip(columns, row)))
-    return result
-
-
-# ---------------------------------------------------------------------------
-# Soil data retrieval (two-step approach for reliability)
-# ---------------------------------------------------------------------------
-
-def get_mukey_for_point(lat, lon):
-    """Get the map unit key (mukey) for a geographic point."""
-    sql = (
-        "SELECT * FROM SDA_Get_Mukey_from_intersection_with_WktWgs84("
-        "'POINT(%s %s)')" % (lon, lat)
-    )
-    rows = sda_query(sql)
-    if rows is None or len(rows) == 0:
-        return None
-    # The function returns mukey and other fields
-    mukey = rows[0].get("mukey") or rows[0].get("MUKEY")
-    if mukey is None:
-        # Try first value in the dict
-        mukey = list(rows[0].values())[0]
-    return str(mukey)
-
-
-def get_soil_properties(mukey):
-    """Get soil properties for a map unit key, including all horizons of major components."""
-    sql = """
-    SELECT
-        mapunit.muname,
-        component.compname,
-        component.comppct_r,
-        component.taxclname,
-        component.taxorder,
-        component.taxsuborder,
-        component.drainagecl,
-        component.majcompflag,
-        chorizon.hzdept_r,
-        chorizon.hzdepb_r,
-        chorizon.hzname,
-        chorizon.sandtotal_r,
-        chorizon.silttotal_r,
-        chorizon.claytotal_r,
-        chorizon.om_r,
-        chorizon.ph1to1h2o_r,
-        chorizon.awc_r,
-        chorizon.ksat_r,
-        chorizon.dbthirdbar_r,
-        chorizon.cec7_r
-    FROM mapunit
-    INNER JOIN component ON component.mukey = mapunit.mukey
-    INNER JOIN chorizon ON chorizon.cokey = component.cokey
-    WHERE mapunit.mukey = '%s'
-      AND component.majcompflag = 'Yes'
-    ORDER BY component.comppct_r DESC, chorizon.hzdept_r ASC
-    """ % mukey
-    return sda_query(sql)
-
-
-def get_mapunit_info(mukey):
-    """Get map unit level information."""
-    sql = """
-    SELECT
-        mapunit.muname,
-        mapunit.mukind,
-        mapunit.muacres,
-        legend.areaname,
-        legend.areasymbol
-    FROM mapunit
-    INNER JOIN legend ON legend.lkey = mapunit.lkey
-    WHERE mapunit.mukey = '%s'
-    """ % mukey
-    return sda_query(sql)
-
-
-# ---------------------------------------------------------------------------
-# Soil texture triangle classification
-# ---------------------------------------------------------------------------
-
-def classify_texture(sand, silt, clay):
-    """Classify soil texture using the USDA soil texture triangle.
-
-    Parameters are percentages (0-100). Returns texture class name.
-
-    Reference:
-        USDA-NRCS Soil Survey Manual, Chapter 3.
-        Soil Science Division Staff (2017). Soil Survey Manual.
-        USDA Handbook 18, Washington, D.C.
-    """
-    if sand is None or silt is None or clay is None:
-        return "Unknown"
-
-    sand = float(sand)
-    silt = float(silt)
-    clay = float(clay)
-
-    # Validate percentages sum to ~100
-    total = sand + silt + clay
-    if total < 90 or total > 110:
-        return "Unknown (invalid %)"
-
-    # USDA texture classes (checked against official NRCS triangle)
-    if clay >= 40 and sand <= 45 and silt < 40:
-        return "Clay"
-    elif clay >= 40 and silt >= 40:
-        return "Silty clay"
-    elif clay >= 35 and sand > 45:
-        return "Sandy clay"
-    elif clay >= 27 and clay < 40 and sand > 20 and sand <= 45:
-        return "Clay loam"
-    elif clay >= 27 and clay < 40 and sand <= 20:
-        return "Silty clay loam"
-    elif clay >= 20 and clay < 35 and silt < 28 and sand > 45:
-        return "Sandy clay loam"
-    elif silt >= 80 and clay < 12:
-        return "Silt"
-    elif silt >= 50 and clay >= 12 and clay < 27:
-        return "Silty clay loam"
-    elif silt >= 50 and clay < 12:
-        return "Silt loam"
-    elif silt >= 28 and silt < 50 and clay < 27 and sand <= 52:
-        return "Loam"
-    elif clay < 7 and silt < 50 and sand > 52:
-        if sand > 85:
-            return "Sand"
-        else:
-            return "Loamy sand"
-    elif clay < 20 and silt < 50 and sand >= 52:
-        return "Sandy loam"
-    elif silt >= 50:
-        return "Silt loam"
-    else:
-        return "Loam"
-
-
-# ---------------------------------------------------------------------------
-# Interpret soil properties for agronomic use
-# ---------------------------------------------------------------------------
-
-def interpret_drainage(drainage_class):
-    """Provide agronomic interpretation of drainage class."""
-    if drainage_class is None:
-        return "No data"
-    dc = str(drainage_class).lower()
-    interpretations = {
-        "excessively drained": "Very low water-holding capacity; may need irrigation. Risk of nutrient leaching.",
-        "somewhat excessively drained": "Low water retention; consider irrigation for high-demand crops.",
-        "well drained": "Ideal for most crops. Good aeration and root development.",
-        "moderately well drained": "Generally suitable; may have brief seasonal wetness at depth.",
-        "somewhat poorly drained": "Seasonal high water table; may need tile drainage for row crops.",
-        "poorly drained": "High water table; tile drainage typically required for row crops.",
-        "very poorly drained": "Standing water common; limited to wetland species unless heavily drained.",
-    }
-    return interpretations.get(dc, "See NRCS drainage class guide.")
-
-
-def interpret_ph(ph):
-    """Provide agronomic interpretation of soil pH."""
-    if ph is None:
-        return "No data"
-    ph = float(ph)
-    if ph < 4.5:
-        return "Extremely acidic -- severe Al toxicity risk; lime heavily"
-    elif ph < 5.5:
-        return "Strongly acidic -- lime recommended for most crops"
-    elif ph < 6.0:
-        return "Moderately acidic -- lime may benefit sensitive crops"
-    elif ph < 6.5:
-        return "Slightly acidic -- suitable for most crops"
-    elif ph < 7.3:
-        return "Neutral -- optimal for most crops"
-    elif ph < 7.8:
-        return "Slightly alkaline -- monitor micronutrient availability"
-    elif ph < 8.4:
-        return "Moderately alkaline -- Fe/Zn deficiency risk"
-    else:
-        return "Strongly alkaline -- sodic conditions likely"
-
-
-def interpret_om(om_pct):
-    """Provide agronomic interpretation of organic matter percentage."""
-    if om_pct is None:
-        return "No data"
-    om = float(om_pct)
-    if om < 1.0:
-        return "Very low -- limited nutrient supply and water retention"
-    elif om < 2.0:
-        return "Low -- consider cover crops and organic amendments"
-    elif om < 4.0:
-        return "Moderate -- typical for Midwest cropland"
-    elif om < 6.0:
-        return "High -- good nutrient supply and water retention"
-    else:
-        return "Very high -- excellent soil health indicator"
-
-
-# ---------------------------------------------------------------------------
-# Output generation
-# ---------------------------------------------------------------------------
-
-def write_csv(filepath, rows, fieldnames):
-    """Write a list of dicts to CSV."""
-    with open(filepath, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+def save_table(rows: list[dict], out_dir: Path, name: str) -> Path:
+    path = out_dir / "tables" / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fields = list(rows[0].keys()) if rows else []
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
         writer.writerows(rows)
+    return path
 
 
-def sha256_file(filepath):
-    """Compute SHA-256 of a file."""
+def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 16), b""):
             h.update(chunk)
     return h.hexdigest()
 
 
-def safe_float(val, fmt="%.1f"):
-    """Safely format a value as float, returning '--' if None or empty."""
-    if val is None or str(val).strip() == "":
-        return "--"
+def write_repro_bundle(out_dir: Path, argv: list[str], inputs: list[str] = (),
+                       packages: list[str] = ()) -> None:
+    """commands.sh, environment.txt and SHA-256 checksums of inputs + outputs."""
+    rd = out_dir / "reproducibility"
+    rd.mkdir(parents=True, exist_ok=True)
+    cmd = " ".join(["python", shlex.quote(str(Path(__file__).resolve()))] +
+                   [shlex.quote(a) for a in argv])
+    stamp = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
+    write_text(rd / "commands.sh",
+               f"#!/usr/bin/env bash\n# {SKILL} {VERSION}, run {stamp}\n{cmd}\n")
+    env = [f"python {platform.python_version()} ({platform.platform()})"]
+    for pkg in packages:
+        try:
+            env.append(f"{pkg} {importlib.metadata.version(pkg)}")
+        except importlib.metadata.PackageNotFoundError:
+            env.append(f"{pkg} (not installed)")
+    write_text(rd / "environment.txt", "\n".join(env) + "\n")
+    files = [Path(p) for p in inputs if p and Path(p).is_file()]
+    files += sorted(p for p in out_dir.rglob("*") if p.is_file() and rd not in p.parents)
+    lines = []
+    for p in files:
+        try:
+            label = p.resolve().relative_to(out_dir.resolve()).as_posix()
+        except ValueError:
+            label = p.resolve().as_posix()
+        lines.append(f"{sha256_file(p)}  {label}")
+    write_text(rd / "checksums.sha256", "\n".join(lines) + "\n")
+
+
+def ascii_safe(text: str) -> str:
+    """Console-safe text (Windows consoles may not encode symbols such as ° or ≥)."""
+    for a, b in (("°", "deg"), ("≥", ">="), ("≤", "<="), ("θ", "theta"), ("−", "-"), ("–", "-"), ("×", "x"),
+                 ("²", "2"), ("±", "+/-")):
+        text = text.replace(a, b)
+    return text.encode("ascii", "replace").decode("ascii")
+
+
+# ---------------------------------------------------------------------------
+# USDA texture classes (Soil Science Division Staff 2017, Soil Survey Manual, pp. 122-124)
+# ---------------------------------------------------------------------------
+
+TEXTURE_CLASSES = ["sand", "loamy sand", "sandy loam", "loam", "silt loam", "silt", "sandy clay loam",
+                   "clay loam", "silty clay loam", "sandy clay", "silty clay", "clay"]
+SUM_TOLERANCE = 2.0  # sand + silt + clay may differ from 100 by this much (rounding in source data)
+
+
+def _texture_rules(sand: float, silt: float, clay: float) -> dict[str, bool]:
+    """The 12 class definitions, word for word from the Soil Survey Manual (2017)."""
+    s15 = round(silt + 1.5 * clay, 9)
+    s2 = round(silt + 2.0 * clay, 9)
+    return {
+        "sand": sand > 85 and s15 < 15,
+        "loamy sand": 70 <= sand <= 90 and s15 >= 15 and s2 < 30,
+        "sandy loam": (7 <= clay < 20 and sand > 52 and s2 >= 30) or (clay < 7 and silt < 50 and s2 >= 30),
+        "loam": 7 <= clay < 27 and 28 <= silt < 50 and sand <= 52,
+        "silt loam": (silt >= 50 and 12 <= clay < 27) or (50 <= silt < 80 and clay < 12),
+        "silt": silt >= 80 and clay < 12,
+        "sandy clay loam": 20 <= clay < 35 and silt < 28 and sand > 45,
+        "clay loam": 27 <= clay < 40 and 20 < sand <= 45,
+        "silty clay loam": 27 <= clay < 40 and sand <= 20,
+        "sandy clay": clay >= 35 and sand > 45,
+        "silty clay": clay >= 40 and silt >= 40,
+        "clay": clay >= 40 and sand <= 45 and silt < 40,
+    }
+
+
+def usda_texture_class(sand, silt, clay, tol: float = SUM_TOLERANCE) -> tuple[str | None, str]:
+    """USDA texture class from % sand, silt and clay of the fine-earth fraction.
+
+    Returns (class or None, note). Sums within 100 +/- tol are rescaled to 100 first.
+    """
     try:
-        return fmt % float(val)
-    except (ValueError, TypeError):
-        return "--"
+        vals = [float(v) for v in (sand, silt, clay)]
+    except (TypeError, ValueError):
+        return None, "sand, silt or clay missing"
+    if any(v < 0 or v > 100 for v in vals):
+        return None, "a fraction is outside 0-100%"
+    total = sum(vals)
+    if abs(total - 100.0) > tol:
+        return None, f"sand + silt + clay = {total:g}%, not 100 ± {tol:g}"
+    sand, silt, clay = (round(v * 100.0 / total, 9) for v in vals)
+    hits = [k for k, ok in _texture_rules(sand, silt, clay).items() if ok]
+    if len(hits) != 1:  # cannot happen if the definitions partition the triangle (tested)
+        return None, f"ambiguous: {hits}"
+    note = "" if abs(total - 100.0) < 1e-9 else f"rescaled from a sum of {total:g}%"
+    return hits[0], note
 
 
-def generate_profile_plot(horizons, output_dir):
-    """Generate a soil profile diagram showing horizons with depth and properties."""
+def base_texture_from_texdesc(texdesc: str | None) -> str | None:
+    """Reduce an SSURGO texture description to one of the 12 basic classes.
+
+    'Gravelly silt loam' -> 'silt loam'; 'Loamy fine sand' -> 'loamy sand'.
+    Stratified or 'x to y' descriptions and non-mineral materials return None.
+    """
+    if not texdesc:
+        return None
+    s = texdesc.strip().lower()
+    if " to " in s or "stratified" in s:
+        return None
+    s = re.sub(r"\b(?:very\s+)?(?:coarse|fine)\s+(?=sand)", "", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    for cls in sorted(TEXTURE_CLASSES, key=len, reverse=True):
+        if s == cls or s.endswith(" " + cls):
+            return cls
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Interpretation tables
+# ---------------------------------------------------------------------------
+
+def reaction_class(ph) -> str:
+    """Soil Survey Manual (2017) Table 3-15 reaction classes (pH rounded to 0.1)."""
+    if ph is None:
+        return ""
+    p = round(float(ph), 1)
+    for upper, name in ((3.4, "Ultra acid"), (4.4, "Extremely acid"), (5.0, "Very strongly acid"),
+                        (5.5, "Strongly acid"), (6.0, "Moderately acid"), (6.5, "Slightly acid"),
+                        (7.3, "Neutral"), (7.8, "Slightly alkaline"), (8.4, "Moderately alkaline"),
+                        (9.0, "Strongly alkaline")):
+        if p <= upper:
+            return name
+    return "Very strongly alkaline"
+
+
+# Soil Survey Manual (2017), pp. 213-215, shortened.
+DRAINAGE_NOTES = {
+    "excessively drained": "Water is removed very rapidly; commonly coarse textured or very shallow.",
+    "somewhat excessively drained": "Water is removed rapidly; commonly coarse textured or very shallow.",
+    "well drained": "Water is removed readily but not rapidly; wetness does not inhibit root growth for "
+                    "significant periods in most growing seasons.",
+    "moderately well drained": "Wet for only a short time within the rooting depth during the growing "
+                               "season, but long enough that most mesophytic crops are affected.",
+    "somewhat poorly drained": "Wet at a shallow depth for significant periods; wetness markedly restricts "
+                               "mesophytic crops unless artificially drained.",
+    "poorly drained": "Wet at shallow depths periodically or for long periods; most mesophytic crops cannot "
+                      "be grown unless the soil is artificially drained.",
+    "very poorly drained": "Free water at or very near the surface during much of the growing season; most "
+                           "mesophytic crops cannot be grown unless artificially drained.",
+    "subaqueous": "Free water is above the soil surface.",
+}
+
+# Organic matter guidance: adjustable rule of thumb (see SKILL.md), not a sourced classification.
+OM_GUIDE = [(1.0, "very low"), (2.0, "low"), (4.0, "moderate"), (6.0, "high")]
+
+
+def om_guidance(om) -> str:
+    if om is None:
+        return ""
+    for upper, name in OM_GUIDE:
+        if float(om) < upper:
+            return name
+    return "very high"
+
+
+# ---------------------------------------------------------------------------
+# Soil Data Access
+# ---------------------------------------------------------------------------
+
+SDA_URL = "https://sdmdataaccess.sc.egov.usda.gov/tabular/post.rest"
+SQL_POINT = "SELECT * FROM SDA_Get_Mukey_from_intersection_with_WktWgs84('point({lon:.6f} {lat:.6f})')"
+SQL_MAPUNIT = """SELECT mu.mukey, mu.musym, mu.muname, mu.mukind, l.areasymbol, l.areaname, sc.saverest,
+ ma.aws025wta, ma.aws050wta, ma.aws0100wta, ma.aws0150wta, ma.drclassdcd, ma.hydgrpdcd,
+ ma.wtdepannmin, ma.wtdepaprjunmin, ma.brockdepmin, ma.slopegradwta, ma.niccdcd, ma.flodfreqdcd
+FROM mapunit mu
+INNER JOIN legend l ON l.lkey = mu.lkey
+LEFT JOIN sacatalog sc ON sc.areasymbol = l.areasymbol
+LEFT JOIN muaggatt ma ON ma.mukey = mu.mukey
+WHERE mu.mukey = '{mukey}'"""
+SQL_HORIZONS = """SELECT co.cokey, co.compname, co.comppct_r, co.majcompflag, co.compkind, co.taxclname, co.taxorder,
+ co.drainagecl, co.hydgrp, ch.chkey, ch.hzname, ch.hzdept_r, ch.hzdepb_r, ch.sandtotal_r, ch.silttotal_r,
+ ch.claytotal_r, ch.om_r, ch.ph1to1h2o_r, ch.awc_r, ch.ksat_r, ch.dbthirdbar_r, ch.cec7_r, ch.wthirdbar_r,
+ ch.wfifteenbar_r, tg.texdesc
+FROM component co
+LEFT JOIN chorizon ch ON ch.cokey = co.cokey
+LEFT JOIN chtexturegrp tg ON tg.chkey = ch.chkey AND tg.rvindicator = 'Yes'
+WHERE co.mukey = '{mukey}'
+ORDER BY co.comppct_r DESC, co.cokey, ch.hzdept_r"""
+
+DEMO = {"lat": 40.08, "lon": -88.20, "point": "sda_point_40.08_-88.20.json",
+        "mapunit": "sda_mapunit_242963.json", "horizons": "sda_horizons_242963.json"}
+
+
+def sda_query(sql: str, timeout: int = 120) -> dict:
+    payload = json.dumps({"query": sql, "format": "JSON+COLUMNNAME"}).encode("utf-8")
+    req = urllib.request.Request(SDA_URL, data=payload, headers={
+        "Content-Type": "application/json", "User-Agent": f"AgriClaw/{VERSION} ({SKILL})"})
     try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        import matplotlib.patches as mpatches
-    except ImportError:
-        print("matplotlib not installed -- skipping plots.", file=sys.stderr)
-        return False
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            text = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"Soil Data Access returned HTTP {e.code}: "
+                           f"{e.read().decode('utf-8', 'replace')[:300]}") from None
+    except (urllib.error.URLError, TimeoutError) as e:
+        raise RuntimeError(f"Could not reach USDA Soil Data Access ({e}).") from None
+    try:
+        return json.loads(text) if text.strip() else {}
+    except json.JSONDecodeError:
+        raise RuntimeError(f"Soil Data Access returned non-JSON text: {text[:300]}") from None
 
-    fig_dir = os.path.join(output_dir, "figures")
-    os.makedirs(fig_dir, exist_ok=True)
 
-    if not horizons:
-        return False
+def parse_sda_table(resp: dict) -> list[dict]:
+    """SDA 'JSON+COLUMNNAME' -> list of dicts. An empty result is {} or a header-only table."""
+    if not resp:
+        return []
+    table = resp.get("Table")
+    if table is None:
+        raise RuntimeError(f"Unexpected Soil Data Access response: {str(resp)[:300]}")
+    if len(table) < 2:
+        return []
+    return [dict(zip(table[0], row)) for row in table[1:]]
 
-    # Build horizon data for the dominant component
-    comp_name = horizons[0].get("compname", "Unknown")
-    profile_data = []
-    for h in horizons:
-        if h.get("compname") != comp_name:
-            break  # Only plot dominant component
-        top = h.get("hzdept_r")
-        bot = h.get("hzdepb_r")
-        if top is None or bot is None:
+
+def check_mukey(mukey) -> str:
+    m = str(mukey).strip()
+    if not m.isdigit():
+        raise ValueError(f"mukey '{mukey}' must be digits only.")
+    return m
+
+
+def num(v):
+    if v is None or (isinstance(v, str) and not v.strip()):
+        return None
+    return float(v)
+
+
+# ---------------------------------------------------------------------------
+# Aggregation
+# ---------------------------------------------------------------------------
+
+
+def build_components(rows: list[dict]) -> list[dict]:
+    """Group SDA horizon rows into components (ordered by comppct_r, as returned)."""
+    comps: dict[str, dict] = {}
+    for r in rows:
+        c = comps.setdefault(str(r["cokey"]), {
+            "cokey": str(r["cokey"]), "compname": r["compname"], "comppct_r": num(r["comppct_r"]) or 0.0,
+            "majcompflag": (r.get("majcompflag") or "").strip(), "compkind": r.get("compkind") or "",
+            "taxclname": r.get("taxclname") or "", "taxorder": r.get("taxorder") or "",
+            "drainagecl": r.get("drainagecl") or "", "hydgrp": r.get("hydgrp") or "", "horizons": []})
+        if r.get("chkey") is None or r.get("hzdept_r") is None or r.get("hzdepb_r") is None:
             continue
-        top = float(top)
-        bot = float(bot)
-        sand = float(h["sandtotal_r"]) if h.get("sandtotal_r") else 0
-        silt = float(h["silttotal_r"]) if h.get("silttotal_r") else 0
-        clay = float(h["claytotal_r"]) if h.get("claytotal_r") else 0
-        om = float(h["om_r"]) if h.get("om_r") else 0
-        ph = float(h["ph1to1h2o_r"]) if h.get("ph1to1h2o_r") else 0
-        texture = classify_texture(
-            h.get("sandtotal_r"), h.get("silttotal_r"), h.get("claytotal_r")
-        )
-        hz_name = h.get("hzname") or ""
-        profile_data.append({
-            "top": top, "bot": bot,
-            "sand": sand, "silt": silt, "clay": clay,
-            "om": om, "ph": ph,
-            "texture": texture, "hzname": hz_name,
-        })
-
-    if not profile_data:
-        return False
-
-    max_depth = max(h["bot"] for h in profile_data)
-
-    # Color based on organic matter (darker = more OM)
-    def om_color(om_val):
-        # Brown scale: high OM = dark brown, low OM = light tan
-        intensity = min(1.0, om_val / 6.0)
-        r = 0.76 - 0.45 * intensity
-        g = 0.60 - 0.40 * intensity
-        b = 0.42 - 0.30 * intensity
-        return (r, g, b)
-
-    fig, axes = plt.subplots(1, 3, figsize=(12, max(6, max_depth * 0.06)),
-                              gridspec_kw={"width_ratios": [2, 1.5, 1.5]})
-
-    # Panel 1: Profile diagram with texture bars
-    ax1 = axes[0]
-    for h in profile_data:
-        depth = h["bot"] - h["top"]
-        color = om_color(h["om"])
-        ax1.barh(
-            -(h["top"] + depth / 2), 1, height=depth,
-            color=color, edgecolor="black", linewidth=0.8
-        )
-        label = "%s" % h["texture"]
-        if h["hzname"]:
-            label = "%s: %s" % (h["hzname"], label)
-        ax1.text(
-            0.5, -(h["top"] + depth / 2), label,
-            ha="center", va="center", fontsize=9,
-            color="white" if h["om"] > 3 else "black"
-        )
-
-    ax1.set_xlim(0, 1)
-    ax1.set_ylim(-max_depth, 0)
-    ax1.set_ylabel("Depth (cm)")
-    ax1.set_title("Soil Profile: %s" % comp_name, fontsize=11, fontweight="bold")
-    ax1.set_xticks([])
-    ax1.invert_yaxis()
-    ax1.set_ylim(-max_depth, 0)
-
-    # Panel 2: Sand/Silt/Clay stacked bars
-    ax2 = axes[1]
-    for h in profile_data:
-        depth = h["bot"] - h["top"]
-        y_center = -(h["top"] + depth / 2)
-        ax2.barh(y_center, h["sand"], height=depth * 0.8,
-                 color="#EDC9AF", edgecolor="black", linewidth=0.3, label="Sand" if h is profile_data[0] else "")
-        ax2.barh(y_center, h["silt"], left=h["sand"], height=depth * 0.8,
-                 color="#C4A882", edgecolor="black", linewidth=0.3, label="Silt" if h is profile_data[0] else "")
-        ax2.barh(y_center, h["clay"], left=h["sand"] + h["silt"], height=depth * 0.8,
-                 color="#8B6914", edgecolor="black", linewidth=0.3, label="Clay" if h is profile_data[0] else "")
-
-    ax2.set_xlim(0, 100)
-    ax2.set_ylim(-max_depth, 0)
-    ax2.set_xlabel("Percent (%)")
-    ax2.set_title("Texture (Sand/Silt/Clay)", fontsize=10)
-    ax2.legend(loc="lower right", fontsize=8)
-    ax2.set_yticks([])
-
-    # Panel 3: pH and OM profiles
-    ax3 = axes[2]
-    mid_depths = [-(h["top"] + (h["bot"] - h["top"]) / 2) for h in profile_data]
-    phs = [h["ph"] for h in profile_data]
-    oms = [h["om"] for h in profile_data]
-
-    color_ph = "#1565c0"
-    color_om = "#2e7d32"
-
-    ax3.plot(phs, mid_depths, "o-", color=color_ph, linewidth=2, markersize=6, label="pH")
-    ax3.set_xlabel("pH", color=color_ph)
-    ax3.set_xlim(3, 10)
-    ax3.tick_params(axis="x", labelcolor=color_ph)
-    ax3.set_title("pH and OM", fontsize=10)
-    ax3.set_ylim(-max_depth, 0)
-    ax3.set_yticks([])
-
-    ax3b = ax3.twiny()
-    ax3b.plot(oms, mid_depths, "s-", color=color_om, linewidth=2, markersize=6, label="OM %")
-    ax3b.set_xlabel("Organic Matter (%)", color=color_om)
-    ax3b.tick_params(axis="x", labelcolor=color_om)
-
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_dir, "soil_profile.png"), dpi=150, bbox_inches="tight")
-    plt.close()
-
-    return True
+        h = {"hzname": r.get("hzname") or "", "top_cm": num(r["hzdept_r"]), "bottom_cm": num(r["hzdepb_r"]),
+             "sand_pct": num(r.get("sandtotal_r")), "silt_pct": num(r.get("silttotal_r")),
+             "clay_pct": num(r.get("claytotal_r")), "om_pct": num(r.get("om_r")),
+             "ph_h2o": num(r.get("ph1to1h2o_r")), "awc_cm_cm": num(r.get("awc_r")),
+             "ksat_um_s": num(r.get("ksat_r")), "db_g_cm3": num(r.get("dbthirdbar_r")),
+             "cec7_meq_100g": num(r.get("cec7_r")), "w33kpa_pct_vol": num(r.get("wthirdbar_r")),
+             "w1500kpa_pct_vol": num(r.get("wfifteenbar_r")), "texdesc": r.get("texdesc") or ""}
+        cls, note = usda_texture_class(h["sand_pct"], h["silt_pct"], h["clay_pct"])
+        h["texture_computed"] = cls or ""
+        h["texture_computed_note"] = note
+        base = base_texture_from_texdesc(h["texdesc"])
+        h["texture_class"] = h["texdesc"] or (cls.capitalize() if cls else "")
+        h["texture_source"] = ("SSURGO texdesc" if h["texdesc"] else
+                               "computed from sand/silt/clay" if cls else "not available")
+        h["texture_agrees"] = ("" if not (base and cls) else "yes" if base == cls else "no")
+        h["ph_class"] = reaction_class(h["ph_h2o"])
+        c["horizons"].append(h)
+    return list(comps.values())
 
 
-def generate_report(soil_data, mu_info, lat, lon, mukey, output_dir):
-    """Generate markdown report with soil profile table."""
-    lines = [
-        "# Soil Report",
-        "",
-        "**Location**: %.4fN, %.4fW  " % (lat, abs(lon)) if lon < 0 else
-        "**Location**: %.4fN, %.4fE  " % (lat, lon),
-        "**Map Unit Key (mukey)**: %s  " % mukey,
-    ]
+def depth_weighted(horizons: list[dict], col: str, top: float, bottom: float) -> tuple[float | None, float]:
+    """Thickness-weighted mean of col over [top, bottom) cm, and the thickness with data."""
+    tot = thick = 0.0
+    for h in horizons:
+        ov = min(h["bottom_cm"], bottom) - max(h["top_cm"], top)
+        if ov > 0 and h[col] is not None:
+            tot += h[col] * ov
+            thick += ov
+    return (tot / thick if thick else None), thick
 
-    if mu_info and len(mu_info) > 0:
-        mu = mu_info[0]
-        lines.append("**Map Unit Name**: %s  " % mu.get("muname", "N/A"))
-        lines.append("**Survey Area**: %s (%s)  " % (
-            mu.get("areaname", "N/A"), mu.get("areasymbol", "N/A")))
-        lines.append("**Map Unit Kind**: %s  " % mu.get("mukind", "N/A"))
-    lines.append("**Generated**: %s  " % datetime.now().strftime("%Y-%m-%d %H:%M"))
-    lines.append("")
 
-    if not soil_data:
-        lines.append("No soil horizon data returned for this location.")
-        report_path = os.path.join(output_dir, "report.md")
-        with open(report_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(lines))
-        return
+def mapunit_weighted(components: list[dict], col: str, top: float, bottom: float):
+    """Component-percent-weighted mean of the depth-weighted values (components with data only)."""
+    num_, den = 0.0, 0.0
+    for c in components:
+        v, thick = depth_weighted(c["horizons"], col, top, bottom)
+        if v is not None:
+            num_ += c["comppct_r"] * v
+            den += c["comppct_r"]
+    return (num_ / den if den else None), den
 
-    # Group by component
-    components = {}
-    for row in soil_data:
-        comp = row.get("compname", "Unknown")
-        if comp not in components:
-            components[comp] = {
-                "pct": row.get("comppct_r", ""),
-                "taxclass": row.get("taxclname", ""),
-                "taxorder": row.get("taxorder", ""),
-                "taxsuborder": row.get("taxsuborder", ""),
-                "drainage": row.get("drainagecl", ""),
-                "horizons": [],
-            }
-        components[comp]["horizons"].append(row)
 
-    # Component summary
-    lines += [
-        "## Map Unit Components",
-        "",
-        "| Component | Pct (%) | Tax. Order | Drainage Class |",
-        "|-----------|---------|------------|----------------|",
-    ]
-    for comp_name, comp_info in components.items():
-        lines.append("| %s | %s | %s | %s |" % (
-            comp_name,
-            safe_float(comp_info["pct"], "%.0f"),
-            comp_info["taxorder"] or "--",
-            comp_info["drainage"] or "--",
-        ))
+def aws_cm(horizons: list[dict], depth_cm: float) -> float:
+    """Available water storage (cm) from the surface to depth_cm: sum of AWC x thickness."""
+    return sum(h["awc_cm_cm"] * max(0.0, min(h["bottom_cm"], depth_cm) - max(h["top_cm"], 0.0))
+               for h in horizons if h["awc_cm_cm"] is not None)
 
-    # Dominant component details
-    dom_name = list(components.keys())[0]
-    dom = components[dom_name]
-    lines += [
-        "",
-        "## Dominant Component: %s" % dom_name,
-        "",
-        "**Taxonomic Classification**: %s  " % (dom["taxclass"] or "N/A"),
-        "**Taxonomic Order**: %s  " % (dom["taxorder"] or "N/A"),
-        "**Taxonomic Suborder**: %s  " % (dom["taxsuborder"] or "N/A"),
-        "**Drainage Class**: %s  " % (dom["drainage"] or "N/A"),
-        "",
-    ]
 
-    # Drainage interpretation
-    drain_interp = interpret_drainage(dom["drainage"])
-    lines.append("**Drainage Interpretation**: %s" % drain_interp)
-    lines.append("")
+def aws_profile(components: list[dict], depths=range(10, 210, 10)) -> list[dict]:
+    """Component-weighted cumulative AWS (mm) by depth, the same aggregation SSURGO uses for
+    muaggatt.aws*wta (weighted average of components)."""
+    with_hz = [c for c in components if c["horizons"]]
+    den = sum(c["comppct_r"] for c in with_hz)
+    dom = with_hz[0] if with_hz else None
+    out = []
+    for d in depths:
+        mu = sum(c["comppct_r"] * aws_cm(c["horizons"], d) for c in with_hz) / den if den else None
+        out.append({"depth_cm": d, "aws_mm": round(mu * 10.0, 2) if mu is not None else "",
+                    "aws_mm_dominant_component": round(aws_cm(dom["horizons"], d) * 10.0, 2) if dom else "",
+                    "max_described_depth_cm": max((h["bottom_cm"] for c in with_hz for h in c["horizons"]),
+                                                  default="")})
+    return out
 
-    # Horizon table
-    lines += [
-        "## Soil Profile by Horizon",
-        "",
-        "| Horizon | Depth (cm) | Sand % | Silt % | Clay % | Texture | OM % | pH | AWC (cm/cm) | Ksat (um/s) |",
-        "|---------|-----------|--------|--------|--------|---------|------|-----|-------------|-------------|",
-    ]
 
-    for h in dom["horizons"]:
-        top = safe_float(h.get("hzdept_r"), "%.0f")
-        bot = safe_float(h.get("hzdepb_r"), "%.0f")
-        sand = safe_float(h.get("sandtotal_r"))
-        silt = safe_float(h.get("silttotal_r"))
-        clay = safe_float(h.get("claytotal_r"))
-        texture = classify_texture(
-            h.get("sandtotal_r"), h.get("silttotal_r"), h.get("claytotal_r")
-        )
-        om = safe_float(h.get("om_r"))
-        ph = safe_float(h.get("ph1to1h2o_r"))
-        awc = safe_float(h.get("awc_r"), "%.2f")
-        ksat = safe_float(h.get("ksat_r"), "%.2f")
-        hz_name = h.get("hzname") or "--"
-        depth_str = "%s-%s" % (top, bot)
+WEIGHTED_PROPS = [("sand_pct", "%"), ("silt_pct", "%"), ("clay_pct", "%"), ("om_pct", "%"),
+                  ("ph_h2o", "pH (1:1 water)"), ("awc_cm_cm", "cm/cm"), ("db_g_cm3", "g/cm3"),
+                  ("cec7_meq_100g", "meq/100 g"), ("w33kpa_pct_vol", "% vol"), ("w1500kpa_pct_vol", "% vol")]
 
-        lines.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
-            hz_name, depth_str, sand, silt, clay, texture, om, ph, awc, ksat))
 
-    # Surface horizon interpretations
-    surf = dom["horizons"][0] if dom["horizons"] else None
-    if surf:
-        lines += [
-            "",
-            "## Surface Horizon Interpretation",
-            "",
-        ]
-        ph_val = surf.get("ph1to1h2o_r")
-        om_val = surf.get("om_r")
-        lines.append("**pH**: %s -- %s  " % (safe_float(ph_val), interpret_ph(ph_val)))
-        lines.append("**Organic Matter**: %s%% -- %s  " % (safe_float(om_val), interpret_om(om_val)))
+def weighted_table(components: list[dict], ranges=((0, 30), (0, 100))) -> list[dict]:
+    out = []
+    for top, bottom in ranges:
+        for col, unit in WEIGHTED_PROPS:
+            v, pct = mapunit_weighted(components, col, top, bottom)
+            out.append({"property": col, "depth_range_cm": f"{top}-{bottom}", "value": "" if v is None else round(v, 3),
+                        "units": unit, "pct_of_mapunit_with_data": round(pct, 1)})
+    return out
 
-        awc_val = surf.get("awc_r")
-        if awc_val is not None:
-            awc_f = float(awc_val)
-            if awc_f < 0.10:
-                awc_interp = "Low -- frequent irrigation may be needed"
-            elif awc_f < 0.18:
-                awc_interp = "Moderate -- typical for loamy soils"
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+
+
+def make_figure(components: list[dict], profile: list[dict], mu: dict, out: Path) -> list[str]:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    dom = next((c for c in components if c["horizons"]), None)
+    if dom is None:
+        return []
+    hz = dom["horizons"]
+    depth = max(h["bottom_cm"] for h in hz)
+    fig, axes = plt.subplots(1, 3, figsize=(12, 6), gridspec_kw={"width_ratios": [2.2, 1.2, 1.4]})
+    ax = axes[0]
+    for h in hz:
+        th = h["bottom_cm"] - h["top_cm"]
+        left = 0.0
+        for col, color in (("sand_pct", "#e3c79b"), ("silt_pct", "#b79a6b"), ("clay_pct", "#7a5a2e")):
+            v = h[col] or 0.0
+            ax.barh(h["top_cm"] + th / 2, v, height=th * 0.95, left=left, color=color, edgecolor="white", lw=0.5)
+            left += v
+        ax.text(101, h["top_cm"] + th / 2, f"{h['hzname']}: {h['texture_class'] or 'n/a'}", va="center", fontsize=7)
+    ax.set_xlim(0, 175)
+    ax.set_ylim(depth, 0)
+    ax.set_xticks([0, 25, 50, 75, 100])
+    ax.set_xlabel("sand | silt | clay (%)")
+    ax.set_ylabel("Depth (cm)")
+    ax.set_title(f"{dom['compname']} ({dom['comppct_r']:.0f}% of map unit)", fontsize=10)
+    ax = axes[1]
+    mids = [(h["top_cm"] + h["bottom_cm"]) / 2 for h in hz]
+    ax.plot([h["ph_h2o"] if h["ph_h2o"] is not None else float("nan") for h in hz], mids, "o-", color="#2e6da4")
+    ax.set_xlabel("pH (1:1 water)", color="#2e6da4")
+    ax.set_ylim(depth, 0)
+    ax2 = ax.twiny()
+    ax2.plot([h["om_pct"] if h["om_pct"] is not None else float("nan") for h in hz], mids, "s--", color="#2f6b3a")
+    ax2.set_xlabel("Organic matter (%)", color="#2f6b3a")
+    ax = axes[2]
+    pd_ = [p for p in profile if p["aws_mm"] != ""]
+    ax.plot([p["aws_mm"] for p in pd_], [p["depth_cm"] for p in pd_], "-", color="#1f5f8b", lw=2,
+            label="computed (all components)")
+    pts = [(25, mu.get("aws025wta")), (50, mu.get("aws050wta")), (100, mu.get("aws0100wta")),
+           (150, mu.get("aws0150wta"))]
+    pts = [(d, num(v) * 10) for d, v in pts if num(v) is not None]
+    if pts:
+        ax.plot([p[1] for p in pts], [p[0] for p in pts], "o", color="#c0392b", label="SSURGO muaggatt")
+    ax.set_ylim(max(depth, 150), 0)
+    ax.set_xlabel("Cumulative available water (mm)")
+    ax.legend(fontsize=7, loc="lower left")
+    ax.grid(alpha=0.3)
+    fig.suptitle(mu.get("muname", ""), fontsize=11)
+    fig.tight_layout()
+    (out / "figures").mkdir(parents=True, exist_ok=True)
+    fig.savefig(out / "figures" / "soil_profile.png", dpi=150)
+    plt.close(fig)
+    return ["figures/soil_profile.png"]
+
+
+REFERENCES = [
+    "Soil Science Division Staff (2017). Soil survey manual. C. Ditzler, K. Scheffe & H.C. Monger (eds.). "
+    "USDA Handbook 18. Government Printing Office, Washington, D.C. Texture classes pp. 122-124; reaction "
+    "classes Table 3-15; drainage classes pp. 213-215. "
+    "https://www.nrcs.usda.gov/resources/guides-and-instructions/soil-survey-manual",
+    "Soil Survey Staff, Natural Resources Conservation Service, USDA. Soil Survey Geographic (SSURGO) Database, "
+    "accessed through Soil Data Access. https://sdmdataaccess.sc.egov.usda.gov/",
+    "USDA-NRCS (2025). Soil Data Mart 4.3 Table Column Descriptions (muaggatt, chorizon, chtexturegrp). "
+    "https://sdmdataaccess.nrcs.usda.gov/documents/TableColumnDescriptionsReport.pdf",
+    "Allen, R.G., Pereira, L.S., Raes, D. & Smith, M. (1998). Crop evapotranspiration: guidelines for "
+    "computing crop water requirements. FAO Irrigation and Drainage Paper 56. FAO, Rome (TAW, Chapter 8). "
+    "https://www.fao.org/4/x0490e/x0490e00.htm",
+]
+
+
+def write_report(out: Path, ctx: dict) -> None:
+    mu = ctx["mapunit"]
+    L = [f"# {SKILL} report", ""]
+    if ctx["warnings"]:
+        L += ["## Warnings", ""] + [f"- {w}" for w in ctx["warnings"]] + [""]
+    L += ["## Map unit", "",
+          f"- Location: {ctx['location']}",
+          f"- Map unit: {mu.get('muname', '')} (symbol {mu.get('musym', '')}, mukey {mu.get('mukey', '')}, "
+          f"{mu.get('mukind', '')})",
+          f"- Survey area: {mu.get('areaname', '')} ({mu.get('areasymbol', '')}), version date {mu.get('saverest', '')}",
+          "", "SSURGO is mapped soil-survey data: each map unit is a mix of components drawn at roughly "
+          "1:12,000-1:24,000 scale, and property values are representative estimates for each component. It is "
+          "not a sample of this field. Use soil tests and on-site observation for decisions.", "",
+          "## Components", "", "| Component | % of map unit | Major | Drainage class | Hydrologic group | Taxonomic class |",
+          "|---|---|---|---|---|---|"]
+    for c in ctx["components"]:
+        L.append(f"| {c['compname']} | {c['comppct_r']:.0f} | {c['majcompflag']} | {c['drainagecl'] or 'n/a'} | "
+                 f"{c['hydgrp'] or 'n/a'} | {c['taxclname'] or 'n/a'} |")
+    dom = next((c for c in ctx["components"] if c["horizons"]), None)
+    if dom:
+        L += ["", f"## Horizons of the dominant component ({dom['compname']})", "",
+              "Texture is SSURGO's own representative texture class (`chtexturegrp.texdesc`, RV row). The "
+              "'computed' column applies the USDA texture triangle to sand/silt/clay as a cross-check.", "",
+              "| Horizon | Depth (cm) | Texture (SSURGO) | Computed class | Sand/Silt/Clay (%) | OM (%) | pH (class) | AWC (cm/cm) |",
+              "|---|---|---|---|---|---|---|---|"]
+        for h in dom["horizons"]:
+            ssc = "/".join("n/a" if h[k] is None else f"{h[k]:g}" for k in ("sand_pct", "silt_pct", "clay_pct"))
+            L.append(f"| {h['hzname']} | {h['top_cm']:g}-{h['bottom_cm']:g} | {h['texdesc'] or 'n/a'} | "
+                     f"{h['texture_computed'] or 'n/a'} | {ssc} | {'n/a' if h['om_pct'] is None else h['om_pct']} | "
+                     f"{'n/a' if h['ph_h2o'] is None else h['ph_h2o']} ({h['ph_class'] or 'n/a'}) | "
+                     f"{'n/a' if h['awc_cm_cm'] is None else h['awc_cm_cm']} |")
+    w = ctx["water"]
+    L += ["", "## Water storage and drainage (for claw-water-balance)", "",
+          "| Item | Value | Source |", "|---|---|---|",
+          f"| Available water storage 0-25 / 0-50 / 0-100 / 0-150 cm | {w['aws_0_25cm_mm']} / {w['aws_0_50cm_mm']} / "
+          f"{w['aws_0_100cm_mm']} / {w['aws_0_150cm_mm']} mm | SSURGO muaggatt (weighted average of components) |",
+          f"| Same, recomputed from horizon AWC | {w['aws_0_25cm_mm_computed']} / {w['aws_0_50cm_mm_computed']} / "
+          f"{w['aws_0_100cm_mm_computed']} / {w['aws_0_150cm_mm_computed']} mm | this skill (check) |",
+          f"| Drainage class (dominant condition) | {w['drainage_class']} | muaggatt.drclassdcd |",
+          f"| Shallowest water table, any month / April-June | {w['water_table_min_cm']} / {w['water_table_apr_jun_min_cm']} cm | "
+          "muaggatt (components ≥ 15%) |",
+          f"| Shallowest bedrock | {str(w['bedrock_min_cm']) + ' cm' if w['bedrock_min_cm'] else 'none recorded'} | "
+          "muaggatt.brockdepmin |",
+          f"| Hydrologic soil group | {w['hydrologic_group']} | muaggatt.hydgrpdcd |", "",
+          "Total available water for a root depth Zr: interpolate `tables/aws_profile.csv` at Zr (FAO-56 TAW = "
+          "1000 (θFC − θWP) Zr; SSURGO AWC is θFC − θWP adjusted for rock fragments and salinity).", ""]
+    if dom and dom["drainagecl"]:
+        note = DRAINAGE_NOTES.get(dom["drainagecl"].lower(), "")
+        L += ["## General guidance (not a recommendation)", "",
+              f"- Drainage, {dom['drainagecl']}: {note} (Soil Survey Manual 2017 definition.)"]
+        surf = dom["horizons"][0] if dom["horizons"] else None
+        if surf and surf["ph_h2o"] is not None:
+            L.append(f"- Surface pH {surf['ph_h2o']}: {surf['ph_class']} (Soil Survey Manual Table 3-15). Lime or "
+                     "acidification needs depend on the crop and a current soil test, not on mapped values.")
+        if surf and surf["om_pct"] is not None:
+            L.append(f"- Surface organic matter {surf['om_pct']}%: {om_guidance(surf['om_pct'])} by an adjustable "
+                     "rule of thumb (<1 very low, 1-2 low, 2-4 moderate, 4-6 high, ≥6 very high).")
+        L.append("")
+    L += ["## Figures", ""] + [f"![{f}]({f})" for f in ctx["figures"]] + [""]
+    L += ["## References", ""] + [f"- {r}" for r in REFERENCES] + ["", f"*{SKILL} {VERSION}*"]
+    write_text(out / "report.md", "\n".join(L) + "\n")
+
+
+def run_texture_csv(path: str, out: Path) -> tuple[list[dict], list[str]]:
+    p = Path(path)
+    if not p.is_file():
+        raise ValueError(f"Input file not found: {path}")
+    with p.open(newline="", encoding="utf-8-sig") as f:
+        rows = list(csv.DictReader(f))
+    if not rows:
+        raise ValueError("The texture CSV has no rows.")
+    need = [c for c in ("sand_pct", "silt_pct", "clay_pct") if c not in rows[0]]
+    if need:
+        raise ValueError(f"Missing column(s) {', '.join(need)}; found {', '.join(rows[0].keys())}. Use % of the "
+                         "fine-earth (<2 mm) fraction.")
+    out_rows, warnings = [], []
+    for r in rows:
+        cls, note = usda_texture_class(r["sand_pct"] or None, r["silt_pct"] or None, r["clay_pct"] or None)
+        out_rows.append(dict(r, usda_texture_class=cls or "", note=note))
+    bad = sum(1 for r in out_rows if not r["usda_texture_class"])
+    if bad:
+        warnings.append(f"{bad} row(s) could not be classified (see the 'note' column).")
+    return out_rows, warnings
+
+
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(prog="soil.py", description=__doc__.splitlines()[0])
+    ap.add_argument("--demo", action="store_true", help="Drummer silty clay loam near Champaign, IL (bundled SDA data)")
+    ap.add_argument("--lat", type=float, help="latitude, decimal degrees (WGS84)")
+    ap.add_argument("--lon", type=float, help="longitude, decimal degrees (WGS84)")
+    ap.add_argument("--mukey", help="SSURGO map unit key (instead of --lat/--lon)")
+    ap.add_argument("--texture-input", help="CSV with sand_pct, silt_pct, clay_pct to classify (no SSURGO lookup)")
+    ap.add_argument("--out", default=f"agriclaw_output/{SKILL}", help="output folder")
+    return ap
+
+
+def main(argv: list[str] | None = None, query=sda_query) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    ap = build_parser()
+    args = ap.parse_args(argv)
+    out = Path(args.out)
+    warnings: list[str] = []
+    try:
+        if args.texture_input:
+            out.mkdir(parents=True, exist_ok=True)
+            rows, warnings = run_texture_csv(args.texture_input, out)
+            save_table(rows, out, "texture_classes.csv")
+            counts: dict[str, int] = {}
+            for r in rows:
+                counts[r["usda_texture_class"] or "unclassified"] = counts.get(r["usda_texture_class"] or "unclassified", 0) + 1
+            L = [f"# {SKILL} report: texture classes", ""]
+            if warnings:
+                L += ["## Warnings", ""] + [f"- {w}" for w in warnings] + [""]
+            L += ["USDA texture classes from sand/silt/clay (Soil Survey Manual 2017, pp. 122-124). Sums within "
+                  f"100 ± {SUM_TOLERANCE:g}% were rescaled to 100.", "", "| Class | Samples |", "|---|---|"]
+            L += [f"| {k} | {v} |" for k, v in sorted(counts.items())]
+            L += ["", "## References", "", f"- {REFERENCES[0]}", "", f"*{SKILL} {VERSION}*"]
+            write_text(out / "report.md", "\n".join(L) + "\n")
+            write_repro_bundle(out, argv, inputs=[args.texture_input], packages=["matplotlib"])
+            print(f"Done: {len(rows)} samples classified. Report: {(out / 'report.md').resolve()}")
+            return 0
+
+        raw = {}
+        inputs = []
+        if args.demo:
+            def load(name):
+                p = SKILL_DIR / "demo" / name
+                inputs.append(str(p))
+                return json.loads(p.read_text(encoding="utf-8"))
+            pt = parse_sda_table(load(DEMO["point"]))
+            mukey = check_mukey(pt[0]["mukey"])
+            mu_rows = parse_sda_table(load(DEMO["mapunit"]))
+            hz_rows = parse_sda_table(load(DEMO["horizons"]))
+            location = f"{DEMO['lat']}, {DEMO['lon']} (bundled SDA responses)"
+        else:
+            if args.mukey:
+                mukey = check_mukey(args.mukey)
+                location = f"mukey {mukey}"
+            elif args.lat is not None and args.lon is not None:
+                if not (-90 <= args.lat <= 90 and -180 <= args.lon <= 180):
+                    ap.error("--lat must be within -90..90 and --lon within -180..180")
+                raw["point"] = query(SQL_POINT.format(lat=args.lat, lon=args.lon))
+                pt = parse_sda_table(raw["point"])
+                if not pt:
+                    raise ValueError(f"No SSURGO map unit at {args.lat}, {args.lon}. SSURGO covers the USA and some "
+                                     "territories; check that latitude/longitude are not swapped and the point is on land.")
+                mukey = check_mukey(pt[0]["mukey"])
+                if len(pt) > 1:
+                    warnings.append(f"The point touches {len(pt)} map units; the first ({mukey}) is used.")
+                location = f"{args.lat}, {args.lon} (WGS84)"
             else:
-                awc_interp = "High -- good water retention"
-            lines.append("**Available Water Capacity**: %s cm/cm -- %s  " % (
-                safe_float(awc_val, "%.2f"), awc_interp))
+                ap.error("give --lat and --lon, --mukey, --texture-input or --demo")
+            raw["mapunit"] = query(SQL_MAPUNIT.format(mukey=mukey))
+            raw["horizons"] = query(SQL_HORIZONS.format(mukey=mukey))
+            mu_rows, hz_rows = parse_sda_table(raw["mapunit"]), parse_sda_table(raw["horizons"])
+            write_text(out / "raw" / "sda_responses.json", json.dumps(raw, indent=1))
+        if not mu_rows:
+            raise ValueError(f"mukey {mukey} was not found in SSURGO.")
+        mu = mu_rows[0]
+        components = build_components(hz_rows)
+        if not components or not any(c["horizons"] for c in components):
+            warnings.append("No horizon data for this map unit (e.g. water, urban land or rock outcrop).")
+        pct_total = sum(c["comppct_r"] for c in components)
+        no_hz = [c for c in components if not c["horizons"]]
+        if no_hz:
+            warnings.append(f"Components without horizon data ({', '.join(c['compname'] for c in no_hz)}; "
+                            f"{sum(c['comppct_r'] for c in no_hz):.0f}% of the map unit) are left out of the "
+                            "weighted values.")
+        if components and abs(pct_total - 100) > 1:
+            warnings.append(f"Component percentages sum to {pct_total:g}%, not 100%.")
+        disagree = [(c["compname"], h["hzname"], h["texdesc"], h["texture_computed"]) for c in components
+                    for h in c["horizons"] if h["texture_agrees"] == "no"]
+        if disagree:
+            warnings.append(f"{len(disagree)} horizon(s) where SSURGO's texture class differs from the class computed "
+                            "from its sand/silt/clay (e.g. {} {}: '{}' vs '{}'); SSURGO's class is reported."
+                            .format(*disagree[0]))
+        profile = aws_profile(components)
+        water = {"mukey": mukey}
+        for d, key in ((25, "aws025wta"), (50, "aws050wta"), (100, "aws0100wta"), (150, "aws0150wta")):
+            v = num(mu.get(key))
+            water[f"aws_0_{d}cm_mm"] = round(v * 10.0, 1) if v is not None else ""
+            comp = next((p["aws_mm"] for p in aws_profile(components, [d])), "")
+            water[f"aws_0_{d}cm_mm_computed"] = round(comp, 1) if comp != "" else ""
+            if v is not None and comp != "" and abs(comp - v * 10) > max(2.0, 0.05 * v * 10):
+                warnings.append(f"Recomputed AWS 0-{d} cm ({comp:.1f} mm) differs from SSURGO muaggatt "
+                                f"({v * 10:.1f} mm); check the horizon data.")
+        water.update({
+            "drainage_class": mu.get("drclassdcd") or "", "hydrologic_group": mu.get("hydgrpdcd") or "",
+            "water_table_min_cm": mu.get("wtdepannmin") or "", "water_table_apr_jun_min_cm": mu.get("wtdepaprjunmin") or "",
+            "bedrock_min_cm": mu.get("brockdepmin") or "", "slope_pct": mu.get("slopegradwta") or "",
+            "nonirrigated_capability_class": mu.get("niccdcd") or "", "flooding": mu.get("flodfreqdcd") or "",
+            "muname": mu.get("muname") or "", "areasymbol": mu.get("areasymbol") or "",
+            "survey_version_date": mu.get("saverest") or ""})
+        wt = num(mu.get("wtdepannmin"))
+        if wt is not None and wt < 200:
+            warnings.append(f"A water table can be as shallow as {wt:g} cm (muaggatt.wtdepannmin). FAO-56 assumes "
+                            "capillary rise is about zero only when the water table is more than ~1 m below the "
+                            "root zone; tell claw-water-balance users, and ask whether the field is tile-drained.")
+        bedrock = num(mu.get("brockdepmin"))
+        if bedrock is not None and bedrock < 150:
+            warnings.append(f"Bedrock as shallow as {bedrock:g} cm limits rooting depth and water storage.")
 
-        surf_texture = classify_texture(
-            surf.get("sandtotal_r"), surf.get("silttotal_r"), surf.get("claytotal_r")
-        )
-        lines.append("**Texture**: %s  " % surf_texture)
-
-    # Figures
-    lines += [
-        "",
-        "## Figures",
-        "",
-        "![Soil Profile](figures/soil_profile.png)",
-        "",
-    ]
-
-    # References
-    lines += [
-        "## Data Source and References",
-        "",
-        "- USDA-NRCS Soil Survey Geographic (SSURGO) Database via Soil Data Access (SDA) API",
-        "- Soil Survey Staff. Web Soil Survey. USDA-NRCS. https://websoilsurvey.nrcs.usda.gov/",
-        "- Soil Survey Division Staff (2017). Soil Survey Manual. USDA Handbook 18.",
-        "- Soil texture classification follows USDA-NRCS texture triangle (Soil Survey Manual, Ch. 3)",
-        "",
-        "**Note**: SSURGO data represents mapped soil survey estimates, not site-specific samples. "
-        "For precision agriculture, supplement with actual soil testing.",
-        "",
-        "---",
-        "*Generated by [AgriClaw claw-soil](https://github.com/bgtamang/AgriClaw) v0.1.0*",
-    ]
-
-    report_path = os.path.join(output_dir, "report.md")
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
-
-
-def generate_repro_bundle(output_dir, args_dict):
-    """Generate reproducibility bundle: commands.sh, environment.yml, checksums.sha256."""
-    repro_dir = os.path.join(output_dir, "reproducibility")
-    os.makedirs(repro_dir, exist_ok=True)
-
-    # commands.sh
-    if args_dict.get("demo"):
-        cmd = "python soil.py --demo"
-    else:
-        cmd = "python soil.py --lat %s --lon %s" % (args_dict["lat"], args_dict["lon"])
-
-    with open(os.path.join(repro_dir, "commands.sh"), "w", encoding="utf-8") as f:
-        f.write("#!/bin/bash\n")
-        f.write("# Reproduce this analysis\n")
-        f.write("# Generated: %s\n\n" % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        f.write("pip install matplotlib\n")
-        f.write("%s\n" % cmd)
-
-    # environment.yml
-    with open(os.path.join(repro_dir, "environment.yml"), "w", encoding="utf-8") as f:
-        f.write("name: claw-soil\n")
-        f.write("dependencies:\n")
-        f.write("  - python>=3.9\n")
-        f.write("  - pip:\n")
-        f.write("    - matplotlib\n")
-
-    # checksums.sha256
-    checksums = []
-    for root, dirs, files in os.walk(output_dir):
-        for fname in sorted(files):
-            fpath = os.path.join(root, fname)
-            rel = os.path.relpath(fpath, output_dir)
-            if "reproducibility" in rel:
-                continue
-            checksums.append("%s  %s" % (sha256_file(fpath), rel))
-
-    with open(os.path.join(repro_dir, "checksums.sha256"), "w", encoding="utf-8") as f:
-        f.write("\n".join(checksums) + "\n")
-
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="claw-soil: Soil Property Lookup via USDA SDA (AgriClaw)",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Examples:\n"
-               "  python soil.py --demo\n"
-               "  python soil.py --lat 40.08 --lon -88.20\n"
-               "  python soil.py --lat 42.03 --lon -93.47 --output iowa_soil\n",
-    )
-    parser.add_argument("--demo", action="store_true",
-                        help="Run demo: Champaign IL (40.08N, -88.20W)")
-    parser.add_argument("--lat", type=float, help="Latitude (decimal degrees)")
-    parser.add_argument("--lon", type=float, help="Longitude (decimal degrees)")
-    parser.add_argument("--output", default="output",
-                        help="Output directory (default: output)")
-    args = parser.parse_args()
-
-    # Demo mode
-    if args.demo:
-        args.lat = 40.08
-        args.lon = -88.20
-        args.output = "demo_output"
-        print("Running demo: Champaign IL (40.08N, 88.20W)")
-
-    # Validate
-    if not args.demo and (args.lat is None or args.lon is None):
-        parser.error("Provide --lat/--lon or --demo")
-
-    lat = args.lat
-    lon = args.lon
-
-    # Step 1: Get mukey for the point
-    print("Querying USDA Soil Data Access for (%.4f, %.4f)..." % (lat, lon))
-    mukey = get_mukey_for_point(lat, lon)
-    if mukey is None:
-        print("ERROR: Could not retrieve map unit key for this location.", file=sys.stderr)
-        print("This may mean the location is outside SSURGO coverage (US only).", file=sys.stderr)
-        sys.exit(1)
-    print("Map unit key (mukey): %s" % mukey)
-
-    # Step 2: Get soil properties
-    print("Fetching soil properties...")
-    soil_data = get_soil_properties(mukey)
-    if soil_data is None:
-        print("ERROR: Failed to query soil properties.", file=sys.stderr)
-        sys.exit(1)
-
-    if len(soil_data) == 0:
-        print("WARNING: No horizon data returned for mukey %s." % mukey, file=sys.stderr)
-
-    # Step 3: Get map unit info
-    mu_info = get_mapunit_info(mukey)
-
-    # Create output directory structure
-    output_dir = args.output
-    os.makedirs(output_dir, exist_ok=True)
-    tables_dir = os.path.join(output_dir, "tables")
-    os.makedirs(tables_dir, exist_ok=True)
-
-    # Write raw horizon data CSV
-    if soil_data:
-        csv_fields = [
-            "compname", "comppct_r", "hzname", "hzdept_r", "hzdepb_r",
-            "sandtotal_r", "silttotal_r", "claytotal_r", "om_r",
-            "ph1to1h2o_r", "awc_r", "ksat_r", "dbthirdbar_r", "cec7_r",
-            "taxclname", "taxorder", "taxsuborder", "drainagecl",
-        ]
-        # Add texture class column
-        enriched = []
-        for row in soil_data:
-            r = dict(row)
-            r["texture_class"] = classify_texture(
-                r.get("sandtotal_r"), r.get("silttotal_r"), r.get("claytotal_r")
-            )
-            enriched.append(r)
-        csv_fields.append("texture_class")
-        write_csv(os.path.join(tables_dir, "soil_horizons.csv"), enriched, csv_fields)
-        print("Wrote soil_horizons.csv (%d rows)" % len(enriched))
-
-    # Write component summary CSV
-    if soil_data:
-        comp_seen = {}
-        comp_rows = []
-        for row in soil_data:
-            cn = row.get("compname", "")
-            if cn not in comp_seen:
-                comp_seen[cn] = True
-                comp_rows.append({
-                    "compname": cn,
-                    "comppct_r": row.get("comppct_r", ""),
-                    "taxclname": row.get("taxclname", ""),
-                    "taxorder": row.get("taxorder", ""),
-                    "drainagecl": row.get("drainagecl", ""),
-                })
-        write_csv(
-            os.path.join(tables_dir, "component_summary.csv"),
-            comp_rows,
-            ["compname", "comppct_r", "taxclname", "taxorder", "drainagecl"],
-        )
-        print("Wrote component_summary.csv (%d components)" % len(comp_rows))
-
-    # Generate profile plot
-    plots_ok = generate_profile_plot(soil_data, output_dir)
-    if plots_ok:
-        print("Generated figure: soil_profile.png")
-
-    # Generate report
-    generate_report(soil_data, mu_info, lat, lon, mukey, output_dir)
-    print("Generated report.md")
-
-    # Reproducibility bundle
-    args_dict = {"demo": args.demo, "lat": lat, "lon": lon}
-    generate_repro_bundle(output_dir, args_dict)
-    print("Generated reproducibility bundle (commands.sh, environment.yml, checksums.sha256)")
-
-    # Summary
-    print("")
-    print("=" * 50)
-    if mu_info and len(mu_info) > 0:
-        print("Map Unit: %s" % mu_info[0].get("muname", "N/A"))
-        print("Survey Area: %s" % mu_info[0].get("areaname", "N/A"))
-
-    if soil_data:
-        dom = soil_data[0]
-        print("Dominant Component: %s (%s%%)" % (
-            dom.get("compname", "N/A"), safe_float(dom.get("comppct_r"), "%.0f")))
-        print("Drainage: %s" % (dom.get("drainagecl") or "N/A"))
-        print("Taxonomic Order: %s" % (dom.get("taxorder") or "N/A"))
-        surf_texture = classify_texture(
-            dom.get("sandtotal_r"), dom.get("silttotal_r"), dom.get("claytotal_r")
-        )
-        print("Surface Texture: %s (Sand: %s%%, Silt: %s%%, Clay: %s%%)" % (
-            surf_texture,
-            safe_float(dom.get("sandtotal_r")),
-            safe_float(dom.get("silttotal_r")),
-            safe_float(dom.get("claytotal_r")),
-        ))
-        print("Surface pH: %s" % safe_float(dom.get("ph1to1h2o_r")))
-        print("Surface OM: %s%%" % safe_float(dom.get("om_r")))
-        print("Horizons: %d" % sum(
-            1 for h in soil_data if h.get("compname") == dom.get("compname")))
-    else:
-        print("No soil data returned for this location.")
-
-    print("")
-    print("Output: %s/" % os.path.abspath(output_dir))
+        hz_out = [{"compname": c["compname"], "comppct_r": c["comppct_r"], "majcompflag": c["majcompflag"],
+                   **{k: v for k, v in h.items()}} for c in components for h in c["horizons"]]
+        save_table(hz_out or [{"compname": ""}], out, "horizons.csv")
+        save_table([{k: v for k, v in c.items() if k != "horizons"} | {"n_horizons": len(c["horizons"])}
+                    for c in components] or [{"compname": ""}], out, "components.csv")
+        save_table(weighted_table(components), out, "mapunit_weighted_properties.csv")
+        save_table(profile, out, "aws_profile.csv")
+        save_table([water], out, "mapunit_summary.csv")
+        figures = make_figure(components, profile, mu, out)
+        write_report(out, {"warnings": warnings, "mapunit": mu, "components": components, "water": water,
+                           "location": location, "figures": figures})
+        write_repro_bundle(out, argv, inputs=inputs, packages=["matplotlib"])
+    except (ValueError, RuntimeError) as e:
+        print(ascii_safe(f"Error: {e}"), file=sys.stderr)
+        return 1
+    print(ascii_safe(f"Done: {mu.get('muname')} (mukey {mukey}); AWS 0-100 cm {water['aws_0_100cm_mm']} mm. "
+                     f"Report: {(out / 'report.md').resolve()}"))
+    for w in warnings:
+        print(ascii_safe(f"Warning: {w}"), file=sys.stderr)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

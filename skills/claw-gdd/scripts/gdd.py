@@ -1,664 +1,946 @@
 #!/usr/bin/env python3
-"""
-claw-gdd: Growing Degree Day Calculator
-
-Computes daily and cumulative GDD from weather data, estimates crop growth
-stages, detects frost dates, and generates a reproducibility bundle.
+"""claw-gdd: growing degree days (GDD) from daily maximum and minimum air
+temperature, corn stage timing from a cited table in its native units
+(degF-days), daylength for photoperiod-sensitive crops, and freeze dates.
 
 Usage:
-    python gdd.py --demo
-    python gdd.py --lat 40.12 --lon -88.24 --plant-date 2025-05-15 --crop soybean
-    python gdd.py --lat 40.12 --lon -88.24 --plant-date 2025-05-15 --crop soybean --base 8 --ceiling 35
-    python gdd.py --input weather.csv --crop corn --plant-date 2025-04-20
+    python scripts/gdd.py --demo
+    python scripts/gdd.py --lat 40.08 --lon -88.24 --plant-date 2025-04-25 --crop corn
+    python scripts/gdd.py --input station.csv --temp-units F --lat 40.08 \
+        --plant-date 2025-04-25 --crop corn
+
+Part of AgriClaw <https://github.com/bgtamang/AgriClaw>. MIT licence.
 """
+
+from __future__ import annotations
 
 import argparse
 import csv
 import hashlib
+import importlib.metadata
 import json
-import os
+import math
+import platform
+import shlex
 import sys
-from datetime import datetime, timedelta
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from urllib.request import urlopen, Request
-from urllib.error import URLError
+
+SKILL = "claw-gdd"
+VERSION = "1.0.0"
+SKILL_DIR = Path(__file__).resolve().parent.parent
 
 # ---------------------------------------------------------------------------
-# Crop parameters: base temp (C), ceiling temp (C), growth stage GDD thresholds
-#
-# References for default base and ceiling temperatures:
-#
-# Soybean (Tbase=10C, Tceiling=30C):
-#   - Setiyono et al. (2007). Understanding and modeling the effect of temperature
-#     and daylength on soybean phenology under high-yield conditions.
-#     Field Crops Research, 100(2-3), 257-271.
-#   - Gilmore & Rogers (1958). Heat units as a method of measuring maturity in corn.
-#     Agronomy Journal, 50(10), 611-615. [foundational GDD method]
-#   - University of Illinois Extension, "Growing Degree Days and Soybean Development"
-#
-# Corn (Tbase=10C, Tceiling=30C):
-#   - Cross & Zuber (1972). Prediction of flowering dates in maize based on different
-#     methods of estimating thermal units. Agronomy Journal, 64(3), 351-355.
-#   - McMaster & Wilhelm (1997). Growing degree-days: one equation, two interpretations.
-#     Agricultural and Forest Meteorology, 87(4), 291-300.
-#   - USDA-NASS standard: base 50F (10C), ceiling 86F (30C)
-#
-# Wheat (Tbase=0C, Tceiling=25C):
-#   - Porter & Gawith (1999). Temperatures and the growth and development of wheat:
-#     a review. European Journal of Agronomy, 10(1), 23-36.
-#   - McMaster & Smika (1988). Estimation and evaluation of winter wheat phenology
-#     in the central Great Plains. Agricultural and Forest Meteorology, 43, 1-18.
-#
-# Rice (Tbase=10C, Tceiling=35C):
-#   - Yoshida (1981). Fundamentals of Rice Crop Science. IRRI, Los Banos.
-#   - Gao et al. (1992). An analysis of the base temperature for computing rice
-#     growing degree days. Acta Agronomica Sinica, 18(1), 11-18.
-#
-# Growth stage GDD thresholds are approximate and vary by cultivar and maturity
-# group. Values here represent mid-maturity cultivars in US Midwest conditions.
-# Users should adjust with --base and --ceiling for their specific conditions.
-# ---------------------------------------------------------------------------
-CROP_PARAMS = {
-    "soybean": {
-        "base": 10.0,
-        "ceiling": 30.0,
-        "stages": [
-            (90, "VE", "Emergence"),
-            (130, "V1", "First trifoliate"),
-            (280, "V3", "Third trifoliate"),
-            (530, "V6", "Sixth trifoliate"),
-            (800, "R1", "Beginning bloom"),
-            (1050, "R3", "Beginning pod"),
-            (1350, "R5", "Beginning seed fill"),
-            (1650, "R7", "Beginning maturity"),
-            (1800, "R8", "Full maturity"),
-        ],
-    },
-    "corn": {
-        "base": 10.0,
-        "ceiling": 30.0,
-        "stages": [
-            (90, "VE", "Emergence"),
-            (200, "V2", "Second leaf collar"),
-            (475, "V6", "Sixth leaf collar"),
-            (740, "V10", "Tenth leaf collar"),
-            (1135, "VT", "Tasseling"),
-            (1250, "R1", "Silking"),
-            (1500, "R3", "Milk"),
-            (1925, "R5", "Dent"),
-            (2450, "R6", "Physiological maturity"),
-        ],
-    },
-    "wheat": {
-        "base": 0.0,
-        "ceiling": 25.0,
-        "stages": [
-            (100, "Emergence", "Seedling emergence"),
-            (400, "Tillering", "Tiller formation"),
-            (800, "Jointing", "Stem elongation"),
-            (1050, "Booting", "Flag leaf visible"),
-            (1200, "Heading", "Head emergence"),
-            (1400, "Flowering", "Anthesis"),
-            (1700, "Grain fill", "Kernel development"),
-            (2000, "Maturity", "Physiological maturity"),
-        ],
-    },
-    "rice": {
-        "base": 10.0,
-        "ceiling": 35.0,
-        "stages": [
-            (100, "Emergence", "Seedling emergence"),
-            (400, "Tillering", "Active tillering"),
-            (800, "Panicle init.", "Panicle initiation"),
-            (1100, "Booting", "Flag leaf visible"),
-            (1300, "Heading", "Panicle emergence"),
-            (1500, "Flowering", "Anthesis"),
-            (1800, "Grain fill", "Grain development"),
-            (2100, "Maturity", "Physiological maturity"),
-        ],
-    },
-}
-
-# ---------------------------------------------------------------------------
-# Weather data fetching (Open-Meteo, free, no API key)
+# Helpers shared by all AgriClaw Python scripts (copy unchanged)
 # ---------------------------------------------------------------------------
 
-def fetch_weather(lat, lon, start_date, end_date):
-    """Fetch daily Tmax/Tmin/precip from Open-Meteo historical archive."""
-    url = (
-        f"https://archive-api.open-meteo.com/v1/archive?"
-        f"latitude={lat}&longitude={lon}"
-        f"&start_date={start_date}&end_date={end_date}"
-        f"&daily=temperature_2m_max,temperature_2m_min,precipitation_sum"
-        f"&timezone=auto"
-    )
-    try:
-        req = Request(url, headers={"User-Agent": "AgriClaw/0.1"})
-        with urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode())
-    except URLError as e:
-        print(f"Error fetching weather data: {e}", file=sys.stderr)
-        sys.exit(1)
 
-    if "daily" not in data:
-        print(f"Unexpected API response: {json.dumps(data, indent=2)}", file=sys.stderr)
-        sys.exit(1)
-
-    daily = data["daily"]
-    rows = []
-    for i, date_str in enumerate(daily["time"]):
-        tmax = daily["temperature_2m_max"][i]
-        tmin = daily["temperature_2m_min"][i]
-        precip = daily["precipitation_sum"][i]
-        # Handle missing values
-        if tmax is None or tmin is None:
-            rows.append({"date": date_str, "tmax": None, "tmin": None, "precip": precip})
-        else:
-            rows.append({"date": date_str, "tmax": tmax, "tmin": tmin, "precip": precip})
-
-    return rows
+def write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
-def load_weather_csv(filepath):
-    """Load user-provided weather CSV. Expected columns: date, tmax, tmin (optional: precip)."""
-    rows = []
-    with open(filepath, newline="") as f:
-        reader = csv.DictReader(f)
-        # Normalise column names to lowercase
-        for raw_row in reader:
-            row = {k.strip().lower(): v.strip() for k, v in raw_row.items()}
-            tmax_val = row.get("tmax")
-            tmin_val = row.get("tmin")
-            precip_val = row.get("precip") or row.get("precipitation") or "0"
-            # Auto-detect Fahrenheit: if any value > 60, likely Fahrenheit
-            tmax_f = float(tmax_val) if tmax_val else None
-            tmin_f = float(tmin_val) if tmin_val else None
-            rows.append({
-                "date": row["date"],
-                "tmax": tmax_f,
-                "tmin": tmin_f,
-                "precip": float(precip_val) if precip_val else 0.0,
-            })
-
-    # Auto-detect Fahrenheit
-    valid_temps = [r["tmax"] for r in rows if r["tmax"] is not None]
-    if valid_temps and max(valid_temps) > 60:
-        print("Detected Fahrenheit — converting to Celsius.", file=sys.stderr)
-        for r in rows:
-            if r["tmax"] is not None:
-                r["tmax"] = (r["tmax"] - 32) * 5 / 9
-            if r["tmin"] is not None:
-                r["tmin"] = (r["tmin"] - 32) * 5 / 9
-
-    return rows
-
-
-# ---------------------------------------------------------------------------
-# GDD computation
-# ---------------------------------------------------------------------------
-
-def compute_gdd(weather_rows, crop):
-    """Compute daily and cumulative GDD using modified method with ceiling cap."""
-    params = CROP_PARAMS[crop]
-    base = params["base"]
-    ceiling = params["ceiling"]
-
-    results = []
-    cumulative = 0.0
-    missing_streak = 0
-
-    for row in weather_rows:
-        tmax = row["tmax"]
-        tmin = row["tmin"]
-
-        if tmax is None or tmin is None:
-            missing_streak += 1
-            if missing_streak > 3:
-                print(f"Warning: >3 consecutive missing days at {row['date']}. "
-                      f"Results after this point may be unreliable.", file=sys.stderr)
-            # Interpolate: carry forward previous day's GDD
-            daily_gdd = results[-1]["daily_gdd"] if results else 0.0
-        else:
-            missing_streak = 0
-            # Cap Tmax at ceiling
-            tmax_capped = min(tmax, ceiling)
-            # Floor Tmin at base (no negative contribution)
-            tmin_adj = max(tmin, base)
-            # Daily GDD
-            daily_gdd = max(0.0, (tmax_capped + tmin_adj) / 2.0 - base)
-
-        cumulative += daily_gdd
-        frost = tmin is not None and tmin <= 0.0
-
-        results.append({
-            "date": row["date"],
-            "tmax": tmax,
-            "tmin": tmin,
-            "precip": row.get("precip", 0.0),
-            "daily_gdd": round(daily_gdd, 2),
-            "cumulative_gdd": round(cumulative, 2),
-            "frost": frost,
-        })
-
-    return results
-
-
-def estimate_stages(gdd_results, crop):
-    """Map cumulative GDD to crop growth stages."""
-    params = CROP_PARAMS[crop]
-    stages = params["stages"]
-    reached = []
-
-    for gdd_thresh, stage_code, stage_name in stages:
-        # Find first date where cumulative GDD >= threshold
-        for row in gdd_results:
-            if row["cumulative_gdd"] >= gdd_thresh:
-                reached.append({
-                    "stage": stage_code,
-                    "description": stage_name,
-                    "gdd_threshold": gdd_thresh,
-                    "date_reached": row["date"],
-                    "actual_gdd": row["cumulative_gdd"],
-                })
-                break
-        else:
-            reached.append({
-                "stage": stage_code,
-                "description": stage_name,
-                "gdd_threshold": gdd_thresh,
-                "date_reached": "Not reached",
-                "actual_gdd": gdd_results[-1]["cumulative_gdd"] if gdd_results else 0,
-            })
-
-    return reached
-
-
-def find_frost_dates(gdd_results):
-    """Find last spring frost and first fall frost."""
-    frost_days = [r for r in gdd_results if r["frost"]]
-    if not frost_days:
-        return None, None
-
-    # Parse dates to find spring vs fall
-    dates_parsed = []
-    for r in frost_days:
-        dt = datetime.strptime(r["date"], "%Y-%m-%d")
-        dates_parsed.append((dt, r["date"]))
-
-    # Last spring frost: last frost before July 1
-    year = dates_parsed[0][0].year
-    july1 = datetime(year, 7, 1)
-    spring_frosts = [(dt, d) for dt, d in dates_parsed if dt < july1]
-    last_spring = spring_frosts[-1][1] if spring_frosts else None
-
-    # First fall frost: first frost after July 1
-    fall_frosts = [(dt, d) for dt, d in dates_parsed if dt >= july1]
-    first_fall = fall_frosts[0][1] if fall_frosts else None
-
-    return last_spring, first_fall
-
-
-# ---------------------------------------------------------------------------
-# Output generation
-# ---------------------------------------------------------------------------
-
-def write_csv(filepath, rows, fieldnames):
-    """Write a list of dicts to CSV."""
-    with open(filepath, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+def save_table(rows: list[dict], out_dir: Path, name: str) -> Path:
+    path = out_dir / "tables" / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fields = list(rows[0].keys()) if rows else []
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
         writer.writerows(rows)
+    return path
 
 
-def sha256_file(filepath):
-    """Compute SHA-256 of a file."""
+def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 16), b""):
             h.update(chunk)
     return h.hexdigest()
 
 
-def generate_plots(gdd_results, output_dir):
-    """Generate GDD accumulation and daily temperature plots."""
+def write_repro_bundle(out_dir: Path, argv: list[str], inputs: list[str] = (),
+                       packages: list[str] = ()) -> None:
+    """commands.sh, environment.txt and SHA-256 checksums of inputs + outputs."""
+    rd = out_dir / "reproducibility"
+    rd.mkdir(parents=True, exist_ok=True)
+    cmd = " ".join(["python", shlex.quote(str(Path(__file__).resolve()))] +
+                   [shlex.quote(a) for a in argv])
+    stamp = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S %Z")
+    write_text(rd / "commands.sh",
+               f"#!/usr/bin/env bash\n# {SKILL} {VERSION}, run {stamp}\n{cmd}\n")
+    env = [f"python {platform.python_version()} ({platform.platform()})"]
+    for pkg in packages:
+        try:
+            env.append(f"{pkg} {importlib.metadata.version(pkg)}")
+        except importlib.metadata.PackageNotFoundError:
+            env.append(f"{pkg} (not installed)")
+    write_text(rd / "environment.txt", "\n".join(env) + "\n")
+    files = [Path(p) for p in inputs if p and Path(p).is_file()]
+    files += sorted(p for p in out_dir.rglob("*") if p.is_file() and rd not in p.parents)
+    lines = []
+    for p in files:
+        try:
+            label = p.resolve().relative_to(out_dir.resolve()).as_posix()
+        except ValueError:
+            label = p.resolve().as_posix()
+        lines.append(f"{sha256_file(p)}  {label}")
+    write_text(rd / "checksums.sha256", "\n".join(lines) + "\n")
+
+
+def ascii_safe(text: str) -> str:
+    """Console-safe text (Windows consoles may not encode symbols such as ° or ≥)."""
+    for a, b in (("°", "deg"), ("≥", ">="), ("≤", "<="), ("θ", "theta"), ("−", "-"), ("–", "-"), ("×", "x"),
+                 ("²", "2"), ("±", "+/-")):
+        text = text.replace(a, b)
+    return text.encode("ascii", "replace").decode("ascii")
+
+
+# ---------------------------------------------------------------------------
+# Constants (sources in SKILL.md, section "Expert decisions")
+# ---------------------------------------------------------------------------
+
+# Crop presets. Corn: the US 86/50 degF cut-off ("modified") method of
+# Neild & Newman (1987, NCH-40). Soybean: the same thresholds, used here only as
+# a thermal-time convention (no stage prediction; see SKILL.md).
+CROP_PRESETS = {
+    "corn": {"base_c": 10.0, "upper_c": 30.0, "method": "modified"},
+    "soybean": {"base_c": 10.0, "upper_c": 30.0, "method": "modified"},
+}
+
+# Neild & Newman (1987, Purdue reprint RR 4/90), NCH-40 Table 3: GDD from planting
+# (degF-days, base 50 degF, 86/50 cut-off method) for a 2700 GDD hybrid.
+# (Hanway stage number, leaf-collar / R code, NCH-40 description, degF-days)
+CORN_STAGES_NCH40 = [
+    (0.5, "V2", "Two leaves fully emerged", 200),
+    (1.0, "V4", "Four leaves fully emerged", 345),
+    (1.5, "V6", "Six leaves fully emerged (growing point above soil)", 475),
+    (2.0, "V8", "Eight leaves fully emerged (tassel beginning to develop)", 610),
+    (2.5, "V10", "Ten leaves fully emerged", 740),
+    (3.0, "V12", "Twelve leaves fully emerged (ear formation)", 870),
+    (3.5, "V14", "Fourteen leaves fully emerged (silks developing on ear)", 1000),
+    (4.0, "V16", "Sixteen leaves fully emerged (tip of tassel emerging)", 1135),
+    (5.0, "R1", "Silks emerging / pollen shedding (plant at full height)", 1400),
+    (6.0, "R2", "Kernels in blister stage", 1660),
+    (7.0, "R4", "Kernels in dough stage", 1925),
+    (8.0, "R5", "Kernels denting", 2190),
+    (9.0, "R5 (late)", "Kernels dented", 2450),
+    (10.0, "R6", "Physiological maturity (black layer)", 2700),
+]
+CORN_TABLE_RATING_F = 2700.0
+
+# NCEI frost-freeze thresholds are "at or below" 32 degF (freeze) and 28 degF
+# (hard freeze); NCEI computes freeze dates over an August 1 - July 31 year.
+FREEZE_C = 0.0
+HARD_FREEZE_C = (28.0 - 32.0) / 1.8
+
+MAX_GAP_DAYS = 3          # gaps of this many days or fewer are interpolated
+DEFAULT_SEASON_DAYS = 210  # default end date = planting + this, clamped to data
+PAST_DAYS_MAX = 92         # Open-Meteo forecast API limit for &past_days=
+
+ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+OM_VARS = {"temperature_2m_max": ("tmax_c", "°C"), "temperature_2m_min": ("tmin_c", "°C")}
+MODELS = ("best_match", "era5", "era5_seamless", "era5_land", "ecmwf_ifs")
+
+DEMO = {"lat": 40.08, "lon": -88.24, "plant_date": "2025-04-25", "crop": "corn",
+        "file": "openmeteo_champaign_2025.json"}
+
+
+class GapError(ValueError):
+    """Raised when weather data have a gap that is too long to interpolate."""
+
+
+# ---------------------------------------------------------------------------
+# Units, GDD, daylength
+# ---------------------------------------------------------------------------
+
+
+def c_to_f(t_c: float) -> float:
+    return t_c * 1.8 + 32.0
+
+
+def f_to_c(t_f: float) -> float:
+    return (t_f - 32.0) / 1.8
+
+
+def daily_gdd(tmax: float, tmin: float, base: float, upper: float | None = None,
+              method: str = "modified") -> float:
+    """Daily growing degree days (McMaster & Wilhelm 1997).
+
+    average:  max(0, (Tmax + Tmin)/2 - Tbase); no upper threshold.
+    modified: Tmax and Tmin are each limited to [Tbase, Tupper] before averaging
+              (the US corn 86/50 degF cut-off method). Without Tupper only the
+              lower limit applies.
+    Units follow the inputs: degC in -> degC-days, degF in -> degF-days.
+    """
+    if method == "average":
+        return max(0.0, (tmax + tmin) / 2.0 - base)
+    if method == "modified":
+        hi = math.inf if upper is None else upper
+        tx = min(max(tmax, base), hi)
+        tn = min(max(tmin, base), hi)
+        return (tx + tn) / 2.0 - base
+    raise ValueError(f"Unknown GDD method '{method}'; use 'average' or 'modified'.")
+
+
+def daylength_hours(lat_deg: float, doy: int, p_deg: float = 0.8333) -> float:
+    """Daylength (h) from the CBM model of Forsythe et al. (1995).
+
+    p_deg = 0.8333 deg: sunrise/sunset with the top of the sun at the horizon,
+    including refraction; p_deg = 6: includes civil twilight.
+    """
+    theta = 0.2163108 + 2.0 * math.atan(0.9671396 * math.tan(0.00860 * (doy - 186)))
+    phi = math.asin(0.39795 * math.cos(theta))
+    lat = math.radians(lat_deg)
+    den = math.cos(lat) * math.cos(phi)
+    if abs(den) < 1e-12:
+        return 24.0 if math.sin(lat) * math.sin(phi) > 0 else 0.0
+    x = (math.sin(math.radians(p_deg)) + math.sin(lat) * math.sin(phi)) / den
+    x = max(-1.0, min(1.0, x))
+    return 24.0 - (24.0 / math.pi) * math.acos(x)
+
+
+def parse_date(text: str, what: str = "date") -> date:
     try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        import matplotlib.dates as mdates
-    except ImportError:
-        print("matplotlib not installed — skipping plots.", file=sys.stderr)
-        return False
-
-    dates = [datetime.strptime(r["date"], "%Y-%m-%d") for r in gdd_results]
-    cumulative = [r["cumulative_gdd"] for r in gdd_results]
-    tmax = [r["tmax"] for r in gdd_results]
-    tmin = [r["tmin"] for r in gdd_results]
-    daily_gdd = [r["daily_gdd"] for r in gdd_results]
-
-    fig_dir = os.path.join(output_dir, "figures")
-    os.makedirs(fig_dir, exist_ok=True)
-
-    # GDD accumulation plot
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
-
-    ax1.fill_between(dates, cumulative, alpha=0.3, color="#2e7d32")
-    ax1.plot(dates, cumulative, color="#2e7d32", linewidth=2)
-    ax1.set_ylabel("Cumulative GDD (C-days)")
-    ax1.set_title("Growing Degree Day Accumulation")
-    ax1.grid(True, alpha=0.3)
-
-    ax2.bar(dates, daily_gdd, color="#66bb6a", alpha=0.7, width=1.0)
-    ax2.set_ylabel("Daily GDD (C-days)")
-    ax2.set_xlabel("Date")
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax2.xaxis.set_major_locator(mdates.MonthLocator())
-    plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha="right")
-    ax2.grid(True, alpha=0.3)
-
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_dir, "gdd_accumulation.png"), dpi=150)
-    plt.close()
-
-    # Daily temperature plot
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.fill_between(dates, tmin, tmax, alpha=0.3, color="#1565c0")
-    ax.plot(dates, tmax, color="#e53935", linewidth=1, label="Tmax")
-    ax.plot(dates, tmin, color="#1565c0", linewidth=1, label="Tmin")
-    ax.axhline(y=0, color="gray", linestyle="--", alpha=0.5)
-    ax.set_ylabel("Temperature (C)")
-    ax.set_xlabel("Date")
-    ax.set_title("Daily Temperature Range")
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
-    ax.xaxis.set_major_locator(mdates.MonthLocator())
-    plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha="right")
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-
-    plt.tight_layout()
-    plt.savefig(os.path.join(fig_dir, "daily_temperature.png"), dpi=150)
-    plt.close()
-
-    return True
+        return date.fromisoformat(str(text).strip())
+    except ValueError:
+        raise ValueError(f"{what} '{text}' is not a valid YYYY-MM-DD date.") from None
 
 
-def generate_report(gdd_results, stages, frost_info, crop, lat, lon, plant_date, output_dir,
-                    base_override=None, ceiling_override=None):
-    """Generate markdown report."""
-    last_spring_frost, first_fall_frost = frost_info
-    total_gdd = gdd_results[-1]["cumulative_gdd"]
-    total_precip = sum(r["precip"] or 0 for r in gdd_results)
-    avg_tmax = sum(r["tmax"] for r in gdd_results if r["tmax"] is not None) / max(1, sum(1 for r in gdd_results if r["tmax"] is not None))
-    avg_tmin = sum(r["tmin"] for r in gdd_results if r["tmin"] is not None) / max(1, sum(1 for r in gdd_results if r["tmin"] is not None))
-    frost_days = sum(1 for r in gdd_results if r["frost"])
-    end_date = gdd_results[-1]["date"]
-    params = CROP_PARAMS[crop]
-
-    base_note = " (user override)" if base_override is not None else ""
-    ceil_note = " (user override)" if ceiling_override is not None else ""
-
-    lines = [
-        f"# GDD Report: {crop.title()}",
-        "",
-        f"**Location**: {lat}N, {lon}E  ",
-        f"**Planting date**: {plant_date}  ",
-        f"**Analysis period**: {plant_date} to {end_date}  ",
-        f"**Base temperature**: {params['base']}C{base_note}  ",
-        f"**Ceiling temperature**: {params['ceiling']}C{ceil_note}  ",
-        "",
-        "## Season Summary",
-        "",
-        f"| Metric | Value |",
-        f"|--------|-------|",
-        f"| Total GDD | {total_gdd:.1f} C-days |",
-        f"| Total precipitation | {total_precip:.1f} mm |",
-        f"| Mean Tmax | {avg_tmax:.1f} C |",
-        f"| Mean Tmin | {avg_tmin:.1f} C |",
-        f"| Frost days (Tmin <= 0C) | {frost_days} |",
-        f"| Last spring frost | {last_spring_frost or 'None'} |",
-        f"| First fall frost | {first_fall_frost or 'None'} |",
-        "",
-        "## Growth Stage Estimates",
-        "",
-        f"| Stage | Description | GDD Threshold | Date Reached |",
-        f"|-------|-------------|---------------|-------------|",
-    ]
-
-    for s in stages:
-        lines.append(f"| {s['stage']} | {s['description']} | {s['gdd_threshold']} | {s['date_reached']} |")
-
-    # References by crop
-    refs = {
-        "soybean": [
-            "Setiyono et al. (2007). Understanding and modeling the effect of temperature and daylength on soybean phenology under high-yield conditions. Field Crops Research, 100(2-3), 257-271.",
-            "Gilmore & Rogers (1958). Heat units as a method of measuring maturity in corn. Agronomy Journal, 50(10), 611-615.",
-        ],
-        "corn": [
-            "Cross & Zuber (1972). Prediction of flowering dates in maize based on different methods of estimating thermal units. Agronomy Journal, 64(3), 351-355.",
-            "McMaster & Wilhelm (1997). Growing degree-days: one equation, two interpretations. Agricultural and Forest Meteorology, 87(4), 291-300.",
-        ],
-        "wheat": [
-            "Porter & Gawith (1999). Temperatures and the growth and development of wheat: a review. European Journal of Agronomy, 10(1), 23-36.",
-            "McMaster & Smika (1988). Estimation and evaluation of winter wheat phenology in the central Great Plains. Agricultural and Forest Meteorology, 43, 1-18.",
-        ],
-        "rice": [
-            "Yoshida (1981). Fundamentals of Rice Crop Science. IRRI, Los Banos.",
-            "Gao et al. (1992). An analysis of the base temperature for computing rice growing degree days. Acta Agronomica Sinica, 18(1), 11-18.",
-        ],
-    }
-
-    lines += [
-        "",
-        "## Figures",
-        "",
-        "![GDD Accumulation](figures/gdd_accumulation.png)",
-        "",
-        "![Daily Temperature](figures/daily_temperature.png)",
-        "",
-        "## References",
-        "",
-        f"Default base ({params['base']}C) and ceiling ({params['ceiling']}C) temperatures for {crop} are based on:",
-        "",
-    ]
-    for ref in refs.get(crop, []):
-        lines.append(f"- {ref}")
-    lines += [
-        "",
-        "Growth stage GDD thresholds are approximate mid-maturity values for US Midwest conditions. "
-        "Override with `--base` and `--ceiling` for local calibration.",
-        "",
-        "---",
-        f"*Generated by [AgriClaw claw-gdd](https://github.com/bgtamang/AgriClaw) v0.1.0*",
-    ]
-
-    report_path = os.path.join(output_dir, "report.md")
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+# ---------------------------------------------------------------------------
+# Open-Meteo access (fetching is separate from parsing so tests run offline)
+# ---------------------------------------------------------------------------
 
 
-def generate_repro_bundle(output_dir, args_dict):
-    """Generate reproducibility bundle: commands.sh, environment.yml, checksums.sha256."""
-    repro_dir = os.path.join(output_dir, "reproducibility")
-    os.makedirs(repro_dir, exist_ok=True)
+def openmeteo_url(kind: str, lat: float, lon: float, start: date | None = None,
+                  end: date | None = None, model: str = "best_match",
+                  past_days: int | None = None, variables=tuple(OM_VARS)) -> str:
+    params = {"latitude": f"{lat:.5f}", "longitude": f"{lon:.5f}",
+              "daily": ",".join(variables), "timezone": "auto"}
+    if kind == "archive":
+        params.update(start_date=start.isoformat(), end_date=end.isoformat())
+        if model != "best_match":
+            params["models"] = model
+        return ARCHIVE_URL + "?" + urllib.parse.urlencode(params)
+    if kind == "forecast":
+        params.update(past_days=str(past_days), forecast_days="0")
+        return FORECAST_URL + "?" + urllib.parse.urlencode(params)
+    raise ValueError(kind)
 
-    # commands.sh
-    base_ceil_flags = ""
-    if args_dict.get("base") is not None:
-        base_ceil_flags += f" --base {args_dict['base']}"
-    if args_dict.get("ceiling") is not None:
-        base_ceil_flags += f" --ceiling {args_dict['ceiling']}"
 
-    if args_dict.get("demo"):
-        cmd = f"python gdd.py --demo{base_ceil_flags}"
-    elif args_dict.get("input"):
-        cmd = (f"python gdd.py --input {args_dict['input']} "
-               f"--crop {args_dict['crop']} --plant-date {args_dict['plant_date']}{base_ceil_flags}")
-    else:
-        cmd = (f"python gdd.py --lat {args_dict['lat']} --lon {args_dict['lon']} "
-               f"--plant-date {args_dict['plant_date']} --crop {args_dict['crop']}{base_ceil_flags}")
+def http_get_json(url: str, timeout: int = 90) -> dict:
+    req = urllib.request.Request(url, headers={"User-Agent": f"AgriClaw/{VERSION} ({SKILL})"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", "replace")
+        try:
+            reason = json.loads(body).get("reason", body)
+        except json.JSONDecodeError:
+            reason = body[:300]
+        raise RuntimeError(f"Open-Meteo returned HTTP {e.code}: {reason}") from None
+    except (urllib.error.URLError, TimeoutError) as e:
+        raise RuntimeError(f"Could not reach Open-Meteo ({e}). Check the internet "
+                           "connection, or use --input with your own station data.") from None
 
-    with open(os.path.join(repro_dir, "commands.sh"), "w") as f:
-        f.write("#!/bin/bash\n")
-        f.write(f"# Reproduce this analysis\n")
-        f.write(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-        f.write(f"pip install pandas matplotlib requests\n")
-        f.write(f"{cmd}\n")
 
-    # environment.yml
-    with open(os.path.join(repro_dir, "environment.yml"), "w") as f:
-        f.write("name: claw-gdd\n")
-        f.write("dependencies:\n")
-        f.write("  - python>=3.9\n")
-        f.write("  - pip:\n")
-        f.write("    - pandas\n")
-        f.write("    - matplotlib\n")
-        f.write("    - requests\n")
+def parse_openmeteo_daily(resp: dict, source: str) -> tuple[list[dict], dict]:
+    """Rows of {date, tmax_c, tmin_c, source} plus response metadata."""
+    if resp.get("error"):
+        raise RuntimeError(f"Open-Meteo error: {resp.get('reason', resp)}")
+    daily = resp.get("daily")
+    if not isinstance(daily, dict) or "time" not in daily:
+        raise RuntimeError("Open-Meteo response has no 'daily' block; cannot parse it.")
+    units = resp.get("daily_units", {})
+    for var, (_, unit) in OM_VARS.items():
+        if var not in daily:
+            raise RuntimeError(f"Open-Meteo response lacks '{var}'.")
+        if units.get(var) not in (None, unit):
+            raise RuntimeError(f"'{var}' is in {units.get(var)}, expected {unit}.")
+    rows = []
+    for i, t in enumerate(daily["time"]):
+        row = {"date": parse_date(t)}
+        for var, (col, _) in OM_VARS.items():
+            v = daily[var][i]
+            row[col] = None if v is None else float(v)
+        row["source"] = source
+        rows.append(row)
+    meta = {k: resp.get(k) for k in ("latitude", "longitude", "elevation", "timezone",
+                                     "utc_offset_seconds")}
+    return rows, meta
 
-    # checksums.sha256
-    checksums = []
-    for root, dirs, files in os.walk(output_dir):
-        for fname in sorted(files):
-            fpath = os.path.join(root, fname)
-            rel = os.path.relpath(fpath, output_dir)
-            if "reproducibility" in rel:
+
+def local_today(utc_offset_seconds: int | None, now_utc: datetime | None = None) -> date:
+    now_utc = now_utc or datetime.now(timezone.utc)
+    return (now_utc + timedelta(seconds=utc_offset_seconds or 0)).date()
+
+
+def trim_trailing_missing(rows: list[dict], cols=("tmax_c", "tmin_c")) -> tuple[list[dict], int]:
+    """Drop trailing days where every column is missing (data not yet published)."""
+    n = len(rows)
+    while n and all(rows[n - 1][c] is None for c in cols):
+        n -= 1
+    return rows[:n], len(rows) - n
+
+
+def fetch_daily(lat: float, lon: float, start: date, end: date, model: str = "best_match",
+                today: date | None = None, fetcher=http_get_json,
+                now_utc: datetime | None = None) -> tuple[list[dict], dict, list[str], list[dict]]:
+    """Fetch daily Tmax/Tmin for [start, end] without ever asking for future days.
+
+    The end date is clamped to yesterday. The archive API is queried first; if its
+    most recent days are not yet available (ERA5 is published with a delay of about
+    5 days), the gap up to yesterday is filled from the forecast API with
+    &past_days= (at most 92 days back). Returns rows, metadata, notes and the raw
+    responses (for saving in the output folder).
+    """
+    today = today or date.today()
+    notes: list[str] = []
+    raw: list[dict] = []
+    yesterday = today - timedelta(days=1)
+    if start > yesterday:
+        raise ValueError(f"Start date {start} is not in the past (today is {today}); "
+                         "there are no observations to use yet.")
+    end_eff = min(end, yesterday)
+    if end_eff < end:
+        notes.append(f"Requested end date {end} is after the last complete day; the "
+                     f"analysis stops at {end_eff} at the latest. Nothing is forecast "
+                     "or extrapolated.")
+    url = openmeteo_url("archive", lat, lon, start, end_eff, model=model)
+    resp = fetcher(url)
+    raw.append({"url": url, "response": resp})
+    rows, meta = parse_openmeteo_daily(resp, f"archive:{model}")
+    ltoday = local_today(meta.get("utc_offset_seconds"), now_utc)
+    rows = [r for r in rows if r["date"] < ltoday]
+    rows, n_trim = trim_trailing_missing(rows)
+    if n_trim:
+        notes.append(f"The archive ({model}) has no data yet for the last {n_trim} day(s) "
+                     "requested (reanalysis is published with a delay).")
+    last = rows[-1]["date"] if rows else start - timedelta(days=1)
+    if last < end_eff:
+        first_missing = last + timedelta(days=1)
+        past_days = (today - first_missing).days
+        if past_days <= PAST_DAYS_MAX:
+            url2 = openmeteo_url("forecast", lat, lon, past_days=past_days)
+            resp2 = fetcher(url2)
+            raw.append({"url": url2, "response": resp2})
+            rows2, _ = parse_openmeteo_daily(resp2, "forecast:past_days")
+            rows2 = [r for r in rows2 if first_missing <= r["date"] <= end_eff and r["date"] < ltoday]
+            rows2, _ = trim_trailing_missing(rows2)
+            if rows2:
+                rows += rows2
+                notes.append(f"{len(rows2)} most recent day(s) ({rows2[0]['date']} to "
+                             f"{rows2[-1]['date']}) come from the Open-Meteo forecast API "
+                             "(&past_days=): operational model output, provisional, and not "
+                             "the same dataset as the archive.")
+        else:
+            notes.append(f"Data after {last} are not available from the archive yet and are "
+                         "too old for the forecast API's past_days window.")
+    return rows, meta, notes, raw
+
+
+# ---------------------------------------------------------------------------
+# Station CSV input
+# ---------------------------------------------------------------------------
+
+MISSING_TOKENS = {"", "na", "nan", "null", "none", "missing"}
+
+
+def read_station_csv(path: str, temp_units: str) -> list[dict]:
+    """Read date, tmax, tmin from a CSV. Temperature units must be given
+    explicitly (temp_units 'C' or 'F'); column suffixes _c/_f must agree."""
+    p = Path(path)
+    if not p.is_file():
+        raise ValueError(f"Input file not found: {path}")
+    if temp_units not in ("C", "F"):
+        raise ValueError("--temp-units must be C or F.")
+    with p.open(newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        header = {h.strip().lower(): h for h in (reader.fieldnames or [])}
+        raw_rows = list(reader)
+    if "date" not in header:
+        raise ValueError(f"No 'date' column in {path}. Columns found: {', '.join(header) or 'none'}.")
+    cols = {}
+    for key in ("tmax", "tmin"):
+        found = [h for h in (key, f"{key}_c", f"{key}_f") if h in header]
+        if len(found) != 1:
+            raise ValueError(f"Need exactly one of {key}, {key}_c or {key}_f in {path}; found "
+                             f"{found or 'none'}.")
+        h = found[0]
+        if h.endswith("_c") and temp_units == "F" or h.endswith("_f") and temp_units == "C":
+            raise ValueError(f"Column '{header[h]}' says {h[-1].upper()} but --temp-units is "
+                             f"{temp_units}. Check which unit the data are in.")
+        cols[key] = header[h]
+    rows, seen = [], set()
+    for i, r in enumerate(raw_rows, start=2):
+        d = parse_date(r[header["date"]], f"Row {i}: date")
+        if d in seen:
+            raise ValueError(f"Row {i}: date {d} appears more than once.")
+        seen.add(d)
+        row = {"date": d, "source": "input CSV"}
+        for key in ("tmax", "tmin"):
+            raw_v = (r[cols[key]] or "").strip()
+            if raw_v.lower() in MISSING_TOKENS:
+                row[f"{key}_c"] = None
                 continue
-            checksums.append(f"{sha256_file(fpath)}  {rel}")
+            try:
+                v = float(raw_v)
+            except ValueError:
+                raise ValueError(f"Row {i}: {cols[key]} '{raw_v}' is not numeric.") from None
+            row[f"{key}_c"] = f_to_c(v) if temp_units == "F" else v
+        rows.append(row)
+    rows.sort(key=lambda r: r["date"])
+    check_temperature_sanity(rows)
+    return rows
 
-    with open(os.path.join(repro_dir, "checksums.sha256"), "w") as f:
-        f.write("\n".join(checksums) + "\n")
+
+def check_temperature_sanity(rows: list[dict]) -> None:
+    bad = [r for r in rows if any(r[c] is not None and not -60.0 <= r[c] <= 60.0
+                                  for c in ("tmax_c", "tmin_c"))]
+    if bad:
+        r = bad[0]
+        raise ValueError(f"{len(bad)} day(s) have temperatures outside -60..60 degC (first: {r['date']}, "
+                         f"tmax {r['tmax_c']}, tmin {r['tmin_c']}). Check --temp-units, and "
+                         "replace missing-value codes such as -9999 with blank cells.")
+    swapped = [r for r in rows if r["tmax_c"] is not None and r["tmin_c"] is not None
+               and r["tmin_c"] > r["tmax_c"] + 0.05]
+    if swapped:
+        raise ValueError(f"{len(swapped)} day(s) have tmin > tmax (first: {swapped[0]['date']}). "
+                         "Check that the tmax and tmin columns are not swapped.")
+
+
+# ---------------------------------------------------------------------------
+# Calendar completion and gap handling
+# ---------------------------------------------------------------------------
+
+
+def complete_calendar(rows: list[dict], start: date, end: date) -> list[dict]:
+    """One row per day from start to end; days absent from the data get None."""
+    by_date = {r["date"]: r for r in rows}
+    out, d = [], start
+    while d <= end:
+        out.append(dict(by_date.get(d) or {"date": d, "tmax_c": None, "tmin_c": None,
+                                            "source": "missing"}))
+        d += timedelta(days=1)
+    return out
+
+
+def fill_short_gaps(rows: list[dict], cols=("tmax_c", "tmin_c"),
+                    max_gap: int = MAX_GAP_DAYS) -> tuple[list[dict], list[dict], list[dict]]:
+    """Linearly interpolate runs of missing values of <= max_gap days that have data
+    on both sides. Returns (rows, filled, unfilled_gaps); nothing is filled silently."""
+    rows = [dict(r, filled="") for r in rows]
+    filled, gaps = [], []
+    for c in cols:
+        i, n = 0, len(rows)
+        while i < n:
+            if rows[i][c] is not None:
+                i += 1
+                continue
+            j = i
+            while j < n and rows[j][c] is None:
+                j += 1
+            length = j - i
+            if 0 < i and j < n and length <= max_gap:
+                a, b = rows[i - 1][c], rows[j][c]
+                for k in range(i, j):
+                    frac = (k - i + 1) / (length + 1)
+                    rows[k][c] = a + frac * (b - a)
+                    rows[k]["filled"] = (rows[k]["filled"] + " " + c).strip()
+                    filled.append({"date": rows[k]["date"], "variable": c,
+                                   "value_c": round(rows[k][c], 2), "gap_days": length})
+            else:
+                gaps.append({"variable": c, "start": rows[i]["date"], "end": rows[j - 1]["date"],
+                             "days": length,
+                             "reason": "longer than max gap" if length > max_gap else "at edge of data"})
+            i = j
+    return rows, filled, gaps
+
+
+# ---------------------------------------------------------------------------
+# Season analysis
+# ---------------------------------------------------------------------------
+
+
+def accumulate_gdd(rows: list[dict], plant: date, end: date, base_c: float,
+                   upper_c: float | None, method: str, lat: float) -> list[dict]:
+    """Daily table from planting (day 1, inclusive) to end."""
+    out, cum = [], 0.0
+    for r in rows:
+        if not plant <= r["date"] <= end:
+            continue
+        if r["tmax_c"] is None or r["tmin_c"] is None:
+            raise GapError(f"Missing temperature on {r['date']} inside the season.")
+        g = daily_gdd(r["tmax_c"], r["tmin_c"], base_c, upper_c, method)
+        cum += g
+        doy = r["date"].timetuple().tm_yday
+        out.append({
+            "date": r["date"].isoformat(),
+            "day_after_planting": (r["date"] - plant).days + 1,
+            "tmax_c": round(r["tmax_c"], 2), "tmin_c": round(r["tmin_c"], 2),
+            "tmax_f": round(c_to_f(r["tmax_c"]), 2), "tmin_f": round(c_to_f(r["tmin_c"]), 2),
+            "gdd_c": round(g, 3), "gdd_f": round(g * 1.8, 3),
+            "cum_gdd_c": round(cum, 2), "cum_gdd_f": round(cum * 1.8, 2),
+            "daylength_h": round(daylength_hours(lat, doy), 3),
+            "daylength_civil_twilight_h": round(daylength_hours(lat, doy, 6.0), 3),
+            "filled": r.get("filled", ""), "source": r.get("source", ""),
+        })
+    return out
+
+
+def corn_stages(daily: list[dict], hybrid_rating_f: float | None = None) -> list[dict]:
+    """First date on which cumulative degF-days reach each NCH-40 threshold.
+    Thresholds are scaled by hybrid_rating_f / 2700 when a rating is given."""
+    scale = (hybrid_rating_f / CORN_TABLE_RATING_F) if hybrid_rating_f else 1.0
+    last = daily[-1] if daily else None
+    out = []
+    for num, code, desc, thr_f in CORN_STAGES_NCH40:
+        thr = thr_f * scale
+        hit = next((d for d in daily if d["cum_gdd_f"] >= thr - 1e-9), None)
+        out.append({
+            "hanway_stage": num, "stage": code, "description_nch40": desc,
+            "gdd_f_table": thr_f, "gdd_f_used": round(thr, 1), "gdd_c_used": round(thr / 1.8, 1),
+            "date_reached": hit["date"] if hit else "",
+            "days_after_planting": hit["day_after_planting"] if hit else "",
+            "status": "reached" if hit else
+            (f"not reached as of {last['date']} ({last['cum_gdd_f']:.0f} of {thr:.0f} degF-days)"
+             if last else "no data"),
+        })
+    return out
+
+
+def fall_boundary(plant: date, lat: float) -> date:
+    """Start of the 'fall' frost window: August 1 (northern hemisphere) or
+    February 1 (southern) after planting, mirroring NCEI's Aug 1 - Jul 31 frost year."""
+    if lat >= 0:
+        return date(plant.year if plant < date(plant.year, 8, 1) else plant.year + 1, 8, 1)
+    return date(plant.year + (1 if plant >= date(plant.year, 2, 1) else 0), 2, 1)
+
+
+def frost_analysis(rows: list[dict], plant: date, lat: float, freeze_c: float = FREEZE_C,
+                   hard_c: float = HARD_FREEZE_C) -> tuple[list[dict], dict]:
+    """Freeze events (Tmin <= threshold) and season summary dates."""
+    boundary = fall_boundary(plant, lat)
+    events = []
+    for r in rows:
+        t = r.get("tmin_c")
+        if t is None or t > freeze_c:
+            continue
+        d = r["date"]
+        period = ("before_planting" if d < plant else
+                  "after_planting_before_fall" if d < boundary else "fall")
+        events.append({"date": d.isoformat(), "tmin_c": round(t, 2), "tmin_f": round(c_to_f(t), 1),
+                       "hard_freeze": "yes" if t <= hard_c else "no", "period": period})
+
+    def pick(period, hard, last):
+        ev = [e for e in events if e["period"] == period and (not hard or e["hard_freeze"] == "yes")]
+        if not ev:
+            return ""
+        return ev[-1]["date"] if last else ev[0]["date"]
+
+    valid = [r["date"] for r in rows if r.get("tmin_c") is not None]
+    summary = {
+        "search_start": valid[0].isoformat() if valid else "",
+        "search_end": valid[-1].isoformat() if valid else "",
+        "fall_window_starts": boundary.isoformat(),
+        "last_freeze_before_planting": pick("before_planting", False, True),
+        "last_hard_freeze_before_planting": pick("before_planting", True, True),
+        "freezes_after_planting_before_fall": sum(e["period"] == "after_planting_before_fall"
+                                                  for e in events),
+        "last_freeze_after_planting_before_fall": pick("after_planting_before_fall", False, True),
+        "first_fall_freeze": pick("fall", False, False),
+        "first_fall_hard_freeze": pick("fall", True, False),
+        "fall_window_observed": bool(valid) and valid[-1] >= boundary,
+    }
+    return events, summary
+
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+
+
+def format_latlon(lat: float | None, lon: float | None) -> str:
+    if lat is None or lon is None:
+        return "not given"
+    return (f"{abs(lat):.4f}°{'N' if lat >= 0 else 'S'}, "
+            f"{abs(lon):.4f}°{'E' if lon >= 0 else 'W'}")
+
+
+def make_figures(daily: list[dict], stages: list[dict] | None, base_c: float,
+                 upper_c: float | None, freeze_c: float, out: Path) -> list[str]:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.dates as mdates
+    import matplotlib.pyplot as plt
+
+    fig_dir = out / "figures"
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    dates = [date.fromisoformat(d["date"]) for d in daily]
+    files = []
+
+    fig, ax = plt.subplots(figsize=(9, 4.8))
+    ax.plot(dates, [d["cum_gdd_f"] for d in daily], color="#2f6b3a", lw=2)
+    ax.set_ylabel("Cumulative GDD (°F-days)")
+    sec = ax.secondary_yaxis("right", functions=(lambda x: x / 1.8, lambda x: x * 1.8))
+    sec.set_ylabel("Cumulative GDD (°C-days)")
+    if stages:
+        for s in stages:
+            ax.axhline(s["gdd_f_used"], color="#999999", lw=0.6, ls=":")
+            if s["date_reached"]:
+                dd = date.fromisoformat(s["date_reached"])
+                ax.plot([dd], [s["gdd_f_used"]], "o", color="#b35900", ms=4)
+                ax.annotate(s["stage"], (dd, s["gdd_f_used"]), textcoords="offset points",
+                            xytext=(-4, 4), ha="right", fontsize=7)
+    ax.set_title("Growing degree-day accumulation from planting")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    ax.grid(alpha=0.3)
+    fig.autofmt_xdate()
+    fig.tight_layout()
+    fig.savefig(fig_dir / "gdd_accumulation.png", dpi=150)
+    plt.close(fig)
+    files.append("figures/gdd_accumulation.png")
+
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(9, 6), sharex=True,
+                                 gridspec_kw={"height_ratios": [3, 1.3]})
+    a1.plot(dates, [d["tmax_c"] for d in daily], color="#c0392b", lw=1, label="Tmax")
+    a1.plot(dates, [d["tmin_c"] for d in daily], color="#2e6da4", lw=1, label="Tmin")
+    a1.axhline(base_c, color="#555555", ls="--", lw=0.8, label=f"Tbase {base_c:g} °C")
+    if upper_c is not None:
+        a1.axhline(upper_c, color="#555555", ls="-.", lw=0.8, label=f"Tupper {upper_c:g} °C")
+    a1.axhline(freeze_c, color="#7f3fbf", ls=":", lw=0.8, label=f"freeze {freeze_c:g} °C")
+    filled = [(dd, d["tmax_c"]) for dd, d in zip(dates, daily) if d["filled"]]
+    if filled:
+        a1.plot([f[0] for f in filled], [f[1] for f in filled], "x", color="black",
+                ms=5, label="interpolated")
+    a1.set_ylabel("Air temperature (°C)")
+    a1.legend(fontsize=7, ncol=3, loc="lower center")
+    a1.grid(alpha=0.3)
+    a2.plot(dates, [d["daylength_h"] for d in daily], color="#8a6d00", lw=1.2, label="sunrise-sunset")
+    a2.plot(dates, [d["daylength_civil_twilight_h"] for d in daily], color="#8a6d00", lw=1,
+            ls="--", label="incl. civil twilight")
+    a2.set_ylabel("Daylength (h)")
+    a2.legend(fontsize=7)
+    a2.grid(alpha=0.3)
+    a2.xaxis.set_major_formatter(mdates.DateFormatter("%b %d"))
+    fig.autofmt_xdate()
+    fig.tight_layout()
+    fig.savefig(fig_dir / "temperature_daylength.png", dpi=150)
+    plt.close(fig)
+    files.append("figures/temperature_daylength.png")
+    return files
+
+
+REFERENCES = [
+    "McMaster, G.S. & Wilhelm, W.W. (1997). Growing degree-days: one equation, two interpretations. "
+    "Agricultural and Forest Meteorology 87(4), 291-300. https://doi.org/10.1016/S0168-1923(97)00027-0",
+    "Neild, R.E. & Newman, J.E. (1987; Purdue reprint RR 4/90). Growing Season Characteristics and "
+    "Requirements in the Corn Belt. National Corn Handbook NCH-40, Purdue University Cooperative "
+    "Extension Service. https://www.extension.purdue.edu/extmedia/nch/nch-40.html",
+    "Lee, C. (2011). Corn Growth Stages and Growing Degree Days: A Quick Reference Guide. AGR-202, "
+    "University of Kentucky Cooperative Extension Service. "
+    "https://publications.ca.uky.edu/sites/publications.ca.uky.edu/files/agr202.pdf",
+    "Forsythe, W.C., Rykiel, E.J., Stahl, R.S., Wu, H. & Schoolfield, R.M. (1995). A model comparison "
+    "for daylength as a function of latitude and day of year. Ecological Modelling 80(1), 87-95. "
+    "https://doi.org/10.1016/0304-3800(94)00034-F",
+    "Arguez, A. (2012). NOAA's 1981-2010 Climate Normals: Supplemental Normals. NOAA National Climatic "
+    "Data Center technical report (frost-freeze thresholds and the August 1 - July 31 frost year), "
+    "reproduced in Appendix I of NOAA NCEI, Normals Calculation Methodology 2020. https://www.ncei.noaa.gov/"
+    "data/normals-annualseasonal/1991-2020/doc/Normals_Calculation_Methodology_2020.pdf",
+    "Setiyono, T.D., Weiss, A., Specht, J., Bastidas, A.M., Cassman, K.G. & Dobermann, A. (2007). "
+    "Understanding and modeling the effect of temperature and daylength on soybean phenology under "
+    "high-yield conditions. Field Crops Research 100(2-3), 257-271. https://doi.org/10.1016/j.fcr.2006.07.011",
+    "Salmerón, M. & Purcell, L.C. (2016). Simplifying the prediction of phenology with the "
+    "DSSAT-CROPGRO-soybean model based on relative maturity group and determinacy. Agricultural "
+    "Systems 148, 178-187. https://doi.org/10.1016/j.agsy.2016.07.016",
+    "Zippenfenig, P. (2023). Open-Meteo.com Weather API [Computer software]. Zenodo. "
+    "https://doi.org/10.5281/zenodo.7970649",
+    "Hersbach, H. et al. (2020). The ERA5 global reanalysis. Quarterly Journal of the Royal "
+    "Meteorological Society 146(730), 1999-2049. https://doi.org/10.1002/qj.3803",
+]
+
+
+def write_report(out: Path, ctx: dict) -> None:
+    L = [f"# {SKILL} report", ""]
+    if ctx["warnings"]:
+        L += ["## Warnings", ""] + [f"- {w}" for w in ctx["warnings"]] + [""]
+    L += ["## Inputs", "",
+          f"- Location: {format_latlon(ctx['lat'], ctx['lon'])}",
+          f"- Weather source: {ctx['source_desc']}",
+          f"- Crop: {ctx['crop']}; planting date {ctx['plant']} (counted as day 1)",
+          f"- Season analysed: {ctx['plant']} to {ctx['end']} ({ctx['n_days']} days)",
+          f"- Method: {ctx['method']}; Tbase {ctx['base_c']:g} °C ({c_to_f(ctx['base_c']):g} °F)"
+          + (f"; Tupper {ctx['upper_c']:g} °C ({c_to_f(ctx['upper_c']):g} °F)"
+             if ctx["upper_c"] is not None and ctx["method"] == "modified" else "; no upper threshold"),
+          "", "## Season summary", "",
+          "| Metric | Value |", "|---|---|",
+          f"| Cumulative GDD | {ctx['cum_c']:.0f} °C-days = {ctx['cum_f']:.0f} °F-days |",
+          f"| Mean Tmax / Tmin | {ctx['mean_tmax']:.1f} / {ctx['mean_tmin']:.1f} °C |",
+          f"| Days interpolated | {ctx['n_filled_days']} |", ""]
+    if ctx["stages"]:
+        scale_txt = (f" scaled to a {ctx['hybrid']:.0f} °F-day hybrid (factor "
+                     f"{ctx['hybrid'] / CORN_TABLE_RATING_F:.3f})" if ctx["hybrid"] else
+                     " for a 2700 °F-day hybrid (unscaled)")
+        L += ["## Corn stage timing", "",
+              f"Thresholds from Neild & Newman (1987) NCH-40 Table 3 (°F-days, 86/50 °F method){scale_txt}. "
+              "Dates are the first day the cumulative °F-days reach the threshold; nothing is "
+              "extrapolated beyond the last day of data.", "",
+              "| Stage | NCH-40 description | °F-days | Date | Days after planting |",
+              "|---|---|---|---|---|"]
+        for s in ctx["stages"]:
+            L.append(f"| {s['stage']} | {s['description_nch40']} | {s['gdd_f_used']:.0f} | "
+                     f"{s['date_reached'] or s['status']} | {s['days_after_planting']} |")
+        L.append("")
+    if ctx["crop"] == "soybean":
+        L += ["## Soybean development", "",
+              "No soybean V- or R-stage dates are predicted. Soybean flowering and maturity depend on "
+              "photoperiod and maturity group as well as temperature (Setiyono et al. 2007; Salmerón & "
+              "Purcell 2016), so a GDD threshold alone would give wrong dates. Use a photothermal model "
+              "instead, such as SoyStage (University of Arkansas; https://soystage.uark.edu/, maturity "
+              "groups 3-6, US Midsouth) or CROPGRO-Soybean in DSSAT. Daily daylength is in "
+              "`tables/daily_gdd.csv` for use with such models.", ""]
+    fs = ctx["frost"]
+    L += ["## Freeze dates", "",
+          f"Freeze = Tmin ≤ {ctx['freeze_c']:.2f} °C; hard freeze = Tmin ≤ {ctx['hard_c']:.2f} °C "
+          "(NCEI 32 °F and 28 °F thresholds). Searched "
+          f"{fs['search_start']} to {fs['search_end']}; the fall window starts {fs['fall_window_starts']}.", "",
+          "| Item | Date |", "|---|---|",
+          f"| Last freeze before planting | {fs['last_freeze_before_planting'] or 'none in searched period'} |",
+          f"| Last hard freeze before planting | {fs['last_hard_freeze_before_planting'] or 'none in searched period'} |",
+          f"| Freezes after planting, before the fall window | {fs['freezes_after_planting_before_fall']} "
+          f"(last: {fs['last_freeze_after_planting_before_fall'] or 'none'}) |",
+          f"| First fall freeze | {fs['first_fall_freeze'] or ('none observed through ' + fs['search_end'] if fs['fall_window_observed'] else 'fall window not reached in the data')} |",
+          f"| First fall hard freeze | {fs['first_fall_hard_freeze'] or ('none observed through ' + fs['search_end'] if fs['fall_window_observed'] else 'fall window not reached in the data')} |",
+          ""]
+    L += ["## Figures", ""] + [f"![{f}]({f})" for f in ctx["figures"]] + [""]
+    L += ["## Method notes and limitations", "",
+          "- GDD use daily Tmax and Tmin only; they ignore water stress, soil temperature at seed depth "
+          "and hourly temperature patterns.",
+          "- °F-days = 1.8 × °C-days exactly when the thresholds are equivalent (50/86 °F = 10/30 °C).",
+          "- Gridded weather (Open-Meteo) is model/reanalysis output for a grid cell, not a field station; "
+          "frost on a clear night in a low spot can be colder than the grid value.",
+          "- Gaps of up to 3 days are filled by linear interpolation and listed in `tables/filled_days.csv`; "
+          "longer gaps inside the season stop the run.", ""]
+    L += ["## References", ""] + [f"- {r}" for r in REFERENCES] + ["", f"*{SKILL} {VERSION}*"]
+    write_text(out / "report.md", "\n".join(L) + "\n")
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="claw-gdd: Growing Degree Day Calculator (AgriClaw)",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Examples:\n"
-               "  python gdd.py --demo\n"
-               "  python gdd.py --lat 40.12 --lon -88.24 --plant-date 2025-05-15 --crop soybean\n"
-               "  python gdd.py --input weather.csv --crop corn --plant-date 2025-04-20\n",
-    )
-    parser.add_argument("--demo", action="store_true",
-                        help="Run demo: soybean, Champaign IL, 2025 season")
-    parser.add_argument("--lat", type=float, help="Latitude (decimal degrees)")
-    parser.add_argument("--lon", type=float, help="Longitude (decimal degrees)")
-    parser.add_argument("--plant-date", help="Planting date (YYYY-MM-DD)")
-    parser.add_argument("--end-date", help="End date (YYYY-MM-DD). Default: 150 days after planting")
-    parser.add_argument("--crop", choices=list(CROP_PARAMS.keys()), default="soybean",
-                        help="Crop type (default: soybean)")
-    parser.add_argument("--base", type=float, default=None,
-                        help="Override base temperature (C). Default: crop-specific")
-    parser.add_argument("--ceiling", type=float, default=None,
-                        help="Override ceiling temperature (C). Default: crop-specific")
-    parser.add_argument("--input", help="Path to user weather CSV (date, tmax, tmin columns)")
-    parser.add_argument("--output", default="output",
-                        help="Output directory (default: output)")
-    args = parser.parse_args()
 
-    # Demo mode
-    if args.demo:
-        args.lat = 40.12
-        args.lon = -88.24
-        args.plant_date = "2025-05-15"
-        args.crop = "soybean"
-        args.output = "demo_output"
-        print("Running demo: Soybean, Champaign IL (40.12N, 88.24W), planted 2025-05-15")
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(prog="gdd.py", description=__doc__.splitlines()[0],
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--demo", action="store_true",
+                    help="corn planted 2025-04-25 near Champaign, IL (bundled Open-Meteo data)")
+    ap.add_argument("--lat", type=float, help="latitude, decimal degrees (needed for daylength and frost season)")
+    ap.add_argument("--lon", type=float, help="longitude, decimal degrees (needed to fetch weather)")
+    ap.add_argument("--input", help="station CSV with date, tmax, tmin (use instead of fetching)")
+    ap.add_argument("--temp-units", choices=["C", "F"], help="units of tmax/tmin in --input (required with --input)")
+    ap.add_argument("--plant-date", help="planting date YYYY-MM-DD (required)")
+    ap.add_argument("--end-date", help=f"last day to analyse (default: planting + {DEFAULT_SEASON_DAYS} days, "
+                                       "clamped to the last day with data)")
+    ap.add_argument("--crop", choices=["corn", "soybean", "other"], help="crop (required)")
+    ap.add_argument("--method", choices=["average", "modified"], help="GDD method (default: modified for corn/soybean)")
+    ap.add_argument("--base-c", type=float, help="base temperature, °C (required for --crop other)")
+    ap.add_argument("--upper-c", type=float, help="upper threshold, °C (modified method only)")
+    ap.add_argument("--hybrid-gdd", type=float,
+                    help="corn hybrid GDD to black layer, °F-days (86/50 method); scales stage thresholds")
+    ap.add_argument("--model", choices=MODELS, default="best_match", help="Open-Meteo archive model")
+    ap.add_argument("--freeze-c", type=float, default=FREEZE_C, help="freeze threshold, °C (default 0 = 32 °F)")
+    ap.add_argument("--hard-freeze-c", type=float, default=HARD_FREEZE_C,
+                    help="hard-freeze threshold, °C (default -2.22 = 28 °F)")
+    ap.add_argument("--out", default=f"agriclaw_output/{SKILL}", help="output folder")
+    return ap
 
-    # Validate
-    if not args.demo and not args.input and (args.lat is None or args.lon is None):
-        parser.error("Provide --lat/--lon, --input, or --demo")
-    if not args.demo and not args.plant_date:
-        parser.error("--plant-date is required")
 
-    plant_date = args.plant_date
-    if args.end_date:
-        end_date = args.end_date
-    else:
-        dt = datetime.strptime(plant_date, "%Y-%m-%d") + timedelta(days=150)
-        end_date = dt.strftime("%Y-%m-%d")
+def main(argv: list[str] | None = None, today: date | None = None, fetcher=http_get_json) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    ap = build_parser()
+    args = ap.parse_args(argv)
+    warnings: list[str] = []
+    try:
+        if args.demo:
+            args.lat = args.lat if args.lat is not None else DEMO["lat"]
+            args.lon = args.lon if args.lon is not None else DEMO["lon"]
+            args.plant_date = args.plant_date or DEMO["plant_date"]
+            args.crop = args.crop or DEMO["crop"]
+        if not args.plant_date:
+            ap.error("--plant-date is required (never guess a planting date; ask the user)")
+        if not args.crop:
+            ap.error("--crop is required: corn, soybean or other")
+        if args.lat is None:
+            ap.error("--lat is required (daylength and the frost season depend on it)")
+        if not -90 <= args.lat <= 90 or (args.lon is not None and not -180 <= args.lon <= 180):
+            ap.error("--lat must be within -90..90 and --lon within -180..180")
+        if args.input and not args.temp_units:
+            ap.error("--temp-units C or F is required with --input (units are never guessed)")
+        if not (args.demo or args.input) and args.lon is None:
+            ap.error("give --lat and --lon to fetch weather, or --input FILE.csv, or --demo")
 
-    # Apply user overrides for base/ceiling
-    if args.base is not None:
-        CROP_PARAMS[args.crop]["base"] = args.base
-    if args.ceiling is not None:
-        CROP_PARAMS[args.crop]["ceiling"] = args.ceiling
+        plant = parse_date(args.plant_date, "--plant-date")
+        end = parse_date(args.end_date, "--end-date") if args.end_date else \
+            plant + timedelta(days=DEFAULT_SEASON_DAYS)
+        if end < plant:
+            raise ValueError("--end-date is before --plant-date.")
 
-    # Get weather data
-    base_src = "user" if args.base is not None else "default"
-    ceil_src = "user" if args.ceiling is not None else "default"
-    print(f"Crop: {args.crop} | Base: {CROP_PARAMS[args.crop]['base']}C ({base_src}) | Ceiling: {CROP_PARAMS[args.crop]['ceiling']}C ({ceil_src})")
+        preset = CROP_PRESETS.get(args.crop, {})
+        base_c = args.base_c if args.base_c is not None else preset.get("base_c")
+        if base_c is None:
+            raise ValueError("--base-c is required for --crop other: ask which base temperature "
+                             "the user's phenology model or reference uses.")
+        method = args.method or preset.get("method") or ("modified" if args.upper_c is not None else "average")
+        upper_c = args.upper_c if args.upper_c is not None else preset.get("upper_c")
+        if method == "average" and args.upper_c is not None:
+            warnings.append("--upper-c is ignored by the 'average' method.")
+        if method == "average":
+            upper_c = None
+        if upper_c is not None and upper_c <= base_c:
+            raise ValueError("--upper-c must be above --base-c.")
+        overridden = (args.base_c is not None or args.upper_c is not None or args.method is not None)
 
-    if args.input:
-        print(f"Loading weather from: {args.input}")
-        weather = load_weather_csv(args.input)
-    else:
-        print(f"Fetching weather for {args.lat}N, {args.lon}E ({plant_date} to {end_date})...")
-        weather = fetch_weather(args.lat, args.lon, plant_date, end_date)
+        frost_start = date(plant.year, 1, 1)
+        raw_responses: list[dict] = []
+        out = Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        inputs = []
+        if args.input:
+            rows = read_station_csv(args.input, args.temp_units)
+            inputs.append(args.input)
+            source_desc = f"station CSV `{args.input}` (temperatures in °{args.temp_units})"
+            if not rows or rows[0]["date"] > plant:
+                raise ValueError(f"The CSV starts on {rows[0]['date'] if rows else 'no date'}, after the "
+                                 f"planting date {plant}; GDD from planting cannot be computed.")
+            if rows[0]["date"] > frost_start:
+                warnings.append(f"The CSV starts on {rows[0]['date']}, so the last-spring-freeze search "
+                                f"covers {rows[0]['date']} to planting, not January 1.")
+            data_end = rows[-1]["date"]
+            rows = [r for r in rows if frost_start <= r["date"] <= end]
+        elif args.demo:
+            demo_file = SKILL_DIR / "demo" / DEMO["file"]
+            resp = json.loads(demo_file.read_text(encoding="utf-8"))
+            rows, meta = parse_openmeteo_daily(resp, "archive:best_match (bundled demo file)")
+            inputs.append(str(demo_file))
+            source_desc = (f"Open-Meteo archive (best match: ECMWF IFS 9 km / ERA5 / ERA5-Land), grid cell "
+                           f"{format_latlon(meta['latitude'], meta['longitude'])}, saved in demo/{DEMO['file']}")
+            rows = [r for r in rows if frost_start <= r["date"] <= end]
+            data_end = rows[-1]["date"]
+        else:
+            if plant >= (today or date.today()):
+                raise ValueError(f"Planting date {plant} is not in the past; there is no weather to "
+                                 "accumulate yet (this skill never uses forecasts or climatology).")
+            rows, meta, notes, raw_responses = fetch_daily(args.lat, args.lon, frost_start, end,
+                                                           model=args.model, today=today, fetcher=fetcher)
+            warnings += notes
+            source_desc = (f"Open-Meteo archive, model '{args.model}' (gridded model/reanalysis data, not a "
+                           f"station), grid cell {format_latlon(meta['latitude'], meta['longitude'])}")
+            write_text(out / "raw" / "openmeteo_responses.json", json.dumps(raw_responses, indent=1))
+            data_end = rows[-1]["date"] if rows else frost_start
+        if not rows:
+            raise ValueError("No weather data in the requested window.")
 
-    print(f"Got {len(weather)} days of weather data.")
+        rows = complete_calendar(rows, frost_start if not args.input else max(frost_start, rows[0]["date"]),
+                                 min(end, data_end))
+        rows, filled, gaps = fill_short_gaps(rows)
+        # the season ends on the last day with both temperatures
+        complete = [r["date"] for r in rows if r["tmax_c"] is not None and r["tmin_c"] is not None]
+        end_eff = min(end, complete[-1]) if complete else plant
+        if end_eff < end and not any("after the last complete day" in w for w in warnings):
+            warnings.append(f"Data end on {end_eff}; the season was requested to {end}. Stages not reached "
+                            f"by {end_eff} are reported as not reached (no extrapolation).")
+        if end_eff < plant:
+            raise ValueError(f"No complete weather data on or after the planting date {plant}.")
+        season_gaps = [g for g in gaps if g["end"] >= plant and g["start"] <= end_eff]
+        if season_gaps:
+            g = season_gaps[0]
+            raise GapError(f"{len(season_gaps)} gap(s) in {', '.join(sorted({x['variable'] for x in season_gaps}))} "
+                           f"inside the season cannot be filled (first: {g['start']} to {g['end']}, {g['days']} "
+                           f"days, {g['reason']}). This skill interpolates gaps of {MAX_GAP_DAYS} days or "
+                           "fewer only: fill the gap from a nearby station or use the Open-Meteo data.")
+        pre_gaps = [g for g in gaps if g["end"] < plant]
+        if pre_gaps:
+            warnings.append(f"{len(pre_gaps)} unfilled gap(s) before planting: the freeze search before "
+                            "planting is incomplete.")
+        if filled:
+            warnings.append(f"{len({f['date'] for f in filled})} day(s) were filled by linear interpolation "
+                            f"(gaps of {MAX_GAP_DAYS} days or fewer); see tables/filled_days.csv.")
 
-    # Compute GDD
-    gdd_results = compute_gdd(weather, args.crop)
-    stages = estimate_stages(gdd_results, args.crop)
-    frost_info = find_frost_dates(gdd_results)
+        daily = accumulate_gdd(rows, plant, end_eff, base_c, upper_c, method, args.lat)
+        stages = None
+        if args.crop == "corn":
+            standard = (method == "modified" and abs(base_c - 10.0) < 1e-9 and upper_c is not None
+                        and abs(upper_c - 30.0) < 1e-9)
+            if standard:
+                if args.hybrid_gdd is not None:
+                    if not 1800 <= args.hybrid_gdd <= 3600:
+                        raise ValueError(f"--hybrid-gdd {args.hybrid_gdd:g} is outside 1800-3600 °F-days. "
+                                         "Seed-company ratings are °F-days (86/50 method); a °C-day rating "
+                                         "must be multiplied by 1.8, and Canadian Crop Heat Units (CHU) are "
+                                         "a different scale that cannot be used here.")
+                    warnings.append(f"Stage thresholds were scaled by {args.hybrid_gdd:g}/2700: proportional "
+                                    "scaling of the NCH-40 table is a rule of thumb, not a calibrated model.")
+                stages = corn_stages(daily, args.hybrid_gdd)
+            else:
+                warnings.append("Corn stage dates were not estimated: the NCH-40 thresholds are defined for the "
+                                "86/50 °F modified method (Tbase 10 °C, Tupper 30 °C) and this run used "
+                                f"{method}, Tbase {base_c:g} °C, Tupper {upper_c}.")
+        elif args.hybrid_gdd is not None:
+            warnings.append("--hybrid-gdd applies to corn only and was ignored.")
+        if args.crop == "soybean":
+            warnings.append("Soybean R stages are not predicted from GDD (photoperiod and maturity group "
+                            "control them); see the 'Soybean development' section.")
+        if overridden and args.crop in CROP_PRESETS:
+            warnings.append(f"Default thresholds for {args.crop} were overridden by the user "
+                            f"(method {method}, Tbase {base_c:g} °C, Tupper {upper_c}).")
 
-    # Create output
-    output_dir = args.output
-    os.makedirs(output_dir, exist_ok=True)
-    tables_dir = os.path.join(output_dir, "tables")
-    os.makedirs(tables_dir, exist_ok=True)
+        events, frost = frost_analysis([r for r in rows if r["date"] <= end_eff], plant, args.lat,
+                                       args.freeze_c, args.hard_freeze_c)
+        if args.lat < 0:
+            warnings.append("Southern-hemisphere site: the fall freeze window starts on February 1 after "
+                            "planting (mirror of NCEI's August 1 boundary).")
 
-    # Write CSVs
-    write_csv(
-        os.path.join(tables_dir, "daily_gdd.csv"),
-        gdd_results,
-        ["date", "tmax", "tmin", "precip", "daily_gdd", "cumulative_gdd", "frost"],
-    )
-    write_csv(
-        os.path.join(tables_dir, "growth_stages.csv"),
-        stages,
-        ["stage", "description", "gdd_threshold", "date_reached", "actual_gdd"],
-    )
-    print(f"Wrote daily_gdd.csv ({len(gdd_results)} rows)")
-
-    # Plots
-    plots_ok = generate_plots(gdd_results, output_dir)
-    if plots_ok:
-        print("Generated figures: gdd_accumulation.png, daily_temperature.png")
-
-    # Report
-    generate_report(gdd_results, stages, frost_info, args.crop,
-                    args.lat or "CSV", args.lon or "input", plant_date, output_dir,
-                    base_override=args.base, ceiling_override=args.ceiling)
-    print("Generated report.md")
-
-    # Reproducibility bundle
-    args_dict = {
-        "demo": args.demo, "lat": args.lat, "lon": args.lon,
-        "plant_date": plant_date, "crop": args.crop, "input": args.input,
-        "base": args.base, "ceiling": args.ceiling,
-    }
-    generate_repro_bundle(output_dir, args_dict)
-    print("Generated reproducibility bundle (commands.sh, environment.yml, checksums.sha256)")
-
-    # Summary
-    total_gdd = gdd_results[-1]["cumulative_gdd"]
-    print(f"\n{'='*50}")
-    print(f"Total GDD accumulated: {total_gdd:.1f} C-days")
-    print(f"Growth stages reached:")
-    for s in stages:
-        status = s["date_reached"] if s["date_reached"] != "Not reached" else "— not reached"
-        print(f"  {s['stage']:12s} ({s['gdd_threshold']:>5d} GDD) -> {status}")
-    last_spring, first_fall = frost_info
-    if last_spring:
-        print(f"Last spring frost: {last_spring}")
-    if first_fall:
-        print(f"First fall frost: {first_fall}")
-    print(f"\nOutput: {os.path.abspath(output_dir)}/")
+        save_table(daily, out, "daily_gdd.csv")
+        if stages:
+            save_table(stages, out, "corn_stages.csv")
+        save_table(events or [{"date": "", "tmin_c": "", "tmin_f": "", "hard_freeze": "", "period": ""}],
+                   out, "freeze_events.csv")
+        save_table([{k: (v.isoformat() if isinstance(v, date) else v) for k, v in f.items()} for f in filled]
+                   or [{"date": "", "variable": "", "value_c": "", "gap_days": ""}], out, "filled_days.csv")
+        figures = make_figures(daily, stages, base_c, upper_c if method == "modified" else None,
+                               args.freeze_c, out)
+        ctx = {
+            "warnings": warnings, "lat": args.lat, "lon": args.lon, "source_desc": source_desc,
+            "crop": args.crop, "plant": plant.isoformat(), "end": end_eff.isoformat(),
+            "n_days": len(daily), "method": method, "base_c": base_c, "upper_c": upper_c,
+            "cum_c": daily[-1]["cum_gdd_c"], "cum_f": daily[-1]["cum_gdd_f"],
+            "mean_tmax": sum(d["tmax_c"] for d in daily) / len(daily),
+            "mean_tmin": sum(d["tmin_c"] for d in daily) / len(daily),
+            "n_filled_days": len({f["date"] for f in filled}), "stages": stages,
+            "hybrid": args.hybrid_gdd, "frost": frost, "freeze_c": args.freeze_c,
+            "hard_c": args.hard_freeze_c, "figures": figures,
+        }
+        write_report(out, ctx)
+        write_repro_bundle(out, argv, inputs=inputs, packages=["matplotlib"])
+    except (ValueError, RuntimeError) as e:
+        print(ascii_safe(f"Error: {e}"), file=sys.stderr)
+        return 1
+    msg = (f"Done: {len(daily)} days, {daily[-1]['cum_gdd_f']:.0f} degF-days "
+           f"({daily[-1]['cum_gdd_c']:.0f} degC-days).")
+    if stages:
+        r1 = next(s for s in stages if s["stage"] == "R1")
+        msg += f" R1: {r1['date_reached'] or 'not reached'}."
+    print(ascii_safe(msg + f" Report: {(Path(args.out) / 'report.md').resolve()}"))
+    for w in warnings:
+        print(ascii_safe(f"Warning: {w}"), file=sys.stderr)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

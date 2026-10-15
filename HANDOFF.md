@@ -33,11 +33,11 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 
 | Skill | Domain | Lang | Status | Notes |
 |---|---|---|---|---|
-| claw-gdd | field | Python | building | fix °F/°C stage thresholds, in-season dates, CSV planting filter, frost logic, citations |
-| claw-weather | field | Python | building | fix missing-data handling, in-season dates, data-source caveats |
-| claw-soil | field | Python | building | use SSURGO texture names; fix fallback classifier; add root-zone water storage |
-| claw-water-balance | field | Python | building | FAO-56 daily soil-water balance with crop coefficients |
-| claw-yield-units | field | Python | building | bu/ac ↔ kg/ha, moisture adjustment, plot-to-area scaling |
+| claw-gdd | field | Python | done | NCH-40 stages in °F-days (R1 Jul 9 for the Apr 25 demo); in-season end-date clamp; CSV planting filter; NCEI freeze logic; no soybean stages (photoperiod); 27 tests |
+| claw-weather | field | Python | done | missing values counted, never zeroed; in-season clamp with forecast past_days; station CSV input; reanalysis caveats; 12 tests |
+| claw-soil | field | Python | done | SSURGO texture class first, corrected SSM 2017 fallback (all 12 classes, 21 boundaries); AWS rebuilt from horizons matches muaggatt; 73 tests |
+| claw-water-balance | field | Python | done | FAO-56 single-Kc daily balance; reproduces Examples 36-38 and Box 15; mass balance closes; 20 tests |
+| claw-yield-units | field | Python | done | bu/ac and kg/ha with AH-697 bushel weights; moisture shrink checked against UF AG442 and FSA-1078 examples; 18 tests |
 | claw-trial-design | trials | R | building | rebuild on agricolae / FielDHub; designs checked for validity |
 | claw-fieldbook | trials | R | building | Field Book app export/import and data QC |
 | claw-trial-analysis | trials | R | building | single-trial spatial analysis, BLUEs/BLUPs, heritability (statgenSTA/SpATS) |
