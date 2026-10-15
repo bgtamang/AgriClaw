@@ -1,0 +1,140 @@
+{
+ "assembly_date": "2018-07",
+ "genebuild_method": "import",
+ "genebuild_initial_release_date": "2010-01",
+ "golden_path": 978491270,
+ "genebuild_start_date": "2018-08-JGI",
+ "assembly_accession": "GCA_000004515.4",
+ "top_level_region": [
+  {
+   "coord_system": "chromosome",
+   "length": 56831624,
+   "name": "1"
+  },
+  {
+   "name": "2",
+   "length": 48577505,
+   "coord_system": "chromosome"
+  },
+  {
+   "name": "3",
+   "length": 45779781,
+   "coord_system": "chromosome"
+  },
+  {
+   "coord_system": "chromosome",
+   "length": 52389146,
+   "name": "4"
+  },
+  {
+   "coord_system": "chromosome",
+   "length": 42234498,
+   "name": "5"
+  },
+  {
+   "name": "6",
+   "length": 51416486,
+   "coord_system": "chromosome"
+  },
+  {
+   "name": "7",
+   "length": 44630646,
+   "coord_system": "chromosome"
+  },
+  {
+   "coord_system": "chromosome",
+   "name": "8",
+   "length": 47837940
+  },
+  {
+   "coord_system": "chromosome",
+   "length": 50189764,
+   "name": "9"
+  },
+  {
+   "length": 51566898,
+   "name": "10",
+   "coord_system": "chromosome"
+  },
+  {
+   "length": 34766867,
+   "name": "11",
+   "coord_system": "chromosome"
+  },
+  {
+   "length": 40091314,
+   "name": "12",
+   "coord_system": "chromosome"
+  },
+  {
+   "name": "13",
+   "length": 45874162,
+   "coord_system": "chromosome"
+  },
+  {
+   "coord_system": "chromosome",
+   "name": "14",
+   "length": 49042192
+  },
+  {
+   "coord_system": "chromosome",
+   "name": "15",
+   "length": 51756343
+  },
+  {
+   "name": "16",
+   "length": 37887014,
+   "coord_system": "chromosome"
+  },
+  {
+   "coord_system": "chromosome",
+   "length": 41641366,
+   "name": "17"
+  },
+  {
+   "name": "18",
+   "length": 58018742,
+   "coord_system": "chromosome"
+  },
+  {
+   "name": "19",
+   "length": 50746916,
+   "coord_system": "chromosome"
+  },
+  {
+   "length": 47904181,
+   "name": "20",
+   "coord_system": "chromosome"
+  }
+ ],
+ "assembly_name": "Glycine_max_v2.1",
+ "genebuild_last_geneset_update": "2018-08",
+ "default_coord_system_version": "Glycine_max_v2.1",
+ "karyotype": [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20"
+ ],
+ "coord_system_versions": [
+  "Glycine_max_v2.1",
+  "V1.0",
+  "Glycine_max_v2.0"
+ ]
+}

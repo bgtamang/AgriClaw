@@ -1,0 +1,19 @@
+##gff-version 3
+#!genome-build AgriClaw-mini-1.0
+##sequence-region Gm01 1 100000
+##sequence-region Gm02 1 50000
+# hand-made fixture for claw-gene-lookup tests: interval of interest is Gm01:1000-2000
+Gm01	test	gene	500	999	.	+	.	ID=gene:geneA;Name=GeneA;description=ends one bp before the interval
+Gm01	test	mRNA	500	999	.	+	.	ID=transcript:geneA.1;Parent=gene:geneA
+Gm01	test	exon	500	999	.	+	.	Parent=transcript:geneA.1
+Gm01	test	gene	500	1000	.	-	.	ID=gene:geneB;Name=GeneB;description=touches the interval start
+Gm01	test	gene	1500	1600	.	+	.	ID=gene:geneC;Name=GeneC;description=Zinc finger%2C C2H2%3B nuclear
+Gm01	test	gene	2000	2500	.	+	.	ID=gene:geneD;description=starts at the interval end
+Gm01	test	gene	2001	3000	.	-	.	ID=gene:geneE;description=starts one bp after the interval
+Gm01	test	gene	900	2100	.	+	.	ID=gene:geneF;biotype=lncRNA;description=spans the interval
+Gm01	test	pseudogene	1700	1800	.	+	.	ID=gene:pseudo1;description=pseudogene inside the interval
+Gm02	test	gene	1000	2000	.	+	.	ID=gene:geneG;description=other chromosome, same coordinates
+##FASTA
+>Gm01
+ACGTACGTAC
+Gm01	test	gene	1000	2000	.	+	.	ID=gene:fasta_trap;description=must be ignored

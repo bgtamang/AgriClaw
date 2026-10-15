@@ -42,10 +42,10 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-fieldbook | trials | R | building | Field Book app export/import and data QC |
 | claw-trial-analysis | trials | R | building | single-trial spatial analysis, BLUEs/BLUPs, heritability (statgenSTA/SpATS) |
 | claw-met-gxe | trials | R | building | multi-environment analysis: GxE, stability, AMMI/GGE (statgenGxE) |
-| claw-marker-qc | genomics | R | building | genotype QC: call rate, MAF, heterozygosity, duplicates |
-| claw-gwas-crop | genomics | R | building | mixed-model GWAS with kinship (statgenGWAS) |
-| claw-ld-decay | genomics | R | building | LD decay and critical distance for candidate windows |
-| claw-gene-lookup | genomics | R | building | genes in QTL/GWAS intervals (Ensembl Plants REST or local GFF3), assembly checks |
+| claw-marker-qc | genomics | R | done | call rate, MAF, heterozygosity, duplicates, segregation distortion; planted problems found exactly; VCF/HapMap I/O; 64 checks |
+| claw-gwas-crop | genomics | R | done | statgenGWAS mixed model with kinship, LOCO and PCs; 35/36 simulated QTNs found, null lambda 0.94-1.08; BH FDR (statgenGWAS fdr option is faulty); 50 checks |
+| claw-ld-decay | genomics | R | done | r2 decay, Hill-Weir fit and critical distance; refuses spurious windows in low-LD panels; 50 checks |
+| claw-gene-lookup | genomics | R | done | genes in intervals from Ensembl Plants REST or a local GFF3; assembly and gene-ID checks; 50 offline checks + 1 live |
 | claw-qtl-mapping | genomics | R | building | biparental QTL mapping with permutation thresholds (qtl2) |
 | claw-genomic-prediction | genomics | R | building | GBLUP / Bayesian prediction with leakage-safe cross-validation |
 | claw-selection-index | genomics | R | building | breeder's equation, Smith-Hazel and desired-gains indices |

@@ -1,0 +1,365 @@
+##gff-version 3
+#!genome-build AgriClaw-demo-1.0
+##sequence-region Chr01 1 10000000
+##sequence-region Chr02 1 8000000
+##sequence-region Chr03 1 12000000
+Chr01	demo	gene	143161	150543	.	+	.	ID=AcDemo01g000100;Name=AcDemo01g000100;Note=NAC domain protein
+Chr01	demo	mRNA	143161	150543	.	+	.	ID=AcDemo01g000100.1;Parent=AcDemo01g000100
+Chr01	demo	exon	143161	150543	.	+	.	Parent=AcDemo01g000100.1
+Chr01	demo	gene	319176	325536	.	-	.	ID=AcDemo01g000200;Name=AcDemo01g000200;Note=Pentatricopeptide repeat protein
+Chr01	demo	mRNA	319176	325536	.	-	.	ID=AcDemo01g000200.1;Parent=AcDemo01g000200
+Chr01	demo	exon	319176	325536	.	-	.	Parent=AcDemo01g000200.1
+Chr01	demo	gene	473686	474715	.	+	.	ID=AcDemo01g000300;Name=AcDemo01g000300;Note=Auxin response factor
+Chr01	demo	mRNA	473686	474715	.	+	.	ID=AcDemo01g000300.1;Parent=AcDemo01g000300
+Chr01	demo	exon	473686	474715	.	+	.	Parent=AcDemo01g000300.1
+Chr01	demo	gene	690498	693908	.	+	.	ID=AcDemo01g000400;Name=AcDemo01g000400;Note=MYB transcription factor
+Chr01	demo	mRNA	690498	693908	.	+	.	ID=AcDemo01g000400.1;Parent=AcDemo01g000400
+Chr01	demo	exon	690498	693908	.	+	.	Parent=AcDemo01g000400.1
+Chr01	demo	gene	926093	929158	.	-	.	ID=AcDemo01g000500;Name=AcDemo01g000500;Note=Zinc finger protein%2C C2H2 type
+Chr01	demo	mRNA	926093	929158	.	-	.	ID=AcDemo01g000500.1;Parent=AcDemo01g000500
+Chr01	demo	exon	926093	929158	.	-	.	Parent=AcDemo01g000500.1
+Chr01	demo	gene	994325	997885	.	+	.	ID=AcDemo01g000600;Name=AcDemo01g000600;Note=Zinc finger protein%2C C2H2 type
+Chr01	demo	mRNA	994325	997885	.	+	.	ID=AcDemo01g000600.1;Parent=AcDemo01g000600
+Chr01	demo	exon	994325	997885	.	+	.	Parent=AcDemo01g000600.1
+Chr01	demo	gene	1422544	1429019	.	-	.	ID=AcDemo01g000700;Name=AcDemo01g000700;Note=Cytochrome P450%2C family 71
+Chr01	demo	mRNA	1422544	1429019	.	-	.	ID=AcDemo01g000700.1;Parent=AcDemo01g000700
+Chr01	demo	exon	1422544	1429019	.	-	.	Parent=AcDemo01g000700.1
+Chr01	demo	gene	1869809	1877451	.	+	.	ID=AcDemo01g000800;Name=AcDemo01g000800;Note=Cytochrome P450%2C family 71
+Chr01	demo	mRNA	1869809	1877451	.	+	.	ID=AcDemo01g000800.1;Parent=AcDemo01g000800
+Chr01	demo	exon	1869809	1877451	.	+	.	Parent=AcDemo01g000800.1
+Chr01	demo	gene	2160433	2164308	.	-	.	ID=AcDemo01g000900;Name=AcDemo01g000900;Note=Zinc finger protein%2C C2H2 type
+Chr01	demo	mRNA	2160433	2164308	.	-	.	ID=AcDemo01g000900.1;Parent=AcDemo01g000900
+Chr01	demo	exon	2160433	2164308	.	-	.	Parent=AcDemo01g000900.1
+Chr01	demo	gene	2924245	2930630	.	+	.	ID=AcDemo01g001000;Name=AcDemo01g001000;Note=Cytochrome P450%2C family 71
+Chr01	demo	mRNA	2924245	2930630	.	+	.	ID=AcDemo01g001000.1;Parent=AcDemo01g001000
+Chr01	demo	exon	2924245	2930630	.	+	.	Parent=AcDemo01g001000.1
+Chr01	demo	gene	3246309	3254231	.	-	.	ID=AcDemo01g001100;Name=AcDemo01g001100;Note=Auxin response factor
+Chr01	demo	mRNA	3246309	3254231	.	-	.	ID=AcDemo01g001100.1;Parent=AcDemo01g001100
+Chr01	demo	exon	3246309	3254231	.	-	.	Parent=AcDemo01g001100.1
+Chr01	demo	gene	3739262	3742588	.	+	.	ID=AcDemo01g001200;Name=AcDemo01g001200;Note=Sugar transporter%3B SWEET family
+Chr01	demo	mRNA	3739262	3742588	.	+	.	ID=AcDemo01g001200.1;Parent=AcDemo01g001200
+Chr01	demo	exon	3739262	3742588	.	+	.	Parent=AcDemo01g001200.1
+Chr01	demo	gene	4079777	4087409	.	-	.	ID=AcDemo01g001300;Name=AcDemo01g001300;Note=Zinc finger protein%2C C2H2 type
+Chr01	demo	mRNA	4079777	4087409	.	-	.	ID=AcDemo01g001300.1;Parent=AcDemo01g001300
+Chr01	demo	exon	4079777	4087409	.	-	.	Parent=AcDemo01g001300.1
+Chr01	demo	gene	4509785	4513565	.	+	.	ID=AcDemo01g001400;Name=AcDemo01g001400;Note=Pentatricopeptide repeat protein
+Chr01	demo	mRNA	4509785	4513565	.	+	.	ID=AcDemo01g001400.1;Parent=AcDemo01g001400
+Chr01	demo	exon	4509785	4513565	.	+	.	Parent=AcDemo01g001400.1
+Chr01	demo	gene	4602493	4606455	.	-	.	ID=AcDemo01g001500;Name=AcDemo01g001500;Note=Zinc finger protein%2C C2H2 type
+Chr01	demo	mRNA	4602493	4606455	.	-	.	ID=AcDemo01g001500.1;Parent=AcDemo01g001500
+Chr01	demo	exon	4602493	4606455	.	-	.	Parent=AcDemo01g001500.1
+Chr01	demo	gene	4817320	4824680	.	-	.	ID=AcDemo01g001600;Name=AcDemo01g001600;Note=Leucine-rich repeat receptor kinase
+Chr01	demo	mRNA	4817320	4824680	.	-	.	ID=AcDemo01g001600.1;Parent=AcDemo01g001600
+Chr01	demo	exon	4817320	4824680	.	-	.	Parent=AcDemo01g001600.1
+Chr01	demo	gene	5944024	5945846	.	+	.	ID=AcDemo01g001700;Name=AcDemo01g001700;Note=Pentatricopeptide repeat protein
+Chr01	demo	mRNA	5944024	5945846	.	+	.	ID=AcDemo01g001700.1;Parent=AcDemo01g001700
+Chr01	demo	exon	5944024	5945846	.	+	.	Parent=AcDemo01g001700.1
+Chr01	demo	gene	6014416	6020702	.	-	.	ID=AcDemo01g001800;Name=AcDemo01g001800;Note=Hypothetical protein
+Chr01	demo	mRNA	6014416	6020702	.	-	.	ID=AcDemo01g001800.1;Parent=AcDemo01g001800
+Chr01	demo	exon	6014416	6020702	.	-	.	Parent=AcDemo01g001800.1
+Chr01	demo	gene	6280329	6281490	.	-	.	ID=AcDemo01g001900;Name=AcDemo01g001900;Note=NAC domain protein
+Chr01	demo	mRNA	6280329	6281490	.	-	.	ID=AcDemo01g001900.1;Parent=AcDemo01g001900
+Chr01	demo	exon	6280329	6281490	.	-	.	Parent=AcDemo01g001900.1
+Chr01	demo	gene	6399619	6401348	.	+	.	ID=AcDemo01g002000;Name=AcDemo01g002000;Note=Pentatricopeptide repeat protein
+Chr01	demo	mRNA	6399619	6401348	.	+	.	ID=AcDemo01g002000.1;Parent=AcDemo01g002000
+Chr01	demo	exon	6399619	6401348	.	+	.	Parent=AcDemo01g002000.1
+Chr01	demo	gene	6399983	6401515	.	+	.	ID=AcDemo01g002100;Name=AcDemo01g002100;Note=Hypothetical protein
+Chr01	demo	mRNA	6399983	6401515	.	+	.	ID=AcDemo01g002100.1;Parent=AcDemo01g002100
+Chr01	demo	exon	6399983	6401515	.	+	.	Parent=AcDemo01g002100.1
+Chr01	demo	gene	6599985	6607873	.	+	.	ID=AcDemo01g002200;Name=AcDemo01g002200;Note=NAC domain protein
+Chr01	demo	mRNA	6599985	6607873	.	+	.	ID=AcDemo01g002200.1;Parent=AcDemo01g002200
+Chr01	demo	exon	6599985	6607873	.	+	.	Parent=AcDemo01g002200.1
+Chr01	demo	gene	6873538	6879107	.	-	.	ID=AcDemo01g002300;Name=AcDemo01g002300;Note=Pentatricopeptide repeat protein
+Chr01	demo	mRNA	6873538	6879107	.	-	.	ID=AcDemo01g002300.1;Parent=AcDemo01g002300
+Chr01	demo	exon	6873538	6879107	.	-	.	Parent=AcDemo01g002300.1
+Chr01	demo	gene	6875670	6878483	.	+	.	ID=AcDemo01g002400;Name=AcDemo01g002400;Note=Heat shock protein 70
+Chr01	demo	mRNA	6875670	6878483	.	+	.	ID=AcDemo01g002400.1;Parent=AcDemo01g002400
+Chr01	demo	exon	6875670	6878483	.	+	.	Parent=AcDemo01g002400.1
+Chr01	demo	gene	7002483	7003933	.	+	.	ID=AcDemo01g002500;Name=AcDemo01g002500;Note=Zinc finger protein%2C C2H2 type
+Chr01	demo	mRNA	7002483	7003933	.	+	.	ID=AcDemo01g002500.1;Parent=AcDemo01g002500
+Chr01	demo	exon	7002483	7003933	.	+	.	Parent=AcDemo01g002500.1
+Chr01	demo	gene	7441411	7447958	.	-	.	ID=AcDemo01g002600;Name=AcDemo01g002600;Note=Pentatricopeptide repeat protein
+Chr01	demo	mRNA	7441411	7447958	.	-	.	ID=AcDemo01g002600.1;Parent=AcDemo01g002600
+Chr01	demo	exon	7441411	7447958	.	-	.	Parent=AcDemo01g002600.1
+Chr01	demo	gene	7644656	7650415	.	-	.	ID=AcDemo01g002700;Name=AcDemo01g002700;Note=Hypothetical protein
+Chr01	demo	mRNA	7644656	7650415	.	-	.	ID=AcDemo01g002700.1;Parent=AcDemo01g002700
+Chr01	demo	exon	7644656	7650415	.	-	.	Parent=AcDemo01g002700.1
+Chr01	demo	gene	8013886	8014699	.	-	.	ID=AcDemo01g002800;Name=AcDemo01g002800;Note=NAC domain protein
+Chr01	demo	mRNA	8013886	8014699	.	-	.	ID=AcDemo01g002800.1;Parent=AcDemo01g002800
+Chr01	demo	exon	8013886	8014699	.	-	.	Parent=AcDemo01g002800.1
+Chr01	demo	gene	8073584	8081412	.	-	.	ID=AcDemo01g002900;Name=AcDemo01g002900;Note=Pentatricopeptide repeat protein
+Chr01	demo	mRNA	8073584	8081412	.	-	.	ID=AcDemo01g002900.1;Parent=AcDemo01g002900
+Chr01	demo	exon	8073584	8081412	.	-	.	Parent=AcDemo01g002900.1
+Chr01	demo	gene	8121876	8123585	.	+	.	ID=AcDemo01g003000;Name=AcDemo01g003000;Note=Hypothetical protein
+Chr01	demo	mRNA	8121876	8123585	.	+	.	ID=AcDemo01g003000.1;Parent=AcDemo01g003000
+Chr01	demo	exon	8121876	8123585	.	+	.	Parent=AcDemo01g003000.1
+Chr01	demo	gene	8253496	8255547	.	-	.	ID=AcDemo01g003100;Name=AcDemo01g003100;Note=Zinc finger protein%2C C2H2 type
+Chr01	demo	mRNA	8253496	8255547	.	-	.	ID=AcDemo01g003100.1;Parent=AcDemo01g003100
+Chr01	demo	exon	8253496	8255547	.	-	.	Parent=AcDemo01g003100.1
+Chr01	demo	gene	8725519	8731305	.	+	.	ID=AcDemo01g003200;Name=AcDemo01g003200;Note=Zinc finger protein%2C C2H2 type
+Chr01	demo	mRNA	8725519	8731305	.	+	.	ID=AcDemo01g003200.1;Parent=AcDemo01g003200
+Chr01	demo	exon	8725519	8731305	.	+	.	Parent=AcDemo01g003200.1
+Chr01	demo	gene	8773922	8781611	.	+	.	ID=AcDemo01g003300;Name=AcDemo01g003300;Note=MYB transcription factor
+Chr01	demo	mRNA	8773922	8781611	.	+	.	ID=AcDemo01g003300.1;Parent=AcDemo01g003300
+Chr01	demo	exon	8773922	8781611	.	+	.	Parent=AcDemo01g003300.1
+Chr01	demo	gene	8842280	8846899	.	+	.	ID=AcDemo01g003400;Name=AcDemo01g003400;Note=MYB transcription factor
+Chr01	demo	mRNA	8842280	8846899	.	+	.	ID=AcDemo01g003400.1;Parent=AcDemo01g003400
+Chr01	demo	exon	8842280	8846899	.	+	.	Parent=AcDemo01g003400.1
+Chr01	demo	gene	9029448	9035496	.	-	.	ID=AcDemo01g003500;Name=AcDemo01g003500;Note=Pentatricopeptide repeat protein
+Chr01	demo	mRNA	9029448	9035496	.	-	.	ID=AcDemo01g003500.1;Parent=AcDemo01g003500
+Chr01	demo	exon	9029448	9035496	.	-	.	Parent=AcDemo01g003500.1
+Chr01	demo	gene	9034963	9035833	.	-	.	ID=AcDemo01g003600;Name=AcDemo01g003600;Note=Hypothetical protein
+Chr01	demo	mRNA	9034963	9035833	.	-	.	ID=AcDemo01g003600.1;Parent=AcDemo01g003600
+Chr01	demo	exon	9034963	9035833	.	-	.	Parent=AcDemo01g003600.1
+Chr01	demo	gene	9046275	9050556	.	-	.	ID=AcDemo01g003700;Name=AcDemo01g003700;Note=Auxin response factor
+Chr01	demo	mRNA	9046275	9050556	.	-	.	ID=AcDemo01g003700.1;Parent=AcDemo01g003700
+Chr01	demo	exon	9046275	9050556	.	-	.	Parent=AcDemo01g003700.1
+Chr01	demo	gene	9301130	9308893	.	-	.	ID=AcDemo01g003800;Name=AcDemo01g003800;Note=Sugar transporter%3B SWEET family
+Chr01	demo	mRNA	9301130	9308893	.	-	.	ID=AcDemo01g003800.1;Parent=AcDemo01g003800
+Chr01	demo	exon	9301130	9308893	.	-	.	Parent=AcDemo01g003800.1
+Chr01	demo	gene	9769397	9773066	.	-	.	ID=AcDemo01g003900;Name=AcDemo01g003900;Note=NAC domain protein
+Chr01	demo	mRNA	9769397	9773066	.	-	.	ID=AcDemo01g003900.1;Parent=AcDemo01g003900
+Chr01	demo	exon	9769397	9773066	.	-	.	Parent=AcDemo01g003900.1
+Chr01	demo	gene	9874247	9879275	.	+	.	ID=AcDemo01g004000;Name=AcDemo01g004000;Note=MYB transcription factor
+Chr01	demo	mRNA	9874247	9879275	.	+	.	ID=AcDemo01g004000.1;Parent=AcDemo01g004000
+Chr01	demo	exon	9874247	9879275	.	+	.	Parent=AcDemo01g004000.1
+Chr02	demo	gene	134229	138669	.	-	.	ID=AcDemo02g000100;Name=AcDemo02g000100;Note=MYB transcription factor
+Chr02	demo	mRNA	134229	138669	.	-	.	ID=AcDemo02g000100.1;Parent=AcDemo02g000100
+Chr02	demo	exon	134229	138669	.	-	.	Parent=AcDemo02g000100.1
+Chr02	demo	gene	605851	610454	.	-	.	ID=AcDemo02g000200;Name=AcDemo02g000200;Note=Pentatricopeptide repeat protein
+Chr02	demo	mRNA	605851	610454	.	-	.	ID=AcDemo02g000200.1;Parent=AcDemo02g000200
+Chr02	demo	exon	605851	610454	.	-	.	Parent=AcDemo02g000200.1
+Chr02	demo	gene	996544	1004276	.	+	.	ID=AcDemo02g000300;Name=AcDemo02g000300;Note=NAC domain protein
+Chr02	demo	mRNA	996544	1004276	.	+	.	ID=AcDemo02g000300.1;Parent=AcDemo02g000300
+Chr02	demo	exon	996544	1004276	.	+	.	Parent=AcDemo02g000300.1
+Chr02	demo	gene	1270120	1277122	.	+	.	ID=AcDemo02g000400;Name=AcDemo02g000400;Note=Cytochrome P450%2C family 71
+Chr02	demo	mRNA	1270120	1277122	.	+	.	ID=AcDemo02g000400.1;Parent=AcDemo02g000400
+Chr02	demo	exon	1270120	1277122	.	+	.	Parent=AcDemo02g000400.1
+Chr02	demo	gene	1312984	1316002	.	-	.	ID=AcDemo02g000500;Name=AcDemo02g000500;Note=MYB transcription factor
+Chr02	demo	mRNA	1312984	1316002	.	-	.	ID=AcDemo02g000500.1;Parent=AcDemo02g000500
+Chr02	demo	exon	1312984	1316002	.	-	.	Parent=AcDemo02g000500.1
+Chr02	demo	gene	1480342	1481272	.	-	.	ID=AcDemo02g000600;Name=AcDemo02g000600;Note=Hypothetical protein
+Chr02	demo	mRNA	1480342	1481272	.	-	.	ID=AcDemo02g000600.1;Parent=AcDemo02g000600
+Chr02	demo	exon	1480342	1481272	.	-	.	Parent=AcDemo02g000600.1
+Chr02	demo	gene	2048202	2049221	.	+	.	ID=AcDemo02g000700;Name=AcDemo02g000700;Note=Cytochrome P450%2C family 71
+Chr02	demo	mRNA	2048202	2049221	.	+	.	ID=AcDemo02g000700.1;Parent=AcDemo02g000700
+Chr02	demo	exon	2048202	2049221	.	+	.	Parent=AcDemo02g000700.1
+Chr02	demo	gene	2340240	2341406	.	+	.	ID=AcDemo02g000800;Name=AcDemo02g000800;Note=Auxin response factor
+Chr02	demo	mRNA	2340240	2341406	.	+	.	ID=AcDemo02g000800.1;Parent=AcDemo02g000800
+Chr02	demo	exon	2340240	2341406	.	+	.	Parent=AcDemo02g000800.1
+Chr02	demo	gene	2632593	2633972	.	+	.	ID=AcDemo02g000900;Name=AcDemo02g000900;Note=Heat shock protein 70
+Chr02	demo	mRNA	2632593	2633972	.	+	.	ID=AcDemo02g000900.1;Parent=AcDemo02g000900
+Chr02	demo	exon	2632593	2633972	.	+	.	Parent=AcDemo02g000900.1
+Chr02	demo	gene	2801458	2809398	.	-	.	ID=AcDemo02g001000;Name=AcDemo02g001000;Note=Sugar transporter%3B SWEET family
+Chr02	demo	mRNA	2801458	2809398	.	-	.	ID=AcDemo02g001000.1;Parent=AcDemo02g001000
+Chr02	demo	exon	2801458	2809398	.	-	.	Parent=AcDemo02g001000.1
+Chr02	demo	gene	3039160	3041453	.	+	.	ID=AcDemo02g001100;Name=AcDemo02g001100;Note=NAC domain protein
+Chr02	demo	mRNA	3039160	3041453	.	+	.	ID=AcDemo02g001100.1;Parent=AcDemo02g001100
+Chr02	demo	exon	3039160	3041453	.	+	.	Parent=AcDemo02g001100.1
+Chr02	demo	gene	3189719	3193764	.	-	.	ID=AcDemo02g001200;Name=AcDemo02g001200;Note=Pentatricopeptide repeat protein
+Chr02	demo	mRNA	3189719	3193764	.	-	.	ID=AcDemo02g001200.1;Parent=AcDemo02g001200
+Chr02	demo	exon	3189719	3193764	.	-	.	Parent=AcDemo02g001200.1
+Chr02	demo	gene	3364937	3368764	.	-	.	ID=AcDemo02g001300;Name=AcDemo02g001300;Note=Leucine-rich repeat receptor kinase
+Chr02	demo	mRNA	3364937	3368764	.	-	.	ID=AcDemo02g001300.1;Parent=AcDemo02g001300
+Chr02	demo	exon	3364937	3368764	.	-	.	Parent=AcDemo02g001300.1
+Chr02	demo	gene	3639166	3644487	.	-	.	ID=AcDemo02g001400;Name=AcDemo02g001400;Note=Hypothetical protein
+Chr02	demo	mRNA	3639166	3644487	.	-	.	ID=AcDemo02g001400.1;Parent=AcDemo02g001400
+Chr02	demo	exon	3639166	3644487	.	-	.	Parent=AcDemo02g001400.1
+Chr02	demo	gene	4388799	4391117	.	-	.	ID=AcDemo02g001500;Name=AcDemo02g001500;Note=Zinc finger protein%2C C2H2 type
+Chr02	demo	mRNA	4388799	4391117	.	-	.	ID=AcDemo02g001500.1;Parent=AcDemo02g001500
+Chr02	demo	exon	4388799	4391117	.	-	.	Parent=AcDemo02g001500.1
+Chr02	demo	gene	4814965	4821186	.	+	.	ID=AcDemo02g001600;Name=AcDemo02g001600;Note=Hypothetical protein
+Chr02	demo	mRNA	4814965	4821186	.	+	.	ID=AcDemo02g001600.1;Parent=AcDemo02g001600
+Chr02	demo	exon	4814965	4821186	.	+	.	Parent=AcDemo02g001600.1
+Chr02	demo	gene	4832636	4833968	.	-	.	ID=AcDemo02g001700;Name=AcDemo02g001700;Note=NAC domain protein
+Chr02	demo	mRNA	4832636	4833968	.	-	.	ID=AcDemo02g001700.1;Parent=AcDemo02g001700
+Chr02	demo	exon	4832636	4833968	.	-	.	Parent=AcDemo02g001700.1
+Chr02	demo	gene	4883826	4890528	.	+	.	ID=AcDemo02g001800;Name=AcDemo02g001800;Note=Sugar transporter%3B SWEET family
+Chr02	demo	mRNA	4883826	4890528	.	+	.	ID=AcDemo02g001800.1;Parent=AcDemo02g001800
+Chr02	demo	exon	4883826	4890528	.	+	.	Parent=AcDemo02g001800.1
+Chr02	demo	gene	4904750	4905593	.	-	.	ID=AcDemo02g001900;Name=AcDemo02g001900;Note=Sugar transporter%3B SWEET family
+Chr02	demo	mRNA	4904750	4905593	.	-	.	ID=AcDemo02g001900.1;Parent=AcDemo02g001900
+Chr02	demo	exon	4904750	4905593	.	-	.	Parent=AcDemo02g001900.1
+Chr02	demo	gene	5050802	5056913	.	-	.	ID=AcDemo02g002000;Name=AcDemo02g002000;Note=Auxin response factor
+Chr02	demo	mRNA	5050802	5056913	.	-	.	ID=AcDemo02g002000.1;Parent=AcDemo02g002000
+Chr02	demo	exon	5050802	5056913	.	-	.	Parent=AcDemo02g002000.1
+Chr02	demo	gene	5065894	5071884	.	-	.	ID=AcDemo02g002100;Name=AcDemo02g002100;Note=Auxin response factor
+Chr02	demo	mRNA	5065894	5071884	.	-	.	ID=AcDemo02g002100.1;Parent=AcDemo02g002100
+Chr02	demo	exon	5065894	5071884	.	-	.	Parent=AcDemo02g002100.1
+Chr02	demo	gene	5295169	5301279	.	+	.	ID=AcDemo02g002200;Name=AcDemo02g002200;Note=Leucine-rich repeat receptor kinase
+Chr02	demo	mRNA	5295169	5301279	.	+	.	ID=AcDemo02g002200.1;Parent=AcDemo02g002200
+Chr02	demo	exon	5295169	5301279	.	+	.	Parent=AcDemo02g002200.1
+Chr02	demo	gene	5527203	5528751	.	-	.	ID=AcDemo02g002300;Name=AcDemo02g002300;Note=Cytochrome P450%2C family 71
+Chr02	demo	mRNA	5527203	5528751	.	-	.	ID=AcDemo02g002300.1;Parent=AcDemo02g002300
+Chr02	demo	exon	5527203	5528751	.	-	.	Parent=AcDemo02g002300.1
+Chr02	demo	gene	5694299	5696360	.	+	.	ID=AcDemo02g002400;Name=AcDemo02g002400;Note=Leucine-rich repeat receptor kinase
+Chr02	demo	mRNA	5694299	5696360	.	+	.	ID=AcDemo02g002400.1;Parent=AcDemo02g002400
+Chr02	demo	exon	5694299	5696360	.	+	.	Parent=AcDemo02g002400.1
+Chr02	demo	gene	5880666	5882985	.	+	.	ID=AcDemo02g002500;Name=AcDemo02g002500;Note=Heat shock protein 70
+Chr02	demo	mRNA	5880666	5882985	.	+	.	ID=AcDemo02g002500.1;Parent=AcDemo02g002500
+Chr02	demo	exon	5880666	5882985	.	+	.	Parent=AcDemo02g002500.1
+Chr02	demo	gene	5964879	5966562	.	-	.	ID=AcDemo02g002600;Name=AcDemo02g002600;Note=MYB transcription factor
+Chr02	demo	mRNA	5964879	5966562	.	-	.	ID=AcDemo02g002600.1;Parent=AcDemo02g002600
+Chr02	demo	exon	5964879	5966562	.	-	.	Parent=AcDemo02g002600.1
+Chr02	demo	gene	6179373	6180793	.	-	.	ID=AcDemo02g002700;Name=AcDemo02g002700;Note=Zinc finger protein%2C C2H2 type
+Chr02	demo	mRNA	6179373	6180793	.	-	.	ID=AcDemo02g002700.1;Parent=AcDemo02g002700
+Chr02	demo	exon	6179373	6180793	.	-	.	Parent=AcDemo02g002700.1
+Chr02	demo	gene	6324537	6329977	.	-	.	ID=AcDemo02g002800;Name=AcDemo02g002800;Note=Hypothetical protein
+Chr02	demo	mRNA	6324537	6329977	.	-	.	ID=AcDemo02g002800.1;Parent=AcDemo02g002800
+Chr02	demo	exon	6324537	6329977	.	-	.	Parent=AcDemo02g002800.1
+Chr02	demo	gene	6466876	6473724	.	+	.	ID=AcDemo02g002900;Name=AcDemo02g002900;Note=MYB transcription factor
+Chr02	demo	mRNA	6466876	6473724	.	+	.	ID=AcDemo02g002900.1;Parent=AcDemo02g002900
+Chr02	demo	exon	6466876	6473724	.	+	.	Parent=AcDemo02g002900.1
+Chr02	demo	gene	6705496	6707495	.	+	.	ID=AcDemo02g003000;Name=AcDemo02g003000;Note=NAC domain protein
+Chr02	demo	mRNA	6705496	6707495	.	+	.	ID=AcDemo02g003000.1;Parent=AcDemo02g003000
+Chr02	demo	exon	6705496	6707495	.	+	.	Parent=AcDemo02g003000.1
+Chr02	demo	gene	6758172	6765950	.	-	.	ID=AcDemo02g003100;Name=AcDemo02g003100;Note=NAC domain protein
+Chr02	demo	mRNA	6758172	6765950	.	-	.	ID=AcDemo02g003100.1;Parent=AcDemo02g003100
+Chr02	demo	exon	6758172	6765950	.	-	.	Parent=AcDemo02g003100.1
+Chr02	demo	gene	6862997	6867790	.	-	.	ID=AcDemo02g003200;Name=AcDemo02g003200;Note=Auxin response factor
+Chr02	demo	mRNA	6862997	6867790	.	-	.	ID=AcDemo02g003200.1;Parent=AcDemo02g003200
+Chr02	demo	exon	6862997	6867790	.	-	.	Parent=AcDemo02g003200.1
+Chr02	demo	gene	6884652	6892370	.	+	.	ID=AcDemo02g003300;Name=AcDemo02g003300;Note=Zinc finger protein%2C C2H2 type
+Chr02	demo	mRNA	6884652	6892370	.	+	.	ID=AcDemo02g003300.1;Parent=AcDemo02g003300
+Chr02	demo	exon	6884652	6892370	.	+	.	Parent=AcDemo02g003300.1
+Chr02	demo	gene	7219872	7222776	.	-	.	ID=AcDemo02g003400;Name=AcDemo02g003400;Note=Leucine-rich repeat receptor kinase
+Chr02	demo	mRNA	7219872	7222776	.	-	.	ID=AcDemo02g003400.1;Parent=AcDemo02g003400
+Chr02	demo	exon	7219872	7222776	.	-	.	Parent=AcDemo02g003400.1
+Chr02	demo	gene	7279081	7282228	.	-	.	ID=AcDemo02g003500;Name=AcDemo02g003500;Note=Hypothetical protein
+Chr02	demo	mRNA	7279081	7282228	.	-	.	ID=AcDemo02g003500.1;Parent=AcDemo02g003500
+Chr02	demo	exon	7279081	7282228	.	-	.	Parent=AcDemo02g003500.1
+Chr02	demo	gene	7366967	7371390	.	-	.	ID=AcDemo02g003600;Name=AcDemo02g003600;Note=Leucine-rich repeat receptor kinase
+Chr02	demo	mRNA	7366967	7371390	.	-	.	ID=AcDemo02g003600.1;Parent=AcDemo02g003600
+Chr02	demo	exon	7366967	7371390	.	-	.	Parent=AcDemo02g003600.1
+Chr02	demo	gene	7448123	7454591	.	-	.	ID=AcDemo02g003700;Name=AcDemo02g003700;Note=Heat shock protein 70
+Chr02	demo	mRNA	7448123	7454591	.	-	.	ID=AcDemo02g003700.1;Parent=AcDemo02g003700
+Chr02	demo	exon	7448123	7454591	.	-	.	Parent=AcDemo02g003700.1
+Chr02	demo	gene	7804938	7809372	.	-	.	ID=AcDemo02g003800;Name=AcDemo02g003800;Note=Leucine-rich repeat receptor kinase
+Chr02	demo	mRNA	7804938	7809372	.	-	.	ID=AcDemo02g003800.1;Parent=AcDemo02g003800
+Chr02	demo	exon	7804938	7809372	.	-	.	Parent=AcDemo02g003800.1
+Chr02	demo	gene	7880902	7882157	.	-	.	ID=AcDemo02g003900;Name=AcDemo02g003900;Note=Auxin response factor
+Chr02	demo	mRNA	7880902	7882157	.	-	.	ID=AcDemo02g003900.1;Parent=AcDemo02g003900
+Chr02	demo	exon	7880902	7882157	.	-	.	Parent=AcDemo02g003900.1
+Chr02	demo	gene	7951702	7957834	.	-	.	ID=AcDemo02g004000;Name=AcDemo02g004000;Note=Zinc finger protein%2C C2H2 type
+Chr02	demo	mRNA	7951702	7957834	.	-	.	ID=AcDemo02g004000.1;Parent=AcDemo02g004000
+Chr02	demo	exon	7951702	7957834	.	-	.	Parent=AcDemo02g004000.1
+Chr03	demo	gene	387288	393470	.	-	.	ID=AcDemo03g000100;Name=AcDemo03g000100;Note=Sugar transporter%3B SWEET family
+Chr03	demo	mRNA	387288	393470	.	-	.	ID=AcDemo03g000100.1;Parent=AcDemo03g000100
+Chr03	demo	exon	387288	393470	.	-	.	Parent=AcDemo03g000100.1
+Chr03	demo	gene	819894	827731	.	+	.	ID=AcDemo03g000200;Name=AcDemo03g000200;Note=Zinc finger protein%2C C2H2 type
+Chr03	demo	mRNA	819894	827731	.	+	.	ID=AcDemo03g000200.1;Parent=AcDemo03g000200
+Chr03	demo	exon	819894	827731	.	+	.	Parent=AcDemo03g000200.1
+Chr03	demo	gene	2087837	2093141	.	-	.	ID=AcDemo03g000300;Name=AcDemo03g000300;Note=Cytochrome P450%2C family 71
+Chr03	demo	mRNA	2087837	2093141	.	-	.	ID=AcDemo03g000300.1;Parent=AcDemo03g000300
+Chr03	demo	exon	2087837	2093141	.	-	.	Parent=AcDemo03g000300.1
+Chr03	demo	gene	2130438	2131472	.	-	.	ID=AcDemo03g000400;Name=AcDemo03g000400;Note=MYB transcription factor
+Chr03	demo	mRNA	2130438	2131472	.	-	.	ID=AcDemo03g000400.1;Parent=AcDemo03g000400
+Chr03	demo	exon	2130438	2131472	.	-	.	Parent=AcDemo03g000400.1
+Chr03	demo	gene	2961976	2968974	.	-	.	ID=AcDemo03g000500;Name=AcDemo03g000500;Note=Pentatricopeptide repeat protein
+Chr03	demo	mRNA	2961976	2968974	.	-	.	ID=AcDemo03g000500.1;Parent=AcDemo03g000500
+Chr03	demo	exon	2961976	2968974	.	-	.	Parent=AcDemo03g000500.1
+Chr03	demo	gene	3214830	3216402	.	+	.	ID=AcDemo03g000600;Name=AcDemo03g000600;Note=Cytochrome P450%2C family 71
+Chr03	demo	mRNA	3214830	3216402	.	+	.	ID=AcDemo03g000600.1;Parent=AcDemo03g000600
+Chr03	demo	exon	3214830	3216402	.	+	.	Parent=AcDemo03g000600.1
+Chr03	demo	gene	3277608	3281610	.	+	.	ID=AcDemo03g000700;Name=AcDemo03g000700;Note=MYB transcription factor
+Chr03	demo	mRNA	3277608	3281610	.	+	.	ID=AcDemo03g000700.1;Parent=AcDemo03g000700
+Chr03	demo	exon	3277608	3281610	.	+	.	Parent=AcDemo03g000700.1
+Chr03	demo	gene	3477879	3485034	.	-	.	ID=AcDemo03g000800;Name=AcDemo03g000800;Note=Zinc finger protein%2C C2H2 type
+Chr03	demo	mRNA	3477879	3485034	.	-	.	ID=AcDemo03g000800.1;Parent=AcDemo03g000800
+Chr03	demo	exon	3477879	3485034	.	-	.	Parent=AcDemo03g000800.1
+Chr03	demo	gene	4135957	4141357	.	+	.	ID=AcDemo03g000900;Name=AcDemo03g000900;Note=Zinc finger protein%2C C2H2 type
+Chr03	demo	mRNA	4135957	4141357	.	+	.	ID=AcDemo03g000900.1;Parent=AcDemo03g000900
+Chr03	demo	exon	4135957	4141357	.	+	.	Parent=AcDemo03g000900.1
+Chr03	demo	gene	4550976	4556529	.	-	.	ID=AcDemo03g001000;Name=AcDemo03g001000;Note=MYB transcription factor
+Chr03	demo	mRNA	4550976	4556529	.	-	.	ID=AcDemo03g001000.1;Parent=AcDemo03g001000
+Chr03	demo	exon	4550976	4556529	.	-	.	Parent=AcDemo03g001000.1
+Chr03	demo	gene	4632997	4637333	.	-	.	ID=AcDemo03g001100;Name=AcDemo03g001100;Note=MYB transcription factor
+Chr03	demo	mRNA	4632997	4637333	.	-	.	ID=AcDemo03g001100.1;Parent=AcDemo03g001100
+Chr03	demo	exon	4632997	4637333	.	-	.	Parent=AcDemo03g001100.1
+Chr03	demo	gene	4776936	4778880	.	-	.	ID=AcDemo03g001200;Name=AcDemo03g001200;Note=Pentatricopeptide repeat protein
+Chr03	demo	mRNA	4776936	4778880	.	-	.	ID=AcDemo03g001200.1;Parent=AcDemo03g001200
+Chr03	demo	exon	4776936	4778880	.	-	.	Parent=AcDemo03g001200.1
+Chr03	demo	gene	4939288	4941110	.	+	.	ID=AcDemo03g001300;Name=AcDemo03g001300;Note=Pentatricopeptide repeat protein
+Chr03	demo	mRNA	4939288	4941110	.	+	.	ID=AcDemo03g001300.1;Parent=AcDemo03g001300
+Chr03	demo	exon	4939288	4941110	.	+	.	Parent=AcDemo03g001300.1
+Chr03	demo	gene	4969832	4975192	.	+	.	ID=AcDemo03g001400;Name=AcDemo03g001400;Note=Cytochrome P450%2C family 71
+Chr03	demo	mRNA	4969832	4975192	.	+	.	ID=AcDemo03g001400.1;Parent=AcDemo03g001400
+Chr03	demo	exon	4969832	4975192	.	+	.	Parent=AcDemo03g001400.1
+Chr03	demo	gene	5364130	5367508	.	-	.	ID=AcDemo03g001500;Name=AcDemo03g001500;Note=Leucine-rich repeat receptor kinase
+Chr03	demo	mRNA	5364130	5367508	.	-	.	ID=AcDemo03g001500.1;Parent=AcDemo03g001500
+Chr03	demo	exon	5364130	5367508	.	-	.	Parent=AcDemo03g001500.1
+Chr03	demo	gene	5372466	5380378	.	+	.	ID=AcDemo03g001600;Name=AcDemo03g001600;Note=Heat shock protein 70
+Chr03	demo	mRNA	5372466	5380378	.	+	.	ID=AcDemo03g001600.1;Parent=AcDemo03g001600
+Chr03	demo	exon	5372466	5380378	.	+	.	Parent=AcDemo03g001600.1
+Chr03	demo	gene	5747114	5755031	.	-	.	ID=AcDemo03g001700;Name=AcDemo03g001700;Note=MYB transcription factor
+Chr03	demo	mRNA	5747114	5755031	.	-	.	ID=AcDemo03g001700.1;Parent=AcDemo03g001700
+Chr03	demo	exon	5747114	5755031	.	-	.	Parent=AcDemo03g001700.1
+Chr03	demo	gene	6095855	6096808	.	-	.	ID=AcDemo03g001800;Name=AcDemo03g001800;Note=Sugar transporter%3B SWEET family
+Chr03	demo	mRNA	6095855	6096808	.	-	.	ID=AcDemo03g001800.1;Parent=AcDemo03g001800
+Chr03	demo	exon	6095855	6096808	.	-	.	Parent=AcDemo03g001800.1
+Chr03	demo	gene	6627008	6634605	.	-	.	ID=AcDemo03g001900;Name=AcDemo03g001900;Note=Auxin response factor
+Chr03	demo	mRNA	6627008	6634605	.	-	.	ID=AcDemo03g001900.1;Parent=AcDemo03g001900
+Chr03	demo	exon	6627008	6634605	.	-	.	Parent=AcDemo03g001900.1
+Chr03	demo	gene	7185092	7187847	.	+	.	ID=AcDemo03g002000;Name=AcDemo03g002000;Note=Auxin response factor
+Chr03	demo	mRNA	7185092	7187847	.	+	.	ID=AcDemo03g002000.1;Parent=AcDemo03g002000
+Chr03	demo	exon	7185092	7187847	.	+	.	Parent=AcDemo03g002000.1
+Chr03	demo	gene	7216748	7218815	.	-	.	ID=AcDemo03g002100;Name=AcDemo03g002100;Note=Sugar transporter%3B SWEET family
+Chr03	demo	mRNA	7216748	7218815	.	-	.	ID=AcDemo03g002100.1;Parent=AcDemo03g002100
+Chr03	demo	exon	7216748	7218815	.	-	.	Parent=AcDemo03g002100.1
+Chr03	demo	gene	7332299	7335181	.	+	.	ID=AcDemo03g002200;Name=AcDemo03g002200;Note=Hypothetical protein
+Chr03	demo	mRNA	7332299	7335181	.	+	.	ID=AcDemo03g002200.1;Parent=AcDemo03g002200
+Chr03	demo	exon	7332299	7335181	.	+	.	Parent=AcDemo03g002200.1
+Chr03	demo	gene	7515414	7521185	.	-	.	ID=AcDemo03g002300;Name=AcDemo03g002300;Note=NAC domain protein
+Chr03	demo	mRNA	7515414	7521185	.	-	.	ID=AcDemo03g002300.1;Parent=AcDemo03g002300
+Chr03	demo	exon	7515414	7521185	.	-	.	Parent=AcDemo03g002300.1
+Chr03	demo	gene	7705070	7712756	.	-	.	ID=AcDemo03g002400;Name=AcDemo03g002400;Note=NAC domain protein
+Chr03	demo	mRNA	7705070	7712756	.	-	.	ID=AcDemo03g002400.1;Parent=AcDemo03g002400
+Chr03	demo	exon	7705070	7712756	.	-	.	Parent=AcDemo03g002400.1
+Chr03	demo	gene	8339656	8340660	.	-	.	ID=AcDemo03g002500;Name=AcDemo03g002500;Note=Hypothetical protein
+Chr03	demo	mRNA	8339656	8340660	.	-	.	ID=AcDemo03g002500.1;Parent=AcDemo03g002500
+Chr03	demo	exon	8339656	8340660	.	-	.	Parent=AcDemo03g002500.1
+Chr03	demo	gene	8436004	8440321	.	+	.	ID=AcDemo03g002600;Name=AcDemo03g002600;Note=Sugar transporter%3B SWEET family
+Chr03	demo	mRNA	8436004	8440321	.	+	.	ID=AcDemo03g002600.1;Parent=AcDemo03g002600
+Chr03	demo	exon	8436004	8440321	.	+	.	Parent=AcDemo03g002600.1
+Chr03	demo	gene	8501200	8508022	.	+	.	ID=AcDemo03g002700;Name=AcDemo03g002700;Note=Hypothetical protein
+Chr03	demo	mRNA	8501200	8508022	.	+	.	ID=AcDemo03g002700.1;Parent=AcDemo03g002700
+Chr03	demo	exon	8501200	8508022	.	+	.	Parent=AcDemo03g002700.1
+Chr03	demo	gene	8873634	8874750	.	+	.	ID=AcDemo03g002800;Name=AcDemo03g002800;Note=Hypothetical protein
+Chr03	demo	mRNA	8873634	8874750	.	+	.	ID=AcDemo03g002800.1;Parent=AcDemo03g002800
+Chr03	demo	exon	8873634	8874750	.	+	.	Parent=AcDemo03g002800.1
+Chr03	demo	gene	9101122	9103801	.	-	.	ID=AcDemo03g002900;Name=AcDemo03g002900;Note=NAC domain protein
+Chr03	demo	mRNA	9101122	9103801	.	-	.	ID=AcDemo03g002900.1;Parent=AcDemo03g002900
+Chr03	demo	exon	9101122	9103801	.	-	.	Parent=AcDemo03g002900.1
+Chr03	demo	gene	9209607	9216665	.	+	.	ID=AcDemo03g003000;Name=AcDemo03g003000;Note=Sugar transporter%3B SWEET family
+Chr03	demo	mRNA	9209607	9216665	.	+	.	ID=AcDemo03g003000.1;Parent=AcDemo03g003000
+Chr03	demo	exon	9209607	9216665	.	+	.	Parent=AcDemo03g003000.1
+Chr03	demo	gene	9295514	9302778	.	+	.	ID=AcDemo03g003100;Name=AcDemo03g003100;Note=Leucine-rich repeat receptor kinase
+Chr03	demo	mRNA	9295514	9302778	.	+	.	ID=AcDemo03g003100.1;Parent=AcDemo03g003100
+Chr03	demo	exon	9295514	9302778	.	+	.	Parent=AcDemo03g003100.1
+Chr03	demo	gene	9791032	9797099	.	+	.	ID=AcDemo03g003200;Name=AcDemo03g003200;Note=Sugar transporter%3B SWEET family
+Chr03	demo	mRNA	9791032	9797099	.	+	.	ID=AcDemo03g003200.1;Parent=AcDemo03g003200
+Chr03	demo	exon	9791032	9797099	.	+	.	Parent=AcDemo03g003200.1
+Chr03	demo	gene	9795109	9801821	.	-	.	ID=AcDemo03g003300;Name=AcDemo03g003300;Note=Cytochrome P450%2C family 71
+Chr03	demo	mRNA	9795109	9801821	.	-	.	ID=AcDemo03g003300.1;Parent=AcDemo03g003300
+Chr03	demo	exon	9795109	9801821	.	-	.	Parent=AcDemo03g003300.1
+Chr03	demo	gene	9814445	9822078	.	-	.	ID=AcDemo03g003400;Name=AcDemo03g003400;Note=MYB transcription factor
+Chr03	demo	mRNA	9814445	9822078	.	-	.	ID=AcDemo03g003400.1;Parent=AcDemo03g003400
+Chr03	demo	exon	9814445	9822078	.	-	.	Parent=AcDemo03g003400.1
+Chr03	demo	gene	9983086	9985251	.	+	.	ID=AcDemo03g003500;Name=AcDemo03g003500;Note=Hypothetical protein
+Chr03	demo	mRNA	9983086	9985251	.	+	.	ID=AcDemo03g003500.1;Parent=AcDemo03g003500
+Chr03	demo	exon	9983086	9985251	.	+	.	Parent=AcDemo03g003500.1
+Chr03	demo	gene	10320157	10324887	.	+	.	ID=AcDemo03g003600;Name=AcDemo03g003600;Note=Leucine-rich repeat receptor kinase
+Chr03	demo	mRNA	10320157	10324887	.	+	.	ID=AcDemo03g003600.1;Parent=AcDemo03g003600
+Chr03	demo	exon	10320157	10324887	.	+	.	Parent=AcDemo03g003600.1
+Chr03	demo	gene	10611056	10611983	.	+	.	ID=AcDemo03g003700;Name=AcDemo03g003700;Note=Cytochrome P450%2C family 71
+Chr03	demo	mRNA	10611056	10611983	.	+	.	ID=AcDemo03g003700.1;Parent=AcDemo03g003700
+Chr03	demo	exon	10611056	10611983	.	+	.	Parent=AcDemo03g003700.1
+Chr03	demo	gene	10697862	10704431	.	-	.	ID=AcDemo03g003800;Name=AcDemo03g003800;Note=Hypothetical protein
+Chr03	demo	mRNA	10697862	10704431	.	-	.	ID=AcDemo03g003800.1;Parent=AcDemo03g003800
+Chr03	demo	exon	10697862	10704431	.	-	.	Parent=AcDemo03g003800.1
+Chr03	demo	gene	11335749	11342274	.	+	.	ID=AcDemo03g003900;Name=AcDemo03g003900;Note=Hypothetical protein
+Chr03	demo	mRNA	11335749	11342274	.	+	.	ID=AcDemo03g003900.1;Parent=AcDemo03g003900
+Chr03	demo	exon	11335749	11342274	.	+	.	Parent=AcDemo03g003900.1
+Chr03	demo	gene	11868735	11870590	.	+	.	ID=AcDemo03g004000;Name=AcDemo03g004000;Note=Pentatricopeptide repeat protein
+Chr03	demo	mRNA	11868735	11870590	.	+	.	ID=AcDemo03g004000.1;Parent=AcDemo03g004000
+Chr03	demo	exon	11868735	11870590	.	+	.	Parent=AcDemo03g004000.1
