@@ -13,7 +13,7 @@ if (binary_ok) options(install.packages.compile.from.source = "never")
 
 cran <- c(
   # trials
-  "agricolae", "FielDHub", "SpATS", "statgenSTA", "statgenGxE", "lme4", "lmerTest", "emmeans", "desplot",
+  "agricolae", "FielDHub", "SpATS", "statgenSTA", "statgenGxE", "lme4", "lmerTest", "nlme", "emmeans", "desplot",
   # genomics
   "statgenGWAS", "qtl2", "rrBLUP", "BGLR", "vcfR",
   # remote sensing
@@ -23,7 +23,7 @@ cran <- c(
   # field / data access
   "soilDB", "jsonlite", "httr2", "curl", "readxl", "openxlsx", "data.table",
   # co-expression and utilities
-  "WGCNA", "fastcluster", "dynamicTreeCut", "openssl", "testthat"
+  "WGCNA", "fastcluster", "dynamicTreeCut", "readr", "openssl", "testthat"
 )
 bioc <- c("DESeq2", "tximport", "edgeR", "limma", "apeglm", "sva",
           "AnnotationDbi", "GO.db", "impute", "preprocessCore", "clusterProfiler")

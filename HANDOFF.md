@@ -38,10 +38,10 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-soil | field | Python | done | SSURGO texture class first, corrected SSM 2017 fallback (all 12 classes, 21 boundaries); AWS rebuilt from horizons matches muaggatt; 73 tests |
 | claw-water-balance | field | Python | done | FAO-56 single-Kc daily balance; reproduces Examples 36-38 and Box 15; mass balance closes; 20 tests |
 | claw-yield-units | field | Python | done | bu/ac and kg/ha with AH-697 bushel weights; moisture shrink checked against UF AG442 and FSA-1078 examples; 18 tests |
-| claw-trial-design | trials | R | building | rebuild on agricolae / FielDHub; designs checked for validity |
-| claw-fieldbook | trials | R | building | Field Book app export/import and data QC |
-| claw-trial-analysis | trials | R | building | single-trial spatial analysis, BLUEs/BLUPs, heritability (statgenSTA/SpATS) |
-| claw-met-gxe | trials | R | building | multi-environment analysis: GxE, stability, AMMI/GGE (statgenGxE) |
+| claw-trial-design | trials | R | done | agricolae and FielDHub designs laid out as compact field blocks; design-property tests (alpha concurrence and efficiency factors, checks in every augmented block, intact whole plots and strips, no dropped entries); 75 checks |
+| claw-fieldbook | trials | R | done | Field Book app export/import, wide files and two-tablet merges; 15 planted error types caught; 69 checks |
+| claw-trial-analysis | trials | R | done | statgenSTA (SpATS or lme4) BLUEs/BLUPs and Cullis H2; spatial model more accurate than lme4 on trended fields; 44 checks |
+| claw-met-gxe | trials | R | done | statgenGxE variance components, Finlay-Wilkinson, AMMI/GGE, SE-weighted stage 2, stability (Shukla checked against agricolae); 58 checks |
 | claw-marker-qc | genomics | R | done | call rate, MAF, heterozygosity, duplicates, segregation distortion; planted problems found exactly; VCF/HapMap I/O; 64 checks |
 | claw-gwas-crop | genomics | R | done | statgenGWAS mixed model with kinship, LOCO and PCs; 35/36 simulated QTNs found, null lambda 0.94-1.08; BH FDR (statgenGWAS fdr option is faulty); 50 checks |
 | claw-ld-decay | genomics | R | done | r2 decay, Hill-Weir fit and critical distance; refuses spurious windows in low-LD panels; 50 checks |
