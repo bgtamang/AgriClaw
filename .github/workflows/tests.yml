@@ -1,0 +1,49 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Skill format and catalog
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python tools/validate_skills.py --templates
+      - run: python tools/build_catalog.py --check
+
+  python:
+    name: Python skill tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pytest
+
+  r:
+    name: R skill tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      # r2u: CRAN and Bioconductor as Ubuntu binaries, so installs take minutes, not hours
+      - uses: eddelbuettel/github-actions/r2u-setup@master
+      - name: Install R packages
+        run: Rscript tools/install_r_deps.R
+      - name: Run R skill tests
+        run: Rscript tests/run_r_tests.R --templates
