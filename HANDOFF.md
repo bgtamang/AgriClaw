@@ -63,9 +63,9 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-aci-fit | physiology | R | building | C3/C4 A-Ci fitting (PhotoGEA) |
 | claw-light-response | physiology | R | building | light-response curves (non-rectangular hyperbola) |
 | claw-stomatal-models | physiology | R | building | Ball-Berry and Medlyn stomatal model fits |
-| claw-vpd-transpiration | physiology | R | building | transpiration response to VPD with breakpoint models |
-| claw-growth-analysis | physiology | R | building | RGR, NAR, LAR, SLA from sequential harvests |
-| claw-fluorescence | physiology | R | building | PAM chlorophyll-fluorescence parameters |
+| claw-vpd-transpiration | physiology | R | done | VPD (FAO-56 examples), irrigation/spike QC, segmented breakpoint with AICc and Davies test; breakpoint within 0.2 kPa in 86% of simulations; 55 checks |
+| claw-growth-analysis | physiology | R | done | RGR, NAR, SLA, LAR, LMF (classical and spline); Hoffmann-Poorter bias reproduced; 40 checks |
+| claw-fluorescence | physiology | R | done | Fv/Fm, PhiPSII, qP, qL, NPQ, ETR; match the LI-6800's own values on 424 rows; 124 checks |
 | agriclaw | meta | none | done | catalog and pipeline router across all skills |
 
 ## Repo-level work
