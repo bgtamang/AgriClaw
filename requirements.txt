@@ -1,10 +1,4 @@
-# Core dependencies shared across skills
-pandas>=1.5.0
-numpy>=1.23.0
-requests>=2.28.0
-
-# Plotting
-matplotlib>=3.6.0
-
-# Individual skills may have additional dependencies
-# listed in their SKILL.md files
+# Runtime dependencies of the Python skills (field and weather skills).
+# R skills list their packages in each SKILL.md `compatibility` field;
+# tools/install_r_deps.R installs all of them.
+matplotlib>=3.6

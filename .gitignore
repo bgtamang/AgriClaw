@@ -223,3 +223,12 @@ __marimo__/
 # OS
 .DS_Store
 Thumbs.db
+**/agriclaw_output/
+agriclaw_output/
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+Rplots.pdf
+*.Rcheck/
