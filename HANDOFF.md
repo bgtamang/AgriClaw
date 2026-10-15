@@ -57,8 +57,8 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | claw-vi-extract | remote-sensing | R | building | per-plot vegetation indices from multispectral imagery |
 | claw-canopy-cover | remote-sensing | R | building | canopy cover from RGB imagery |
 | claw-ortho-qc | remote-sensing | R | building | orthomosaic quality checks and processing guide |
-| claw-vi-timeseries | remote-sensing | R | building | VI time-series smoothing and phenology metrics |
-| claw-yield-prediction | remote-sensing | R | building | yield prediction with leakage-safe (grouped) cross-validation |
+| claw-vi-timeseries | remote-sensing | R | done | double logistic (Beck/Elmore), LOESS or Savitzky-Golay on days-after-planting or GDD; upper-envelope weights for cloudy dates; peak/green-up/senescence recovered within 4 d on simulated seasons; 76 checks |
+| claw-yield-prediction | remote-sensing | R | done | elastic net and random forest with nested grouped CV (leave-environment/genotype/year-out); leakage shown (r 0.90 random vs 0.20 environment-out); 75 checks |
 | claw-licor-6800 | physiology | R | building | read and QC LI-COR LI-6800 files |
 | claw-aci-fit | physiology | R | building | C3/C4 A-Ci fitting (PhotoGEA) |
 | claw-light-response | physiology | R | building | light-response curves (non-rectangular hyperbola) |

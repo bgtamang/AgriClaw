@@ -1,0 +1,10 @@
+"feature","available_t"
+"greenup_dap",60
+"ndvi_at_dap50",50
+"ndvi_at_dap60",60
+"ndvi_peak",90
+"senescence_dap",125
+"season_length_days",125
+"auc_vi_days",125
+"precip_season_mm",130
+"gdd_season_c",130
