@@ -8,6 +8,7 @@ metadata:
   domain: remote-sensing
   language: R
   status: tested
+  summary: "Smooth vegetation-index time series and extract phenology: green-up, peak, senescence, AUC"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

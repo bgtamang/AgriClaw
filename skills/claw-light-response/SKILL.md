@@ -8,6 +8,7 @@ metadata:
   domain: physiology
   language: R
   status: tested
+  summary: "Light-response curves: Asat, quantum yield, compensation and saturation points"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

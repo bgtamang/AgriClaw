@@ -8,6 +8,7 @@ metadata:
   domain: physiology
   language: R
   status: tested
+  summary: "Fit C3 and C4 A-Ci curves: Vcmax, J, TPU, Vpmax (PhotoGEA)"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

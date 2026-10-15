@@ -8,6 +8,7 @@ metadata:
   domain: field
   language: Python
   status: tested
+  summary: "FAO-56 daily soil-water balance: crop water use, water stress, irrigation timing"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

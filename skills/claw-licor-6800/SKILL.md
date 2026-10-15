@@ -8,6 +8,7 @@ metadata:
   domain: physiology
   language: R
   status: tested
+  summary: "Read and QC LI-COR LI-6800 log files (Excel and plain text)"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

@@ -38,6 +38,7 @@ def load_skills() -> list[dict]:
         skills.append({
             "name": fm.get("name", skill_md.parent.name),
             "description": " ".join(str(fm.get("description", "")).split()),
+            "summary": str(meta.get("summary", "")),
             "domain": meta.get("domain", "?"),
             "language": meta.get("language", "?"),
             "status": meta.get("status", "?"),
@@ -63,7 +64,8 @@ def readme_table(skills: list[dict]) -> str:
         lines += [f"### {DOMAIN_TITLES[domain]}", "", "| Skill | What it does | Language | Status |",
                   "|---|---|---|---|"]
         for s in group:
-            lines.append(f"| [`{s['name']}`]({s['path']}/) | {first_sentence(s['description'])} "
+            what = s["summary"] or first_sentence(s["description"])
+            lines.append(f"| [`{s['name']}`]({s['path']}/) | {what} "
                          f"| {s['language']} | {STATUS_BADGE.get(s['status'], s['status'])} |")
         lines.append("")
     counts = {k: sum(s["status"] == k for s in skills) for k in ("tested", "experimental", "guide")}

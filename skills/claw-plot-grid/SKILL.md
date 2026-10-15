@@ -8,6 +8,7 @@ metadata:
   domain: remote-sensing
   language: R
   status: tested
+  summary: "Plot polygons from field corners and layout, joined to the field book"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

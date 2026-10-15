@@ -8,6 +8,7 @@ metadata:
   domain: physiology
   language: R
   status: tested
+  summary: "PAM chlorophyll fluorescence: Fv/Fm, PhiPSII, qP, qL, NPQ, ETR"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

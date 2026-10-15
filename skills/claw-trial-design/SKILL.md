@@ -8,6 +8,7 @@ metadata:
   domain: trials
   language: R
   status: tested
+  summary: "Randomise and lay out trials: RCBD, alpha-lattice, row-column, augmented, p-rep, split, strip"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

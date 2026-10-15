@@ -22,7 +22,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 
 ALLOWED_KEYS = {"name", "description", "license", "compatibility", "metadata", "allowed-tools"}
-REQUIRED_META = ("version", "domain", "language", "status")
+REQUIRED_META = ("version", "domain", "language", "status", "summary")
 DOMAINS = {"field", "trials", "genomics", "transcriptomics", "remote-sensing", "physiology", "meta"}
 STATUSES = {"tested", "experimental", "guide"}
 LANGUAGES = {"R", "Python", "R+Python", "none"}
@@ -97,7 +97,7 @@ def check_skill(skill_dir: Path, is_template: bool = False) -> tuple[list[str], 
     # --- metadata -------------------------------------------------------------
     meta = fm.get("metadata")
     if not isinstance(meta, dict):
-        errors.append("metadata must be a mapping with version, domain, language, status")
+        errors.append("metadata must be a mapping with version, domain, language, status, summary")
         meta = {}
     for k, v in meta.items():
         if not isinstance(k, str) or not isinstance(v, str):
@@ -116,6 +116,8 @@ def check_skill(skill_dir: Path, is_template: bool = False) -> tuple[list[str], 
         errors.append(f"metadata.status must be one of {sorted(STATUSES)}")
     if "language" in meta and meta["language"] not in LANGUAGES:
         errors.append(f"metadata.language must be one of {sorted(LANGUAGES)}")
+    if "summary" in meta and len(str(meta["summary"])) > 100:
+        errors.append(f"metadata.summary is {len(str(meta['summary']))} characters (max 100)")
 
     # --- body -----------------------------------------------------------------
     n_lines = body.count("\n") + 1

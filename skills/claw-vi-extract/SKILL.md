@@ -8,6 +8,7 @@ metadata:
   domain: remote-sensing
   language: R
   status: tested
+  summary: "Per-plot vegetation indices (NDVI, NDRE, GNDVI, OSAVI, EVI2, MCARI2) from multispectral imagery"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

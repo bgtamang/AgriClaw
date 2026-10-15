@@ -8,6 +8,7 @@ metadata:
   domain: meta
   language: none
   status: guide
+  summary: "Which AgriClaw skill to use for a request, and how the skills chain together"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

@@ -8,6 +8,7 @@ metadata:
   domain: genomics
   language: R
   status: tested
+  summary: "Genomic prediction (GBLUP, RR-BLUP, Bayesian) with leakage-safe cross-validation"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

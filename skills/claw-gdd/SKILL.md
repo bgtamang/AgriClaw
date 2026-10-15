@@ -8,6 +8,7 @@ metadata:
   domain: field
   language: Python
   status: tested
+  summary: "Growing degree days, corn growth stages (NCH-40) and freeze dates from planting"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

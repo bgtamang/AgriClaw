@@ -8,6 +8,7 @@ metadata:
   domain: genomics
   language: R
   status: tested
+  summary: "Response to selection, selection intensity, Smith-Hazel and desired-gains indices"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

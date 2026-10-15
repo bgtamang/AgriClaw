@@ -8,6 +8,7 @@ metadata:
   domain: transcriptomics
   language: R
   status: tested
+  summary: "Import Salmon, kallisto or featureCounts output to gene counts, with sample QC"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

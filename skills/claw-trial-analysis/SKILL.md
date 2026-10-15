@@ -8,6 +8,7 @@ metadata:
   domain: trials
   language: R
   status: tested
+  summary: "Single-trial mixed models (SpATS spatial or lme4): BLUEs, BLUPs, heritability, outliers"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

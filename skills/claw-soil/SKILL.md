@@ -8,6 +8,7 @@ metadata:
   domain: field
   language: Python
   status: tested
+  summary: "USDA SSURGO soil at a field: texture, drainage, pH, organic matter, water storage"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

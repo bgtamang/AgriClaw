@@ -8,6 +8,7 @@ metadata:
   domain: remote-sensing
   language: R
   status: tested
+  summary: "Predict yield from imagery features with grouped (leakage-safe) cross-validation"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

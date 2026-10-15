@@ -8,6 +8,7 @@ metadata:
   domain: remote-sensing
   language: R
   status: tested
+  summary: "Check a drone orthomosaic and DSM before plot extraction; processing guide"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

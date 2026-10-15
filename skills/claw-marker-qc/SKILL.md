@@ -8,6 +8,7 @@ metadata:
   domain: genomics
   language: R
   status: tested
+  summary: "Genotype QC: call rate, MAF, heterozygosity, duplicates, distortion; VCF and HapMap"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

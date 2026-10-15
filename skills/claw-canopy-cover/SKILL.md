@@ -8,6 +8,7 @@ metadata:
   domain: remote-sensing
   language: R
   status: tested
+  summary: "Per-plot green canopy cover from RGB drone orthomosaics"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

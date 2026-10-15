@@ -8,6 +8,7 @@ metadata:
   domain: physiology
   language: R
   status: tested
+  summary: "Growth analysis from sequential harvests: RGR, NAR, LAR, SLA, LMF"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

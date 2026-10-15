@@ -8,6 +8,7 @@ metadata:
   domain: genomics
   language: R
   status: tested
+  summary: "Genes inside GWAS or QTL intervals from Ensembl Plants or a local GFF3, with assembly checks"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

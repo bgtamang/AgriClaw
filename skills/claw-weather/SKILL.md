@@ -8,6 +8,7 @@ metadata:
   domain: field
   language: Python
   status: tested
+  summary: "Growing-season weather: temperature, rain, reference ET, heat and dry spells"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

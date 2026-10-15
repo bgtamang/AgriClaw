@@ -8,6 +8,7 @@ metadata:
   domain: transcriptomics
   language: R
   status: tested
+  summary: "GO, KEGG, MapMan or custom term enrichment against the correct background"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

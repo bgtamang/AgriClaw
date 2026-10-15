@@ -29,7 +29,7 @@ AgriClaw follows the open Agent Skills specification (<https://agentskills.io/sp
 | `description` | Required. At most 1024 characters. Says what the skill does **and** when to use it, using the words a user would actually type. Agents choose skills from this text alone. |
 | `license` | `MIT`. |
 | `compatibility` | At most 500 characters: language, required packages, internet needs. |
-| `metadata` | A map of string keys to **string** values. AgriClaw requires `version`, `domain`, `language` and `status`. |
+| `metadata` | A map of string keys to **string** values. AgriClaw requires `version`, `domain`, `language`, `status` and `summary` (one line, at most 100 characters, shown in the README table). |
 | `allowed-tools` | Optional and experimental in the spec. Don't use it unless needed. |
 
 A top-level `version`, or any other key, is invalid: put extra information under `metadata`.
@@ -53,11 +53,12 @@ metadata:
   domain: physiology
   language: R
   status: tested
+  summary: "Fit C3 and C4 A-Ci curves: Vcmax, J, TPU, Vpmax (PhotoGEA)"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 ```
 
-Always quote `version`. `python tools/validate_skills.py` checks all of these rules.
+Always quote `version` and `summary`. `python tools/validate_skills.py` checks all of these rules.
 
 ## 3. SKILL.md body
 

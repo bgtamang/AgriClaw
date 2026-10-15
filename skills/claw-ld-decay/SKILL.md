@@ -8,6 +8,7 @@ metadata:
   domain: genomics
   language: R
   status: tested
+  summary: "LD decay curves and the critical distance for candidate-gene windows"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

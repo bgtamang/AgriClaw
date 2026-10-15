@@ -8,6 +8,7 @@ metadata:
   domain: transcriptomics
   language: R
   status: tested
+  summary: "WGCNA co-expression modules and module-trait relationships"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

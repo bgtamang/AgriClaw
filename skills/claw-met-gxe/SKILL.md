@@ -8,6 +8,7 @@ metadata:
   domain: trials
   language: R
   status: tested
+  summary: "Multi-environment trials: GxE variance, heritability, stability, Finlay-Wilkinson, AMMI/GGE"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

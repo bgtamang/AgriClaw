@@ -8,6 +8,7 @@ metadata:
   domain: field
   language: Python
   status: tested
+  summary: "Yield conversions (bu/ac, kg/ha, t/ha), moisture adjustment, plot-to-area scaling"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

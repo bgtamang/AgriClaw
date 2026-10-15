@@ -8,6 +8,7 @@ metadata:
   domain: genomics
   language: R
   status: tested
+  summary: "QTL mapping in biparental and multiparent populations with permutation thresholds (qtl2)"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

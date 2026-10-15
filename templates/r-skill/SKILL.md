@@ -8,6 +8,7 @@ metadata:
   domain: meta
   language: R
   status: tested
+  summary: "Template: trait summary by group (n, mean, SD, CV); copy it to start a new skill"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

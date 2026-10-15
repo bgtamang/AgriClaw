@@ -8,6 +8,7 @@ metadata:
   domain: trials
   language: R
   status: tested
+  summary: "Field Book app export and import, merging tablets, plot-level data QC"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

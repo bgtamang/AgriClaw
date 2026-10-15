@@ -75,13 +75,27 @@ Status values: `planned`, `building`, `done` (validator clean and tests pass), `
 | Flat `skills/<name>/` layout, CONVENTIONS.md, templates, validator, R/Python test runners | done |
 | `tools/install_r_deps.R` (all R packages) | done |
 | Claude Code plugin + marketplace manifest (`.claude-plugin/`) | done (passes `claude plugin validate`) |
-| GitHub Actions CI (validator + Python + R tests) | written (`.github/workflows/tests.yml`), not pushed until skills pass locally |
-| README rewrite (honest status table, install for Claude Code / OpenClaw / others) | done; table filled by `tools/build_catalog.py` |
+| GitHub Actions CI (validator + Python + R tests) | done (`.github/workflows/tests.yml`) |
+| README rewrite (honest status table, install for Claude Code / OpenClaw / others) | done; table filled by `tools/build_catalog.py` from each skill's `metadata.summary` |
 | CONTRIBUTING.md update, CHANGELOG.md, CITATION.cff | done |
+| `tools/check_dois.py` (looks up every cited DOI in Crossref/DataCite) | done; needs internet, so not in CI |
+| Plugin install check | done: installs from a local marketplace in a clean Claude Code config, all 34 skills listed; a `--plugin-dir` session ran `claw-gdd` through `${CLAUDE_SKILL_DIR}` |
 
 ## How the build is organised
 
-Nine build agents worked in parallel on 2026-10-15, one per area: field (Python), trials, markers/GWAS, breeding genetics, RNA-seq, imagery, imagery time series, gas exchange, and plant water/growth/fluorescence. Each could edit only its own skill folders. The orchestrator reviews each area, runs the validator and tests, and commits area by area.
+Nine build agents worked in parallel on 2026-10-15, one per area: field (Python), trials, markers/GWAS, breeding genetics, RNA-seq, imagery, imagery time series, gas exchange, and plant water/growth/fluorescence. Each could edit only its own skill folders. The orchestrator reviewed each area (validator, tests, DOI check, link check, spot checks of the science) and committed area by area.
+
+## Ideas for later versions
+
+Each skill's SKILL.md lists its own limitations. The larger gaps:
+
+- No real-data benchmarks yet for imagery (canopy cover, VI time series) or yield prediction; validation is on simulated or synthetic data.
+- `claw-genomic-prediction`: no GxE kernel in the multi-environment model.
+- `claw-qtl-mapping`: single-QTL scans only.
+- `claw-water-balance`: constant root depth; no runoff or capillary rise unless supplied.
+- `claw-enrichment`: over-representation only (no GSEA).
+- Not covered: crop-model calibration (DSSAT/APSIM), hyperspectral imagery, root phenotyping, seed composition (NIR).
+- Upstream package problems found during testing are listed in CHANGELOG.md; consider reporting them to the package maintainers.
 
 ## Decisions log
 

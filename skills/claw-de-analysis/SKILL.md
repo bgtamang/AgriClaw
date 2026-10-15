@@ -8,6 +8,7 @@ metadata:
   domain: transcriptomics
   language: R
   status: tested
+  summary: "Differential expression with DESeq2: contrasts, likelihood-ratio tests, shrunken fold changes"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

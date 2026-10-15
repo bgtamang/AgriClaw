@@ -8,6 +8,7 @@ metadata:
   domain: physiology
   language: R
   status: tested
+  summary: "Transpiration response to VPD from pot weights, with breakpoint models"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 

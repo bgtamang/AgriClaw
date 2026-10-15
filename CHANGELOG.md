@@ -21,8 +21,17 @@ A rebuild of the March 2026 scaffold.
 - Removed fabricated or garbled citations.
 
 ### Added
-- New skills across field trials, genetics, gene expression, imagery and physiology. See the README table.
-- `CONVENTIONS.md`, working skill templates, `tools/validate_skills.py`, `tools/build_catalog.py`, `tests/run_r_tests.R`, `tools/install_r_deps.R`, and GitHub Actions CI.
+- 33 tested skills plus the `agriclaw` router: field and environment (5), field trials (4), genotypes and genetics (7), gene expression (4), drone and satellite imagery (6) and plant physiology (7). See the README table.
+- Tests that compare results with known answers: published worked examples (FAO-56, NCH-40, the qtl2 user guide, PhotoGEA's article tables, Cerón-Rojas & Crossa 2018), simulations with known truth, and design-property checks.
+- `CONVENTIONS.md`, working skill templates, `tools/validate_skills.py`, `tools/build_catalog.py`, `tools/check_dois.py`, `tests/run_r_tests.R`, `tools/install_r_deps.R`, and GitHub Actions CI.
+
+### Problems found in upstream packages (worked around in the skills)
+- statgenGWAS 1.0.14: `thrType = "fdr"` compares the k-th cluster with α/k after an unadjusted p < α gate, so traits with no marker effects get significant SNPs. `claw-gwas-crop` uses Benjamini–Hochberg instead.
+- statgenGxE 1.0.11: `gxeStability(method = "static")` is documented as Shukla's stability variance but returns each genotype's variance across environments. `claw-met-gxe` computes Shukla's measure itself.
+- FielDHub 1.5.0: `row_column()` fails for some seeds ("best_efficiencies" not found). `claw-trial-design` retries with the next seed and records the seed used.
+- tximport: `ignoreTxVersion` cuts IDs at the first dot, which merges every `Glyma.`/`Sobic.`/`Potri.` transcript. `claw-rnaseq-import` strips only a trailing version number.
+- segmented: `seg.control(seed = )` resets the caller's random-number stream. `claw-vpd-transpiration` restores it.
+- terra: 8- and 16-bit rasters are written with NoData 255 / 65535 by default, so saturated pixels become missing. `claw-canopy-cover` and `claw-ortho-qc` warn about it.
 
 ## 0.1.0 (2026-03-02)
 

@@ -8,6 +8,7 @@ metadata:
   domain: genomics
   language: R
   status: tested
+  summary: "Mixed-model GWAS with kinship, LOCO and principal components (statgenGWAS)"
   repository: https://github.com/bgtamang/AgriClaw
 ---
 
