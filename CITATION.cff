@@ -2,6 +2,8 @@ cff-version: 1.2.0
 message: "If you use AgriClaw, please cite it as below, together with the packages and methods named in each skill's report."
 title: "AgriClaw: tested AI-agent skills for crop research"
 type: software
+version: 1.0.0
+date-released: "2026-10-15"
 authors:
   - family-names: Tamang
     given-names: Bishal Gole

@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 (unreleased, branch `v1-rebuild`)
+## 1.0.0 (2026-10-15)
 
 A rebuild of the March 2026 scaffold.
 

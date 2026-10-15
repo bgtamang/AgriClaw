@@ -1,7 +1,6 @@
-# AgriClaw v1 rebuild: handoff
+# AgriClaw handoff
 
-Working branch: `v1-rebuild`. `main` stays unchanged until the owner reviews the rebuild.
-Started 2026-10-15.
+Released as 1.0.0 on 2026-10-15: the `v1-rebuild` branch was reviewed and merged into `main`. Develop new skills on feature branches and merge them when CI passes.
 
 ## Goal
 
@@ -15,7 +14,7 @@ Turn the March 2026 scaffold into a tested, portable skill library for crop rese
 
 ## How to resume (any person or agent session)
 
-1. `git clone https://github.com/bgtamang/AgriClaw && cd AgriClaw && git checkout v1-rebuild`
+1. `git clone https://github.com/bgtamang/AgriClaw && cd AgriClaw`
 2. Read `CONVENTIONS.md` (the rules), then the status table below.
 3. Check the current state:
    ```
