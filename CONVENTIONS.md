@@ -66,7 +66,7 @@ Write for an AI agent that knows general science but not the pitfalls of this me
 1. **What it does**: two or three sentences.
 2. **When to use / when not to use**, naming the AgriClaw skill to use instead where relevant.
 3. **Inputs**: file formats, required columns with units, and **what to ask the user** when information is missing. Never guess a planting date, maturity group, genome assembly, unit, or experimental design.
-4. **How to run**: exact commands, run from the skill folder: `Rscript scripts/<file>.R --demo` first, then real-data examples.
+4. **How to run**: exact commands, with the demo first and then real-data examples. An installed skill runs in the user's project folder, not the skill folder, so call scripts through `${CLAUDE_SKILL_DIR}`. Start the section with this sentence: "Commands use `${CLAUDE_SKILL_DIR}`, this skill's folder: Claude Code fills it in; in other tools, replace it with the folder that contains this SKILL.md." Then write commands like `Rscript "${CLAUDE_SKILL_DIR}/scripts/<file>.R" --demo`. Paths to the user's own files stay as ordinary paths.
 5. **Outputs**: the files, key columns, and how to read them.
 6. **Expert decisions**: each default and threshold, why it was chosen, and its source.
 7. **Checks before reporting**: diagnostics the agent must look at, and red flags that mean "stop and tell the user".

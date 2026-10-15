@@ -35,11 +35,11 @@ If the user's trait column has no units in its name, ask what the units are befo
 
 ## How to run
 
-Run from this skill's folder:
+Commands use `${CLAUDE_SKILL_DIR}`, this skill's folder: Claude Code fills it in; in other tools, replace it with the folder that contains this SKILL.md.
 
 ```bash
-python scripts/example.py --demo
-python scripts/example.py --input trial.csv --trait yield_kg_ha --group genotype --out results/
+python "${CLAUDE_SKILL_DIR}/scripts/example.py" --demo
+python "${CLAUDE_SKILL_DIR}/scripts/example.py" --input trial.csv --trait yield_kg_ha --group genotype --out results/
 ```
 
 ## Outputs

@@ -35,11 +35,11 @@ If the user's trait column has no units in its name, ask what the units are befo
 
 ## How to run
 
-Run from this skill's folder:
+Commands use `${CLAUDE_SKILL_DIR}`, this skill's folder: Claude Code fills it in; in other tools, replace it with the folder that contains this SKILL.md.
 
 ```bash
-Rscript scripts/example.R --demo
-Rscript scripts/example.R --input trial.csv --trait yield_kg_ha --group genotype --out results/
+Rscript "${CLAUDE_SKILL_DIR}/scripts/example.R" --demo
+Rscript "${CLAUDE_SKILL_DIR}/scripts/example.R" --input trial.csv --trait yield_kg_ha --group genotype --out results/
 ```
 
 ## Outputs

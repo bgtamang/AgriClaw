@@ -1,0 +1,14 @@
+{
+  "name": "agriclaw",
+  "description": "AgriClaw: tested AI-agent skills for crop research (field trials, genomics, transcriptomics, remote sensing, plant physiology).",
+  "owner": {
+    "name": "Bishal Gole Tamang"
+  },
+  "plugins": [
+    {
+      "name": "agriclaw",
+      "source": "./",
+      "description": "Tested AI-agent skills for crop research: field trials, genomics, transcriptomics, remote sensing and plant physiology."
+    }
+  ]
+}
